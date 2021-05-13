@@ -1,0 +1,7 @@
+FROM informaticsmatters/rdkit-python3-debian:Release_2021_03_2
+
+COPY *.py *.nf site_substructures.smarts /home/rdkit/
+
+RUN pip install im-standardize-molecule==0.1.0
+
+WORKDIR /home/rdkit

@@ -1,0 +1,5 @@
+FROM informaticsmatters/obabel:3.1.1
+
+COPY gen_conformer.* /home/obabel/
+
+WORKDIR /home/obabel
