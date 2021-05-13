@@ -20,7 +20,7 @@ docker build -f Dockerfile-obabel -t informaticsmatters/virt-screening-obabel .
 ## Prepare conda environments
 
 Alternatively these processes can be run in a conda environment.
-Use the [](environment-rdkit.yaml) and [](environment-obabel.yaml) environment files to 
+Use the [environment-rdkit.yaml]() and [environment-obabel.yaml]() environment files to 
 create these. e.g.
 ```
 conda env create -f environment-rdkit.yaml
@@ -66,7 +66,7 @@ For example:
 }
 ```
 
-To shard a dataset use the [](shard.py) script like this:
+To shard a dataset use the [shard.py]() script like this:
 ```
 python3 -m shard -i data/100000.smi -s chemspace -v feb_2021 -o molecules -n 1 --interval 10000
 ```
@@ -103,7 +103,7 @@ Use the `vs-rdkit` conda environment to run this.
 
 Or run with Docker:
 ```
-
+docker run -it --rm -v $PWD/molecules:/home/rdkit/molecules informaticsmatters/virt-screening-rdkit python3 max_min_picker.py -i molecules/16-25.smi -o molecules/16-25-1000.smi -c 1000
 ```
 
 ## 4. Prepare lists for enumeration and conformer generation
