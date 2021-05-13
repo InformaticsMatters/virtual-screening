@@ -1,6 +1,6 @@
 # Virtual screening tools
 
-This repo contains a set of tools to preare inputs for virtual screening.
+This repo contains a set of tools to prepare inputs for virtual screening.
 
 ## Prepare Docker images
 
