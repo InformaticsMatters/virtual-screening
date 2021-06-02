@@ -58,9 +58,9 @@ jobs:
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
     command: >-
-        python3 -m shard -i {{ inputFile }} -s {{ supplierName }}
-        -v {{ supplierVersion }} -o {{ outputDir }} -n {{ codeFieldIndex }}
-        --interval 10000
+      python -m shard -i {{ inputFile }} -s {{ supplierName }}
+      -v {{ supplierVersion }} -o {{ outputDir }} -n {{ codeFieldIndex }}
+      --interval 10000
     # Command variables - using JSONSchema to allow for simplified client
     # presentation to the user. 'inputs' and 'outputs' use custom types
     # and typically consist of the definition of input files and output
@@ -115,3 +115,83 @@ jobs:
           supplierVersion:
             title: Version of the molecule source
             type: string
+
+  filter:
+    name: Filter candidate molecules
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    image:
+      name: informaticsmatters/virt-screening-rdkit
+      tag: '1.0.0'
+      project-directory: /data
+    command: >-
+      python -m filter -i {{ inputFile }} -o {{ outputFile }}
+      --min-hac {{ minHac }}
+      --max-hac {{ maxHac }}
+      --min-rings {{ minRings }}
+      --min-aro-rings {{ minAroRings }}
+      --max-chiral-centres {{ maxChiralCentres }}
+      --max-undefined-chiral-centres {{ maxUndefinedChiralCentres }}
+      --min-sp3 {{ minSp3 }}
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to filter
+            mime-types:
+            - chemical/x-csv
+            multiple: true
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            mime-types:
+            - chemical/x-csv
+            creates: '{{ outputDir }}/{{ supplierName }}_{{ supplierVersion }}/*.smi'
+            type: file
+      options:
+        type: object
+        required:
+        - minHac
+        - maxHac
+        properties:
+          minHac:
+            title: Minimum Heavy Atom Count
+            type: integer
+            minimum: 0
+          maxHac:
+            title: Maximum Heavy Atom Count
+            type: integer
+            minimum: 0
+          minRings:
+            title: Minimum rings
+            type: integer
+            default: 0
+            minimum: 0
+          minAroRings:
+            title: Minimum Aromatc rings
+            type: integer
+            default: 0
+            minim: 0
+          maxChiralCentres:
+            title: Maximum Chiral centres
+            type: integer
+            default: 0
+            minimum: 0
+          maxUndefinedChiralCentres:
+            title: Maximum undefined Chiral centres
+            type: integer
+            default: 0
+            minimum: 0
+          minSp3:
+            title: Minimum sp3
+            type: integer
+            default: 0
+            minimum: 0
