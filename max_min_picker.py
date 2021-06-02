@@ -45,7 +45,8 @@ def pick(input, output, count, threshold, interval=0):
                 tokens = line.strip().split('\t')
                 
                 smi = tokens[0]
-                digest = tokens[1]
+                uid = tokens[1]
+                digest = tokens[2]
                 if smi in duplicates:
                     num_dups += 1
                     continue
@@ -57,7 +58,7 @@ def pick(input, output, count, threshold, interval=0):
                     continue
                 
                 fingerprints.append(rdMolDescriptors.GetMorganFingerprintAsBitVect(mol,2))
-                data.append((smi, digest))
+                data.append((smi, uid, digest))
                 
             t1 = time.time()
             utils.log('Fingerprinting took {} seconds'.format((t1-t0)))
@@ -79,7 +80,7 @@ def pick(input, output, count, threshold, interval=0):
             utils.log('Writing data ....')
             for pick in picks:
                 d = data[pick]
-                outf.write('{}\t{}\n'.format(d[0], d[1]))
+                outf.write('{}\t{}\t{}\n'.format(d[0], d[1], d[2]))
             utils.log('Finished')
                 
     return inputs, len(fingerprints), len(picks), num_dups

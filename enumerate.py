@@ -19,7 +19,7 @@
 Reads a file of SMILES and enumerates undefined chiral centres, tautomers and charge states.
 Writes results as SMILES.
 """
-import os, sys, argparse, traceback
+import os, sys, argparse, traceback, uuid
 import utils
 
 from rdkit import Chem
@@ -112,7 +112,7 @@ def add_molecule(mydict, mol, code):
         mydict[smiles] = mol
 
 
-def execute(suppl, data_dir, enumerate_chirals=False,
+def execute(input, data_dir, enumerate_chirals=False,
             enumerate_charges=False, enumerate_tautomers=False,
             combinatorial=False,
             min_charge=None, max_charge=None, num_charges=None,
@@ -130,69 +130,78 @@ def execute(suppl, data_dir, enumerate_chirals=False,
     total = 0
     errors = 0
     excluded = 0
-    for mol in suppl:
-        count += 1
-        
-        if interval and count % interval == 0:
-                utils.log("Processed {} records".format(count))
-
-        if not mol:
-            errors += 1
-            utils.log("Failed to create molecule", count)
-            continue
-
-        # if we have HAC filters apply them
-        hac = mol.GetNumHeavyAtoms()
-        if min_hac is not None and min_hac > hac:
-            excluded += 1
-            continue
-        if max_hac is not None and max_hac < hac:
-            excluded += 1
-            continue
-
-        digest = mol.GetProp('_Name')
-        #utils.log('Processing mol', count)
-        
-        parts = [data_dir]
-        parts.extend(utils.get_path_from_digest(digest))
-        path = os.path.join(*parts, digest + '.smi')
-        #utils.log('Handling', path)
-        
-        codes = ''
-        with open(path, 'w') as writer:
-
-            try:
-
-                # use a dict as we want to keep the order
-                enumerated_mols = {}
-                add_molecule(enumerated_mols, mol, 'B')
-
-                if enumerate_chirals:
-                    mols = enumerate_undefined_chirals(mol)
-                    add_molecules(enumerated_mols, mols, 'C')
-
-                if combinatorial:
-                    tautomers = gen_tautomers(enumerated_mols.values(), enumerator)
-                    protonated_mols = gen_charges(tautomers, min_ph, max_ph, min_charge, max_charge, num_charges)
-                    add_molecules(enumerated_mols, protonated_mols, 'X')
-                else:
-                    if enumerate_tautomers:
-                        tautomers = gen_tautomers(enumerated_mols.values(), enumerator)
-                    if enumerate_charges:
-                        protonated_mols = gen_charges(enumerated_mols.values(), min_ph, max_ph, min_charge, max_charge, num_charges)
-                    if enumerate_tautomers:
-                        add_molecules(enumerated_mols, tautomers, 'T')
-                    if enumerate_charges:
-                        add_molecules(enumerated_mols, protonated_mols, 'M')
-
-                total += len(enumerated_mols)
-
-                for m in enumerated_mols.values():
-                    writer.write(Chem.MolToSmiles(m) + '\t' + m.GetProp('CODE') + '\n')
-
-            except:
+    
+    with open(input) as infile:
+        for line in infile:
+            count += 1
+            
+            tokens = line.strip().split('\t')
+            smi = tokens[0]
+            uid = tokens[1]
+            digest = tokens[2]
+            
+            if interval and count % interval == 0:
+                    utils.log("Processed {} records".format(count))
+                    
+            mol = Chem.MolFromSmiles(smi)
+            if not mol:
                 errors += 1
-                traceback.print_exc()
+                utils.log("Failed to create molecule", count)
+                continue
+
+            # if we have HAC filters apply them
+            hac = mol.GetNumHeavyAtoms()
+            if min_hac is not None and min_hac > hac:
+                excluded += 1
+                continue
+            if max_hac is not None and max_hac < hac:
+                excluded += 1
+                continue
+            
+            parts = [data_dir]
+            parts.extend(utils.get_path_from_digest(digest))
+            path = os.path.join(*parts, digest + '.smi')
+            #utils.log('Handling', path)
+            
+            codes = ''
+            with open(path, 'w') as writer:
+
+                try:
+
+                    # use a dict as we want to keep the order
+                    enumerated_mols = {}
+                    add_molecule(enumerated_mols, mol, 'B')
+
+                    if enumerate_chirals:
+                        mols = enumerate_undefined_chirals(mol)
+                        add_molecules(enumerated_mols, mols, 'C')
+
+                    if combinatorial:
+                        tautomers = gen_tautomers(enumerated_mols.values(), enumerator)
+                        protonated_mols = gen_charges(tautomers, min_ph, max_ph, min_charge, max_charge, num_charges)
+                        add_molecules(enumerated_mols, protonated_mols, 'X')
+                    else:
+                        if enumerate_tautomers:
+                            tautomers = gen_tautomers(enumerated_mols.values(), enumerator)
+                        if enumerate_charges:
+                            protonated_mols = gen_charges(enumerated_mols.values(), min_ph, max_ph, min_charge, max_charge, num_charges)
+                        if enumerate_tautomers:
+                            add_molecules(enumerated_mols, tautomers, 'T')
+                        if enumerate_charges:
+                            add_molecules(enumerated_mols, protonated_mols, 'M')
+
+                    total += len(enumerated_mols)
+
+                    for m in enumerated_mols.values():
+                        code = m.GetProp('CODE')
+                        if code == 'B':
+                            writer.write(Chem.MolToSmiles(m) + '\t' + uid + '\t' + code + '\n')
+                        else:
+                            writer.write(Chem.MolToSmiles(m) + '\t' + str(uuid.uuid4()) + '\t' + code + '\n')
+
+                except:
+                    errors += 1
+                    traceback.print_exc()
 
 
     return count, total, excluded, errors
@@ -211,8 +220,6 @@ def main():
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES")
     parser.add_argument('--data-dir', required=True, help="Data directory")
     parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter")
-    parser.add_argument("--name-column", type=int, default=1, help="Column for name field (zero based)")
-    parser.add_argument('-t', '--title-line', default=False, help="Do the files have title lines")
     parser.add_argument('--enumerate-charges', help='Enumerate charge forms', action='store_true')
     parser.add_argument('--enumerate-chirals', help='Enumerate undefined chiral centers', action='store_true')
     parser.add_argument('--enumerate-tautomers', help='Enumerate undefined chiral centers', action='store_true')
@@ -234,8 +241,6 @@ def main():
     input = args.input
     data_dir = args.data_dir
     delimiter = args.delimiter
-    title_line = args.title_line
-    name_column = args.name_column
     enumerate_charges = args.enumerate_charges
     enumerate_chirals = args.enumerate_chirals
     enumerate_tautomers = args.enumerate_tautomers
@@ -259,9 +264,7 @@ def main():
     # dimorphite is unaware of any previous commandline parameters.
     sys.argv = sys.argv[:1]
 
-    suppl = Chem.SmilesMolSupplier(input, delimiter=delimiter, titleLine=title_line, nameColumn=name_column)
-
-    count, total, excluded, errors = execute(suppl, data_dir, enumerate_chirals=enumerate_chirals,
+    count, total, excluded, errors = execute(input, data_dir, enumerate_chirals=enumerate_chirals,
                                    enumerate_charges=enumerate_charges, enumerate_tautomers=enumerate_tautomers,
                                    combinatorial=combinatorial,
                                    min_charge=min_charge, max_charge=max_charge, num_charges=num_charges,

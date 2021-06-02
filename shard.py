@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-import sys, argparse, os, json, gzip, time
+import sys, argparse, os, json, gzip, time, uuid
 import utils
 from hashlib import sha256
 from rdkit import Chem, RDLogger
@@ -45,7 +45,7 @@ def write_error(line, file):
                 
 
 def shard(inputs, source, version, output_dir, delimiter,
-    name_column=None, skip_lines=0, interval=0, errors_file=None):
+    name_column=None, skip_lines=0, generate_uuid=False, interval=0, errors_file=None):
 
     if not os.path.isdir(output_dir):
         utils.log('Creating outdir', output_dir)
@@ -86,6 +86,11 @@ def shard(inputs, source, version, output_dir, delimiter,
                     line = line.strip()
                     tokens = line.split(delimiter)
                     o_smi = tokens[0]
+                    if generate_uuid:
+                        uid = str(uuid.uuid4())
+                    else:
+                        uid = tokens[1]
+                    
                     try:
                         std_smi, mol = standardize_to_iso_smiles(o_smi)
                     except Exception as ex:
@@ -104,7 +109,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                         id = tokens[name_column]
                     else:
                         id = str(count)
-                    mol.SetProp('_Name', id)
+                    mol.SetProp('_Name', uid)
                     
                     sha256_digest = sha256(bytes(std_smi, 'utf-8')).hexdigest()
                     hac = mol.GetNumHeavyAtoms()
@@ -124,11 +129,11 @@ def shard(inputs, source, version, output_dir, delimiter,
                         freqs[hac] = 1
                         path = os.path.join(hacdir, str(hac).zfill(2) + '.smi')
                         outfile = open(path, 'w')
-                        outfile.write('smiles\tid\torig_smiles\tsha256\thac\trot_bonds\tring_count\t' + 
+                        outfile.write('smiles\tuuid\tid\torig_smiles\tsha256\thac\trot_bonds\tring_count\t' + 
                             'aromatic_ring_count\tchiral_centres\tundefined_chiral_centres\tnum_sp3\n')
                         files[hac] = outfile
-                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
-                        std_smi, id, o_smi, sha256_digest, hac, num_rot_bonds, num_rings, num_aromatic_rings, num_cc, num_undef_cc, num_sp3))
+                    outfile.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                        std_smi, uid, id, o_smi, sha256_digest, hac, num_rot_bonds, num_rings, num_aromatic_rings, num_cc, num_undef_cc, num_sp3))
                         
                     parts = [output_dir, 'sha256']
                     parts.extend(utils.get_path_from_digest(sha256_digest))
@@ -145,9 +150,12 @@ def shard(inputs, source, version, output_dir, delimiter,
                                 continue
                         else:
                             data['smiles'] = std_smi
+                            data['uuid'] = uid
                     else:
                         data = {}
                         data['smiles'] = std_smi
+                        data['uuid'] = uid
+                        
                     if not 'suppliers' in data:
                         data['suppliers'] = {}
                     if name_column is not None:
@@ -184,6 +192,7 @@ def main():
     parser.add_argument('-o', '--outdir', required=True, help="Dir for the molecules output")
     parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter")
     parser.add_argument('-n', '--name-column', type=int, help="Column for name field (zero based)")
+    parser.add_argument('-g', '--generate-uuid', action='store_true', help="Generate UUIDs (if not then UUID must be present as the second column)")
     parser.add_argument('--skip-lines', default=0, type=int, help="Skip this many lines e.g. use 1 for skipping a header line")
     parser.add_argument('-e', '--errors-file', help="Optional file to write bad lines to")
     parser.add_argument("--interval", type=int, help="Reporting interval")
@@ -193,7 +202,7 @@ def main():
     
     t0 = time.time()
     count, errors = shard(args.input, args.source, args.version, args.outdir, args.delimiter, name_column=args.name_column,
-        interval=args.interval, skip_lines=args.skip_lines, errors_file=args.errors_file)
+        interval=args.interval, skip_lines=args.skip_lines, generate_uuid=args.generate_uuid,  errors_file=args.errors_file)
     t1 = time.time()
 
     utils.log('Processed {} records in {} seconds. {} errors.'.format(count, t1 - t0, errors))

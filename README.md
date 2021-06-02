@@ -1,6 +1,6 @@
 # Virtual screening tools
 
-This repo contains a set of tools to prepare inputs for virtual screening.
+This repo contains a set of tools to preare inputs for virtual screening.
 
 ## Prepare Docker images
 
@@ -20,7 +20,7 @@ docker build -f Dockerfile-obabel -t informaticsmatters/virt-screening-obabel .
 ## Prepare conda environments
 
 Alternatively these processes can be run in a conda environment.
-Use the [environment-rdkit.yaml]() and [environment-obabel.yaml]() environment files to 
+Use the [](environment-rdkit.yaml) and [](environment-obabel.yaml) environment files to 
 create these. e.g.
 ```
 conda env create -f environment-rdkit.yaml
@@ -66,9 +66,9 @@ For example:
 }
 ```
 
-To shard a dataset use the [shard.py]() script like this:
+To shard a dataset use the [](shard.py) script like this:
 ```
-python3 -m shard -i data/100000.smi -s chemspace -v feb_2021 -o molecules -n 1 --interval 10000
+python3 -m shard -i data/100000.smi -s chemspace -v feb_2021 -o molecules -n 1 --generate-uuid --interval 10000
 ```
 Use the `vs-rdkit` conda environment to run this.
 
@@ -82,13 +82,13 @@ docker run -it --rm -v $PWD/data:/home/rdkit/data -v $PWD/molecules:/home/rdkit/
 This step allows to select a subset of molecules based on the properties calculated in the shard step. 
 
 ```
-python3 -m filter -i chemspace_feb_2021 -o molecules/16-25.smi --min-hac 16 --max-hac 25 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0 --min-sp3 1
+python3 -m filter -i molecules/chemspace_feb_2021 -o molecules/16-25.smi --min-hac 16 --max-hac 25 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0 --min-sp3 1
 ```
 Use the `vs-rdkit` conda environment to run this.
 
 Or run with Docker:
 ```
-docker run -it --rm -v $PWD/data:/home/rdkit/data -v $PWD/molecules:/home/rdkit/molecules informaticsmatters/virt-screening-rdkit python3 -m filter -i molecules/chemspace_feb_2021 -o molecules/16-25.smi --min-hac 16 --max-hac 25 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0 --min-sp3 1
+docker run -it --rm -v $PWD/molecules:/home/rdkit/molecules informaticsmatters/virt-screening-rdkit python3 -m filter -i molecules/chemspace_feb_2021 -o molecules/16-25.smi --min-hac 16 --max-hac 25 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0 --min-sp3 1
 ```
 An output file is generated that contains the smiles and SHA256 digest of the filtered molecules.
 
@@ -118,7 +118,7 @@ Use the `vs-rdkit` conda environment to run this.
 
 Or run with Docker:
 ```
-docker run -it --rm -v $PWD/data:/home/rdkit/data -v $PWD/molecules:/home/rdkit/molecules informaticsmatters/virt-screening-rdkit python3 prepare_enum_conf_lists.py -i molecules/16-25.smi --outfile-enum molecules/16-25-need-enum.smi --outfile-conf molecules/16-25-need-conf.smi -d molecules/sha256
+docker run -it --rm -v $PWD/molecules:/home/rdkit/molecules informaticsmatters/virt-screening-rdkit python3 prepare_enum_conf_lists.py -i molecules/16-25.smi --outfile-enum molecules/16-25-need-enum.smi --outfile-conf molecules/16-25-need-conf.smi -d molecules/sha256
 ```
 
 ## 5. Enumeration

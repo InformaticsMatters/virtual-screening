@@ -39,7 +39,8 @@ def prepare_3d_list(infile, outfile_enum, outfile_conf, data_dir):
                     total += 1
                     tokens = line.strip().split('\t')
                     smi = tokens[0]
-                    digest = tokens[1]
+                    uid = tokens[1]
+                    digest = tokens[2]
                     parts = [data_dir]
                     parts.extend(get_path_from_digest(digest))
                     path = os.path.join(*parts)
@@ -54,19 +55,19 @@ def prepare_3d_list(infile, outfile_enum, outfile_conf, data_dir):
                     if smi in dups:
                         duplicates += 1
                         continue
-                  docker build -f Dockerfile-rdkit -t informaticsmatters/virt-screening-rdkit .   else:
+                    else:
                         dups.add(smi)
                         
                     if os.path.exists(tgt_enum):
                         existing_enum += 1
                     else:
-                        outenum.write(smi + '\t' + digest + '\n')
+                        outenum.write(smi + '\t' + uid + '\t' + digest + '\n')
                         count_enum += 1
                         
                     if os.path.exists(tgt_conf):
                         existing_conf += 1
                     else:
-                        outconf.write(smi + '\t' + digest + '\n')
+                        outconf.write(smi + '\t' + uid + '\t' + digest + '\n')
                         count_conf += 1
                 
                 

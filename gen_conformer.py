@@ -34,7 +34,8 @@ def execute(infile_smiles, data_dir, interval=0):
             
             tokens1 = line.strip().split('\t')
             std_smi = tokens1[0]
-            digest = tokens1[1]
+            uid = tokens1[1]
+            digest = tokens1[2]
             
             parts = [data_dir]
             parts.extend(utils.get_path_from_digest(digest))
@@ -60,15 +61,18 @@ def execute(infile_smiles, data_dir, interval=0):
                         count += 1
                         tokens2 = l.strip().split('\t')
                         enum_smi = tokens2[0]
-                        code = tokens2[1]
+                        uid2 = tokens2[1]
+                        code = tokens2[2]
                 
                         mol = pybel.readstring("smi", enum_smi)
                         mol.addh()
                         mol.make3D()
-                        mol.title = std_smi
+                        mol.title = uid2
                         mol.data['std_smi'] = std_smi
                         mol.data['enum_smi'] = enum_smi
                         mol.data['enum_code'] = code
+                        if code != 'B':
+                            mol.data['parent_uuid'] = uid
                         #utils.log('Writing', std_smi, enum_smi, code)
                 
                         sdf.write(mol)

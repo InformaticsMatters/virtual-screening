@@ -93,6 +93,7 @@ def filter(input_dir, output_file, min_hac=None, max_hac=None,
                     total += 1
                     tokens = line.strip().split('\t')
                     smi = get_value(tokens, 'smiles')
+                    uid = get_value(tokens, 'uuid')
                     digest = get_value(tokens, 'sha256')
                     
                     if smi in duplicates:
@@ -120,7 +121,7 @@ def filter(input_dir, output_file, min_hac=None, max_hac=None,
                         continue
                     
                     count += 1
-                    out.write('{}\t{}\n'.format(smi, digest))
+                    out.write('{}\t{}\t{}\n'.format(smi, uid, digest))
             
     return total, count, num_dups
 

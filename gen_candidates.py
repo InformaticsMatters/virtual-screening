@@ -37,7 +37,8 @@ def execute(input, output, data_dir, interval=0):
                 
                 tokens = line.strip().split('\t')
                 smi = tokens[0]
-                digest = tokens[1]
+                uid = tokens[1]
+                digest = tokens[2]
                 parts = [data_dir]
                 parts.extend(utils.get_path_from_digest(digest))
                 path = os.path.join(*parts)
