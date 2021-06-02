@@ -1,0 +1,117 @@
+---
+# A Data-Manager Job definition, defining 1 or more Data Manager Jobs.
+# For v1 the 'kind-version' must be '2021.1'
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+
+# An arbitrary name (ignored by the DataManager)
+name: RDKit virtual screening tools
+
+# The 'collection' for the jobs named in this definition.
+#
+# A collection ensures that all of the Jobs have unique names so that they
+# can be easily identified. A collection can be used by more than one
+# JobDefinition file but all the Job identities in a given collection must
+# be unique. i.e. our "shard-molecules" Job ID is unique because
+# it's in the collection "im-rdkit-virtual-screening" and there is no
+# other "shard-molecules" in the same collection. It is different
+# to any "shard-molecules" Job identity in any other collection.
+# The collection must only container lower-case letters, numbers and a hyphen
+# and must begin with a letter.
+collection: im-rdkit-virtual-screening
+
+# The repository where this definition (and the code for the Job) can be found.
+repository-url: https://github.com/InformaticsMatters/virtual-screening
+# The repository tag.
+# All definitions are expected to reside in a repository that has been tagged.
+repository-tag: '1.0.0'
+
+# Job definitions.
+# A list of jobs indexed using a unique identity (i.e. "shared-molecules").
+# Job identities must only container lower-case letters, numbers or a hyphen
+# and must begin with a letter.
+jobs:
+  shard:
+    # An arbitrary name.
+    # The job is actually referred to in the API using the job (above),
+    # e.g. 'shard-molecules'. The name is simply here as a human-friendly
+    # reference.
+    name: Shard candidate molecules
+    # The job version.
+    # Any string, but typically something compatible with SemVer 2.0.0
+    version: '1.0.0'
+    # An arbitrary category and keywords.
+    # Provided to facilitate Job filtering in the client.
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    # The container image that contains the Job implementation
+    # (in v1, these are hosted on Docker Hub)
+    # ... along with the image tag
+    # and the project directory (mount-point) to use for the Project data.
+    image:
+      name: informaticsmatters/virt-screening-rdkit
+      tag: '1.0.0'
+      project-directory: /data
+    # The command that will be used as the Kubernetes Pod 'command'
+    # (after variable expansion). This is a jinja2 template with its variables
+    # described in the `variables` block below (A JSONSchema block).
+    command: >-
+        python3 -m shard -i {{ inputFile }} -s {{ supplierName }}
+        -v {{ supplierVersion }} -o {{ outputDir }} -n {{ codeFieldIndex }}
+        --interval 10000
+    # Command variables - using JSONSchema to allow for simplified client
+    # presentation to the user. 'inputs' and 'outputs' use custom types
+    # and typically consist of the definition of input files and output
+    # directories and files. 'options' are generic JSONSchema types,
+    # like 'strings', 'integers' etc.
+    # Every 'variable' expected by the command must be represented by a
+    # corresponding property in 'inputs', 'outputs' or 'options'.
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to shard
+            mime-types:
+            - chemical/x-csv
+            multiple: true
+            type: file
+      outputs:
+        type: object
+        properties:
+          hacSlices:
+            mime-types:
+            - chemical/x-csv
+            creates: '{{ outputDir }}/{{ supplierName }}_{{ supplierVersion }}/*.smi'
+            type: directory
+          shards:
+            mime-types:
+            - appliction/json
+            creates: '{{ outputDir }}/sha256/*/*/*.json'
+            type: directory
+      options:
+        type: object
+        required:
+        - codeFieldIndex
+        - outputDir
+        - supplierName
+        - supplierVersion
+        properties:
+          codeFieldIndex:
+            default: 1
+            title: Index of vendor code field
+            minimum: 0
+            type: integer
+          outputDir:
+            title: Output directory
+            type: string
+          supplierName:
+            title: Source of the molecules
+            type: string
+          supplierVersion:
+            title: Version of the molecule source
+            type: string
