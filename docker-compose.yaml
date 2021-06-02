@@ -1,0 +1,21 @@
+---
+version: '3.8'
+
+# Build and push with: -
+#
+# IMAGE_TAG=1.0.0 docker-compose build
+# IMAGE_TAG=1.0.0 docker-compose push
+
+services:
+
+  rdkit:
+    build:
+      context: .
+      dockerfile: Dockerfile-rdkit
+    image: informaticsmatters/virt-screening-rdkit:${IMAGE_TAG:-latest}
+
+  obabel:
+    build:
+      context: .
+      dockerfile: Dockerfile-obabel
+    image: informaticsmatters/virt-screening-obabel:${IMAGE_TAG:-latest}

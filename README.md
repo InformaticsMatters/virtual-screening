@@ -1,21 +1,20 @@
 # Virtual screening tools
 
-This repo contains a set of tools to preare inputs for virtual screening.
+This repo contains a set of tools to prepare inputs for virtual screening.
 
 ## Prepare Docker images
 
 Whilst these scripts can be run directly we prefer to always run as Docker containers.
 Two images are needed. These are available on DockerHub, but if you need to build them
-yourself for some reason this is how.
+yourself for some reason this is how...
 
-To build the RDKit based container image run this:
-```
-docker build -f Dockerfile-rdkit -t informaticsmatters/virt-screening-rdkit . 
-```
-To build the OpenBabel based container image run this:
-```
-docker build -f Dockerfile-obabel -t informaticsmatters/virt-screening-obabel . 
-```
+To build the container images run this:
+
+    $ IMAGE_TAG=1.0.0 docker-compose build 
+
+Or, to build using the latest tag: -
+
+    $ docker-compose build 
 
 ## Prepare conda environments
 
