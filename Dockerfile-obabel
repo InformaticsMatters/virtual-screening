@@ -10,9 +10,11 @@ ENV PYTHONUNBUFFERED=1
 
 # Do stuff as root
 USER 0
-WORKDIR /code
+ENV APP_DIR=/code
+WORKDIR ${APP_DIR}
 COPY --chown=obabel gen_conformer.* ./
 RUN chmod 755 *.py
+ENV PATH="${PATH}:${APP_DIR}"
 
 # Finally, return to the obabel user id.
 USER obabel
