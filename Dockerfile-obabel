@@ -1,5 +1,15 @@
 FROM informaticsmatters/obabel:3.1.1
 
-COPY gen_conformer.* /home/obabel/
+# Note:     When run by the Data Manager the uid and gid
+#           will be set according to the Project we're running against.
+#           Consequently we cannot know in advance the user or group id
+#           for execution, and so we must ensure the code runs
+#           as any user.
 
+USER 0
 WORKDIR /home/obabel
+COPY --chown=obabel gen_conformer.* ./
+RUN chmod 755 *.py
+
+# Finally, return to the obabel user id.
+USER obabel
