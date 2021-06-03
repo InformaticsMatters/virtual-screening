@@ -24,7 +24,7 @@ collection: im-rdkit-virtual-screening
 repository-url: https://github.com/InformaticsMatters/virtual-screening
 # The repository tag.
 # All definitions are expected to reside in a repository that has been tagged.
-repository-tag: '1.0.0'
+repository-tag: '1.0.1'
 
 # Job definitions.
 # A list of jobs indexed using a unique identity (i.e. "shared-molecules").
@@ -52,14 +52,14 @@ jobs:
     # and the project directory (mount-point) to use for the Project data.
     image:
       name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.0'
-      project-directory: /home/rdkit/data
+      tag: '1.0.1'
+      project-directory: /data
     # The command that will be used as the Kubernetes Pod 'command'
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
     command: >-
-      python -m shard -i data/{{ inputFile }} -s {{ supplierName }}
-      -v {{ supplierVersion }} -o {{ outputDir }} -n {{ codeFieldIndex }}
+      shard.py -i /data/{{ inputFile }} -s {{ supplierName }}
+      -v {{ supplierVersion }} -o /data/{{ outputDir }} -n {{ codeFieldIndex }}
       --interval 10000
     # Command variables - using JSONSchema to allow for simplified client
     # presentation to the user. 'inputs' and 'outputs' use custom types
@@ -126,10 +126,10 @@ jobs:
     - ligand preparation
     image:
       name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.0'
-      project-directory: /home/rdkit/molecules
+      tag: '1.0.1'
+      project-directory: /data
     command: >-
-      python -m filter -i molecules/{{ inputFile }} -o {{ outputFile }}
+      filter.py -i /data/{{ inputFile }} -o /data/{{ outputFile }}
       --min-hac {{ minHac }}
       --max-hac {{ maxHac }}
       --min-rings {{ minRings }}
