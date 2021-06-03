@@ -1,7 +1,18 @@
 FROM informaticsmatters/rdkit-python3-debian:Release_2021_03_2
 
-COPY *.py *.nf site_substructures.smarts /home/rdkit/
+# Note:     When run by the Data Manager the uid and gid
+#           will be set according to the Project we're running against.
+#           Consequently we cannot know in advance the user or group id
+#           for execution, and so we must ensure the code runs
+#           as any user.
 
-RUN pip install im-standardize-molecule==0.1.0
-
+# Do stuff as root
+# partly to allow installed Python packages to be used by anyone
+USER 0
 WORKDIR /home/rdkit
+COPY --chown=rdkit *.py *.nf site_substructures.smarts ./
+RUN pip install im-standardize-molecule==0.1.0 && \
+    chmod 755 *.py
+
+# Finally, return to the RDKit user id.
+USER rdkit
