@@ -52,7 +52,7 @@ jobs:
     # and the project directory (mount-point) to use for the Project data.
     image:
       name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.1'
+      tag: '1.0.2'
       project-directory: /data
     # The command that will be used as the Kubernetes Pod 'command'
     # (after variable expansion). This is a jinja2 template with its variables
@@ -126,7 +126,7 @@ jobs:
     - ligand preparation
     image:
       name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.1'
+      tag: '1.0.2'
       project-directory: /data
     command: >-
       filter.py -i /data/{{ inputFile }} -o /data/{{ outputFile }}

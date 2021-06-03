@@ -6,6 +6,8 @@ FROM informaticsmatters/rdkit-python3-debian:Release_2021_03_2
 #           for execution, and so we must ensure the code runs
 #           as any user.
 
+ENV PYTHONUNBUFFERED=1
+
 # Do stuff as root
 # partly to allow installed Python packages to be used by anyone
 USER 0

@@ -6,6 +6,9 @@ FROM informaticsmatters/obabel:3.1.1
 #           for execution, and so we must ensure the code runs
 #           as any user.
 
+ENV PYTHONUNBUFFERED=1
+
+# Do stuff as root
 USER 0
 WORKDIR /code
 COPY --chown=obabel gen_conformer.* ./

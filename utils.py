@@ -14,6 +14,7 @@ def log(*args, **kwargs):
     """
     print(*args, file=sys.stderr, **kwargs)
 
+
 def log_dm_event(*args):
     """Generate a Data Manager-compliant event message.
     The Data Manager watches stdout and interprets certain formats
@@ -26,6 +27,7 @@ def log_dm_event(*args):
     print('%s # %s -EVENT- %s' % (msg_time.isoformat(),
                                   _INFO,
                                   _SBUF.getvalue().strip()))
+
 
 def get_path_from_digest(digest, num_chars=default_num_chars, num_levels=default_num_levels):
     parts = []
