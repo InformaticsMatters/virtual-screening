@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-import sys, argparse, os, json, gzip, time, uuid
+import argparse, os, json, gzip, time, uuid
 import utils
 from hashlib import sha256
 from rdkit import Chem, RDLogger
@@ -67,7 +67,7 @@ def shard(inputs, source, version, output_dir, delimiter,
         err_f = None
     
     for input in inputs:
-        utils.log("Processing", input)
+        utils.log_dm_event("Processing", input)
 
         with (gzip.open(input, 'rt') if input.endswith('.gz') else open(input, 'rt')) as f:
         
@@ -81,7 +81,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                     count += 1
                     
                     if interval and count % interval == 0:
-                        utils.log("Processed {} records".format(count))
+                        utils.log_dm_event("Processed {} records".format(count))
                     
                     line = line.strip()
                     tokens = line.split(delimiter)
@@ -181,7 +181,7 @@ def shard(inputs, source, version, output_dir, delimiter,
 def main():
 
     # Example usage:
-    #   python3 -m shard -i data/100000.smi -s chemspace -v feb2021 -o testdir -n 1 --interval 10000
+    #   ./shard.py -i data/100000.smi -s chemspace -v feb2021 -o testdir -n 1 --interval 10000
 
     ### command line args definitions #########################################
 
@@ -204,8 +204,12 @@ def main():
     count, errors = shard(args.input, args.source, args.version, args.outdir, args.delimiter, name_column=args.name_column,
         interval=args.interval, skip_lines=args.skip_lines, generate_uuid=args.generate_uuid,  errors_file=args.errors_file)
     t1 = time.time()
+    # Duration? No less than 1 second?
+    duration_s = int(t1 - t0)
+    if duration_s < 1:
+        duration_s = 1
 
-    utils.log('Processed {} records in {} seconds. {} errors.'.format(count, t1 - t0, errors))
+    utils.log_dm_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
     
 
 if __name__ == "__main__":

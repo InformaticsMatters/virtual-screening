@@ -7,7 +7,7 @@ FROM informaticsmatters/obabel:3.1.1
 #           as any user.
 
 USER 0
-WORKDIR /home/obabel
+WORKDIR /code
 COPY --chown=obabel gen_conformer.* ./
 RUN chmod 755 *.py
 

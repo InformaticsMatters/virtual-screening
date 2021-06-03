@@ -9,10 +9,12 @@ FROM informaticsmatters/rdkit-python3-debian:Release_2021_03_2
 # Do stuff as root
 # partly to allow installed Python packages to be used by anyone
 USER 0
-WORKDIR /home/rdkit
+ENV APP_DIR=/code
+WORKDIR ${APP_DIR}
 COPY --chown=rdkit *.py *.nf site_substructures.smarts ./
 RUN pip install im-standardize-molecule==0.1.0 && \
     chmod 755 *.py
+ENV PATH="${PATH}:${APP_DIR}"
 
 # Finally, return to the RDKit user id.
 USER rdkit
