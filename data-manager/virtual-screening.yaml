@@ -232,7 +232,7 @@ jobs:
             type: integer
             minimum: 0
             
-  max_min_picker:
+  max-min-picker:
     name: Select diverse subset of molecules
     version: '1.0.0'
     category: virtual screening
@@ -278,7 +278,7 @@ jobs:
             type: integer
             minimum: 1
 
-  prep_enum_conf_lists:
+  prep-enum-conf-lists:
     name: Prepare lists of molecules requiring enumeration or 3D conformer generation
     version: '1.0.0'
     category: virtual screening
@@ -340,7 +340,7 @@ jobs:
             type: string
             default: need-conf.smi
             
-  enumerate_candidates:
+  enumerate-candidates:
     name: Enumerate microstates, tautomers and undefined chiral centres
     version: '1.0.0'
     category: virtual screening
