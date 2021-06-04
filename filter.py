@@ -77,7 +77,7 @@ def filter(input_dir, output_file, min_hac=None, max_hac=None,
     min_sp3=None, max_sp3=None):
     
     files = list_files(input_dir, min_hac, max_hac)
-    utils.log('Processing', files)
+    utils.log_dm_event('Files to process:', files)
     count = 0
     total = 0
     num_dups = 0
@@ -85,6 +85,7 @@ def filter(input_dir, output_file, min_hac=None, max_hac=None,
     
     with open(output_file, 'w') as out:
         for i, file in enumerate(files):
+            utils.log_dm_event('Processing', file)
             with open(file) as f:
                 header_line = f.readline()
                 header_tokens = header_line.strip().split('\t')
@@ -163,7 +164,7 @@ def main():
         min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
         min_sp3=args.min_sp3, max_sp3=args.max_sp3)
 
-    utils.log('Matched {} out of {} records. {} duplicates'.format(count, total, num_dups))
+    utils.log_dm_event('Matched {} out of {} records. {} duplicates'.format(count, total, num_dups))
     
 
 if __name__ == "__main__":

@@ -129,7 +129,7 @@ jobs:
       tag: '1.0.2'
       project-directory: /data
     command: >-
-      filter.py -i /data/{{ inputFile }} -o /data/{{ outputFile }}
+      filter.py -i /data/{{ inputDir }} -o /data/{{ outputFile }}
       --min-hac {{ minHac }}
       --max-hac {{ maxHac }}
       {% if minRotb is defined %}--min-rotb {{ minRotb }}{% endif %}
@@ -148,10 +148,10 @@ jobs:
       inputs:
         type: object
         required:
-        - inputFile
+        - inputDir
         properties:
-          inputFile:
-            title: Molecules to filter
+          inputDir:
+            title: Directory with molecules to filter
             mime-types:
             - chemical/x-csv
             multiple: true
