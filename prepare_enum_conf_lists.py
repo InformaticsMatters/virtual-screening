@@ -32,6 +32,7 @@ def prepare_3d_list(infile, outfile_enum, outfile_conf, data_dir):
     
     dups = set()
     
+    utils.log_dm_event('Processing file', infile)
     with open(infile) as inf:
         with open(outfile_enum, 'w') as outenum:
             with open(outfile_conf, 'w') as outconf:
@@ -92,7 +93,7 @@ def main():
     
     total, existing_enum, existing_conf, count_enum, count_conf, duplicates, errors = prepare_3d_list(
         args.input, args.outfile_enum, args.outfile_conf, args.data_dir)
-    utils.log('Processed {} records. {} already enumerated, {} already have conformer, {} needing enumeration, {} needing conformer generation, {} duplicates, {} errors'.format(
+    utils.log_dm_event('Processed {} records. {} already enumerated, {} already have conformer, {} needing enumeration, {} needing conformer generation, {} duplicates, {} errors'.format(
         total, existing_enum, existing_conf, count_enum, count_conf, duplicates, errors))
     
     

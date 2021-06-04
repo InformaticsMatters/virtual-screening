@@ -124,6 +124,7 @@ jobs:
     keywords:
     - rdkit
     - ligand preparation
+    - filter
     image:
       name: informaticsmatters/virt-screening-rdkit
       tag: '1.0.2'
@@ -154,8 +155,7 @@ jobs:
             title: Directory with molecules to filter
             mime-types:
             - chemical/x-csv
-            multiple: true
-            type: file
+            type: dir
       outputs:
         type: object
         properties:
@@ -231,3 +231,156 @@ jobs:
             title: Maximum sp3
             type: integer
             minimum: 0
+            
+  max_min_picker:
+    name: Select diverse subset of molecules
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    - diverse subset
+    - filter
+    image:
+      name: informaticsmatters/virt-screening-rdkit
+      tag: '1.0.2'
+      project-directory: /data
+    command: >-
+      max_min_picker.py -i /data/{{ inputFile }} -o /data/{{ outputFile }}
+      --count {{ count }}
+      --interval 10000
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to pick from
+            mime-types:
+            - chemical/x-csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            mime-types:
+            - chemical/x-csv
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - count
+        properties:
+          count:
+            title: Number of molecules to pick
+            type: integer
+            minimum: 1
+
+  prep_enum_conf_lists:
+    name: Prepare lists of molecules requiring enumeration or 3D conformer generation
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    - enumeration
+    - conformer generation
+    image:
+      name: informaticsmatters/virt-screening-rdkit
+      tag: '1.0.2'
+      project-directory: /data
+    command: >-
+      prepare_enum_conf_lists.py 
+      --input /data/{{ inputFile }}
+      --data-dir /data/{{ dataDir }}
+      --outfile-enum /data/{{ outputFileEnum }}
+      --outfile-conf /data/{{ outputFileConf }}
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        - dataDir
+        properties:
+          inputFile:
+            title: Molecules to evaluate
+            mime-types:
+            - chemical/x-csv
+            type: file
+          dataDir:
+            title: Directory with sharded data
+            type: dir
+      outputs:
+        type: object
+        properties:
+          outputFileEnum:
+            mime-types:
+            - chemical/x-csv
+            creates: '{{ outputFileEnum }}'
+            type: file
+          outputFileConf:
+            mime-types:
+            - chemical/x-csv
+            creates: '{{ outputFileConf }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFileEnum
+        - outputFileConf
+        properties:
+          outputFileEnum:
+            title: Filename for molecules needing enumeration
+            type: string
+            default: need-enum.smi
+          outputFileConf:
+            title: Filename for molecules needing 3D conformers
+            type: string
+            default: need-conf.smi
+            
+  enumerate_candidates:
+    name: Enumerate microstates, tautomers and undefined chiral centres
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    - enumeration
+    - dimorphite_dl
+    - nextflow
+    image:
+      name: informaticsmatters/virt-screening-rdkit
+      tag: '1.0.2'
+      project-directory: /data
+    command: >-
+      nextflow run enumerate.nf
+      --inputs /data/{{ inputFile }}
+      --data-dir /data/{{ dataDir }}
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        - dataDir
+        properties:
+          inputFile:
+            title: Molecules to enumerate
+            mime-types:
+            - chemical/x-csv
+            type: file
+          dataDir:
+            title: Directory with sharded data
+            type: dir
+      outputs:
+        type: object
+        properties:
+          enumerated:
+            mime-types:
+            - chemical/x-csv
+            creates: '{{ dataDir }}/sha256/*/*/*.smi'
+            # additional *.smi files might have already been generated
+            type: directory
+      # there are no options for this job
+
