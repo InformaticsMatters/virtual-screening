@@ -104,7 +104,7 @@ jobs:
           codeFieldIndex:
             title: Index of vendor code field
             default: 1
-            minimum: 0
+            minimum: 1
             type: integer
           outputDir:
             title: Output directory
@@ -132,11 +132,18 @@ jobs:
       filter.py -i /data/{{ inputFile }} -o /data/{{ outputFile }}
       --min-hac {{ minHac }}
       --max-hac {{ maxHac }}
-      --min-rings {{ minRings }}
-      --min-aro-rings {{ minAroRings }}
-      --max-chiral-centres {{ maxChiralCentres }}
-      --max-undefined-chiral-centres {{ maxUndefinedChiralCentres }}
-      --min-sp3 {{ minSp3 }}
+      {% if minRotb is defined %}--min-rotb {{ minRotb }}{% endif %}
+      {% if maxRotb is defined %}--max-rotb {{ maxRotb }}{% endif %}
+      {% if minRings is defined %}--min-rings {{ minRings }}{% endif %}
+      {% if maxRings is defined %}--max-rings {{ maxRings }}{% endif %}
+      {% if minAroRings is defined %}--min-aro-rings {{ minAroRings }}{% endif %}
+      {% if maxAroRings is defined %}--max-aro-rings {{ maxAroRings }}{% endif %}
+      {% if minChiralCenters is defined %}--min-chiral-centres {{ minChiralCenters }}{% endif %}
+      {% if maxChiralCenters is defined %}--max-chiral-centres {{ maxChiralCenters }}{% endif %}
+      {% if minUndefinedChiralCenters is defined %}--min-undefined-chiral-centres {{ minUndefinedChiralCenters }}{% endif %}
+      {% if maxUndefinedChiralCenters is defined %}--max-undefined-chiral-centres {{ maxUndefinedChiralCenters }}{% endif %}
+      {% if minSp3 is defined %}--min-sp3 {{ minSp3 }}{% endif %}
+      {% if maxSp3 is defined %}--max-sp3 {{ maxSp3 }}{% endif %}
     variables:
       inputs:
         type: object
@@ -155,14 +162,19 @@ jobs:
           outputFile:
             mime-types:
             - chemical/x-csv
-            creates: '{{ outputDir }}/{{ supplierName }}_{{ supplierVersion }}/*.smi'
+            creates: '{{ outputFile }}'
             type: file
       options:
         type: object
         required:
         - minHac
         - maxHac
+        - outputFile
         properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: filtered.smi
           minHac:
             title: Minimum Heavy Atom Count
             type: integer
@@ -171,28 +183,51 @@ jobs:
             title: Maximum Heavy Atom Count
             type: integer
             minimum: 0
-          minRings:
-            title: Minimum rings
+          minRotb:
+            title: Minimum number of rotatable bonds
             type: integer
-            default: 0
+            minimum: 0
+          maxRotb:
+            title: Maximum number of rotatable bonds
+            type: integer
+            minimum: 0
+          minRings:
+            title: Minimum number of rings
+            type: integer
+            minimum: 0
+          maxRings:
+            title: Maximum number of rings
+            type: integer
             minimum: 0
           minAroRings:
-            title: Minimum Aromatc rings
+            title: Minimum number of aromatic rings
             type: integer
-            default: 0
             minim: 0
-          maxChiralCentres:
-            title: Maximum Chiral centres
+          maxAroRings:
+            title: Maximum number of aromatic rings
             type: integer
-            default: 0
+            minim: 0
+          minChiralCentres:
+            title: Minimum number of chiral centres
+            type: integer
+            minimum: 0
+          maxChiralCentres:
+            title: Maximum number of chiral centres
+            type: integer
+            minimum: 0
+          minUndefinedChiralCentres:
+            title: Minimum number of undefined chiral centres
+            type: integer
             minimum: 0
           maxUndefinedChiralCentres:
-            title: Maximum undefined Chiral centres
+            title: Maximum number of undefined chiral centres
             type: integer
-            default: 0
             minimum: 0
           minSp3:
             title: Minimum sp3
             type: integer
-            default: 0
+            minimum: 0
+          maxSp3:
+            title: Maximum sp3
+            type: integer
             minimum: 0
