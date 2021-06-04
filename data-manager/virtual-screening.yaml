@@ -246,7 +246,8 @@ jobs:
       tag: '1.0.2'
       project-directory: /data
     command: >-
-      max_min_picker.py -i /data/{{ inputFile }} -o /data/{{ outputFile }}
+      max_min_picker.py --input /data/{{ inputFile }} 
+      --output /data/{{ outputFile }}
       --count {{ count }}
       --interval 10000
     variables:
@@ -273,6 +274,10 @@ jobs:
         required:
         - count
         properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: diverse.smi
           count:
             title: Number of molecules to pick
             type: integer
