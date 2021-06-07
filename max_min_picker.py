@@ -75,13 +75,13 @@ def pick(input, output, count, threshold, interval=0):
                 picks = mmp.LazyBitVectorPick(fingerprints, len(fingerprints), count)
             
             t3 = time.time()
-            utils.log_dm_event.log('Picking took {} seconds'.format((t3-t2)))
+            utils.log_dm_event('Picking took {} seconds'.format((t3-t2)))
             
-            utils.log_dm_event.log('Writing data ....')
+            utils.log_dm_event('Writing data ....')
             for pick in picks:
                 d = data[pick]
                 outf.write('{}\t{}\t{}\n'.format(d[0], d[1], d[2]))
-            utils.log_dm_event.log('Finished')
+            utils.log_dm_event('Finished')
                 
     return inputs, len(fingerprints), len(picks), num_dups
 
