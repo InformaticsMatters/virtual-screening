@@ -8,13 +8,16 @@ FROM informaticsmatters/obabel:3.1.1
 
 ENV PYTHONUNBUFFERED=1
 
+ENV HOME=/code
+WORKDIR ${HOME}
+
 # Do stuff as root
 USER 0
-ENV APP_DIR=/code
-WORKDIR ${APP_DIR}
 COPY --chown=obabel gen_conformer.* ./
 RUN chmod 755 *.py
-ENV PATH="${PATH}:${APP_DIR}"
+
+# Adjust the path
+ENV PATH="${PATH}:${HOME}"
 
 # Finally, return to the obabel user id.
 USER obabel
