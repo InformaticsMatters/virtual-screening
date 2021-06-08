@@ -9,6 +9,7 @@ outputsdir = file(params.data_dir)
 
 process splitter {
 
+    container 'informaticsmatters/virt-screening-obabel:1.0.4'
 
     input:
     file inputs from inputsfile
@@ -22,6 +23,8 @@ process splitter {
 }
 
 process gen_conformers {
+
+    container 'informaticsmatters/virt-screening-obabel:1.0.4'
 
     input:
     file chunks from chunks.flatten()

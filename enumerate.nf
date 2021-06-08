@@ -9,6 +9,8 @@ outputsdir = file(params.data_dir)
 
 process splitter {
 
+    container 'informaticsmatters/virt-screening-rdkit:1.0.3'
+
     input:
     file inputs from inputsfile
 
@@ -21,6 +23,8 @@ process splitter {
 }
 
 process enumerate {
+
+    container 'informaticsmatters/virt-screening-rdkit:1.0.3'
 
     input:
     file chunks from chunks.flatten()
