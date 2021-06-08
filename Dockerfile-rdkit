@@ -8,15 +8,38 @@ FROM informaticsmatters/rdkit-python3-debian:Release_2021_03_2
 
 ENV PYTHONUNBUFFERED=1
 
+ENV HOME=/code
+WORKDIR ${HOME}
+
 # Do stuff as root
 # partly to allow installed Python packages to be used by anyone
 USER 0
-ENV APP_DIR=/code
-WORKDIR ${APP_DIR}
-COPY --chown=rdkit *.py *.nf site_substructures.smarts ./
+COPY --chown=rdkit:root *.py *.nf site_substructures.smarts ./
 RUN pip install im-standardize-molecule==0.1.0 && \
     chmod 755 *.py
-ENV PATH="${PATH}:${APP_DIR}"
+
+# Install material to support Nextflow
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        openjdk-11-jre-headless \
+        curl \
+        git && \
+    apt-get clean -y
+
+# Install nextflow
+RUN curl -s https://get.nextflow.io | bash && \
+    chmod 755 nextflow && \
+    mv nextflow /usr/local/bin/
+
+# Adjust permissions for RunAsAnyUser
+RUN chmod 777 ${HOME} && \
+    chmod 777 ${HOME}/.nextflow && \
+    chown -R rdkit:root ${HOME}/.nextflow && \
+    find ./.nextflow -type d | xargs chmod 777 && \
+    find . -type f -name '*.jar' | xargs chmod 655
+
+# Adjust the path
+ENV PATH="${PATH}:${HOME}"
 
 # Finally, return to the RDKit user id.
 USER rdkit
