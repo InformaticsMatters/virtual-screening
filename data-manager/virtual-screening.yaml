@@ -24,7 +24,7 @@ collection: im-rdkit-virtual-screening
 repository-url: https://github.com/InformaticsMatters/virtual-screening
 # The repository tag.
 # All definitions are expected to reside in a repository that has been tagged.
-repository-tag: '1.0.1'
+repository-tag: '1.0.3'
 
 # Job definitions.
 # A list of jobs indexed using a unique identity (i.e. "shared-molecules").
