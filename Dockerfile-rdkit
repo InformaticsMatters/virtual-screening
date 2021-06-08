@@ -39,7 +39,7 @@ RUN chmod 777 ${HOME} && \
     find . -type f -name '*.jar' | xargs chmod 655
 
 # Adjust the path
-ENV PATH="${PATH}:${HOME}"
+ENV PATH="${PATH}:${HOME}:/usr/local/bin"
 
 # Finally, return to the RDKit user id.
 USER rdkit
