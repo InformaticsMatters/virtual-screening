@@ -347,7 +347,7 @@ jobs:
             
   enumerate-candidates:
     name: Enumerate microstates, tautomers and undefined chiral centres
-    version: '1.0.0'
+    version: '1.0.6'
     category: virtual screening
     keywords:
     - rdkit
