@@ -275,7 +275,7 @@ jobs:
         - count
         properties:
           outputFile:
-            title: Output file name
+            titldata_dire: Output file name
             type: string
             default: diverse.smi
           count:
@@ -363,7 +363,7 @@ jobs:
     command: >-
       nextflow run enumerate.nf
       --inputs /data/{{ inputFile }}
-      --data-dir /data/{{ dataDir }}
+      --data_dir /data/{{ dataDir }}
     variables:
       inputs:
         type: object
