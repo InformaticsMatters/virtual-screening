@@ -40,7 +40,7 @@ jobs:
     # The job version.
     # Any string, but typically something compatible with SemVer 2.0.0
     version: '1.0.0'
-    # An arbitrary category and keywords.
+    # An arbitrary category and keywords.3
     # Provided to facilitate Job filtering in the client.
     category: virtual screening
     keywords:
@@ -357,7 +357,7 @@ jobs:
     - nextflow
     image:
       name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.5'
+      tag: '1.0.6'
       project-directory: /data
       type: nextflow
     command: >-
