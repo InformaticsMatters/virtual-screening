@@ -11,11 +11,11 @@ services:
   rdkit:
     build:
       context: .
-      dockerfile: Dockerfile-rdkit
-    image: informaticsmatters/virt-screening-rdkit:${IMAGE_TAG:-latest}
+      dockerfile: Dockerfile-prep
+    image: informaticsmatters/vs-prep:${IMAGE_TAG:-latest}
 
   obabel:
     build:
       context: .
-      dockerfile: Dockerfile-obabel
-    image: informaticsmatters/virt-screening-obabel:${IMAGE_TAG:-latest}
+      dockerfile: Dockerfile-nextflow
+    image: informaticsmatters/vs-nextflow:${IMAGE_TAG:-latest}

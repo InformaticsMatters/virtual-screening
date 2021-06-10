@@ -19,11 +19,13 @@ Or, to build using the `latest` tag: -
 ## Prepare conda environments
 
 Alternatively these processes can be run in a conda environment.
-Use the [](environment-rdkit.yaml) and [](environment-obabel.yaml) environment files to 
-create these. e.g.
+Use the [](environment.yaml) environment files to 
+create a conda environment named `im-vs-prep`. e.g.
 ```
-conda env create -f environment-rdkit.yaml
+conda env create -f environment.yaml
+conda activate im-vs-prep
 ```
+This environment contains all the tools needed to run these processes.
 
 # Usage
 
@@ -69,27 +71,31 @@ To shard a dataset use the [](shard.py) script like this:
 ```
 ./shard.py -i data/100000.smi -s chemspace -v feb_2021 -o molecules -n 1 --interval 10000
 ```
-Use the `vs-rdkit` conda environment to run this.
+Use the `im-vs-prep` conda environment to run this.
 
 Or run as a docker container:
 ```
-docker run -it --rm -v $PWD/data:/data -v $PWD/molecules:/data/molecules \
-    informaticsmatters/virt-screening-rdkit:$IMAGE_TAG \
-    shard.py -i /data/100000.smi -s chemspace -v feb_2021 -o /data/molecules -n 1 --interval 10000
+docker run -it --rm -v $PWD/data:/data -v $PWD/molecules:/molecules \
+    informaticsmatters/vs-prep:$IMAGE_TAG \
+    ./shard.py -i /data/100000.smi -s chemspace -v feb_2021 -o /molecules -n 1 --interval 10000
 ```
+
+You may want to run as your user ID rather than the default of `root` so that the created files have the correct ownnership.
+Do this by adding `-u 1000:1000` tot he docker run options (replace 1000 with your actual user ID).
+You will need to create the `molecules` dir before running this so that it has the right ownership.
 
 ## 2. Filter
 
-This step allows to select a subset of molecules based on the properties calculated in the shard step. 
+This step allows to select a subset of molecules based on the properties calculated in the shard step.
 
 ```
 ./filter.py -i molecules/chemspace_feb_2021 -o molecules/16-25.smi --min-hac 16 --max-hac 25 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0 --min-sp3 1
 ```
-Use the `vs-rdkit` conda environment to run this.
+Use the `im-vs-prep` conda environment to run this.
 
 Or run with Docker:
 ```
-docker run -it --rm -v $PWD/molecules:/code/molecules informaticsmatters/virt-screening-rdkit filter.py -i molecules/chemspace_feb_2021 -o molecules/16-25.smi --min-hac 16 --max-hac 25 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0 --min-sp3 1
+docker run -it --rm -v $PWD/molecules:/molecules informaticsmatters/vs-prep:$IMAGE_TAG ./filter.py -i /molecules/chemspace_feb_2021 -o /molecules/16-25.smi --min-hac 16 --max-hac 25 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0 --min-sp3  1
 ```
 An output file is generated that contains the smiles and SHA256 digest of the filtered molecules.
 
@@ -104,7 +110,7 @@ Use the `vs-rdkit` conda environment to run this.
 
 Or run with Docker:
 ```
-docker run -it --rm -v $PWD/molecules:/code/molecules informaticsmatters/virt-screening-rdkit max_min_picker.py -i molecules/16-25.smi -o molecules/16-25-1000.smi -c 1000
+docker run -it --rm -v $PWD/molecules:/molecules informaticsmatters/vs-prep:$IMAGE_TAG ./max_min_picker.py -i /molecules/16-25.smi -o /molecules/16-25-1000.smi -c 1000
 ```
 
 ## 4. Prepare lists for enumeration and conformer generation
@@ -119,7 +125,7 @@ Use the `vs-rdkit` conda environment to run this.
 
 Or run with Docker:
 ```
-docker run -it --rm -v $PWD/molecules:/code/molecules informaticsmatters/virt-screening-rdkit prepare_enum_conf_lists.py -i molecules/16-25.smi --outfile-enum molecules/16-25-need-enum.smi --outfile-conf molecules/16-25-need-conf.smi -d molecules/sha256
+docker run -it --rm -v $PWD/molecules:/molecules informaticsmatters/vs-prep:$IMAGE_TAG ./prepare_enum_conf_lists.py -i /molecules/16-25.smi --outfile-enum /molecules/16-25-need-enum.smi --outfile-conf /molecules/16-25-need-conf.smi -d /molecules/sha256
 ```
 
 ## 5. Enumeration
@@ -132,7 +138,7 @@ Note: you need to have created the `vs-rdkit` conda environment and specify the 
 
 Or run with Docker:
 ```
-nextflow run enumerate.nf --inputs molecules/16-25-need-enum.smi --data_dir molecules/sha256 -with-docker informaticsmatters/virt-screening-rdkit
+nextflow run enumerate.nf --inputs molecules/16-25-need-enum.smi --data_dir molecules/sha256 -with-docker informaticsmatters/vs-prep:$IMAGE_TAG
 ```
 
 ## 6. 3D conformer generation
@@ -147,7 +153,7 @@ Note: you need to have created the `vs-obabel3` conda environment and specify th
 
 Or run with Docker:
 ```
-nextflow run gen_conformer.nf --inputs molecules/16-25-need-conf.smi --data_dir molecules/sha256 -with-docker informaticsmatters/virt-screening-obabel:latest
+nextflow run gen_conformer.nf --inputs molecules/16-25-need-conf.smi --data_dir molecules/sha256 -with-docker informaticsmatters/vs-prep:$IMAGE_TAG
 ```
 
 ## 7. Prepare SD file for docking
@@ -160,5 +166,5 @@ Use the `vs-obabel3` conda environment to run this.
 
 Or run with Docker:
 ```
-docker run -it --rm -v $PWD/molecules:/code/molecules informaticsmatters/virt-screening-rdkit gen_candidates.py -i molecules/16-25.smi -o molecules/16-25-candidates.sdf -d molecules/sha256
+docker run -it --rm -v $PWD/molecules:/molecules informaticsmatters/vs-prep:$IMAGE_TAG ./gen_candidates.py -i /molecules/16-25.smi -o /molecules/16-25-candidates.sdf -d /molecules/sha256
 ```

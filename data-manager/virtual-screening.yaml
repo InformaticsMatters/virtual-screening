@@ -51,8 +51,8 @@ jobs:
     # ... along with the image tag
     # and the project directory (mount-point) to use for the Project data.
     image:
-      name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.2'
+      name: informaticsmatters/vs-prep
+      tag: '1.0.0'
       project-directory: /data
     # The command that will be used as the Kubernetes Pod 'command'
     # (after variable expansion). This is a jinja2 template with its variables
@@ -126,8 +126,8 @@ jobs:
     - ligand preparation
     - filter
     image:
-      name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.2'
+      name: informaticsmatters/vs-prep
+      tag: '1.0.0'
       project-directory: /data
     command: >-
       filter.py -i /data/{{ inputDir }} -o /data/{{ outputFile }}
@@ -242,8 +242,8 @@ jobs:
     - diverse subset
     - filter
     image:
-      name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.2'
+      name: informaticsmatters/vs-prep
+      tag: '1.0.0'
       project-directory: /data
     command: >-
       max_min_picker.py --input /data/{{ inputFile }} 
@@ -293,8 +293,8 @@ jobs:
     - enumeration
     - conformer generation
     image:
-      name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.2'
+      name: informaticsmatters/vs-prep
+      tag: '1.0.0'
       project-directory: /data
     command: >-
       prepare_enum_conf_lists.py 
@@ -344,10 +344,60 @@ jobs:
             title: Filename for molecules needing 3D conformers
             type: string
             default: need-conf.smi
-            
+
+generate-candidates:
+    name: Assemble 3D conformers into a single SDF for docking
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - ligand preparation
+    image:
+      name: informaticsmatters/vs-prep
+      tag: '1.0.0'
+      project-directory: /data
+    command: >-
+      gen_candidates.py 
+      --input /data/{{ inputFile }}
+      --data-dir /data/{{ dataDir }}
+      --output /data/{{ outputFile }}
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        - dataDir
+        properties:
+          inputFile:
+            title: Molecules to assemble
+            mime-types:
+            - chemical/x-csv
+            type: file
+          dataDir:
+            title: Directory with sharded data
+            type: dir
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFileEnum
+        - outputFileConf
+        properties:
+          outputFileEnum:
+            title: Filename for SDF output
+            type: string
+            default: candidates.sdf
+  
+  # nextflow jobs                      
   enumerate-candidates:
     name: Enumerate microstates, tautomers and undefined chiral centres
-    version: '1.0.6'
+    version: '1.0.0'
     category: virtual screening
     keywords:
     - rdkit
@@ -356,14 +406,16 @@ jobs:
     - dimorphite_dl
     - nextflow
     image:
-      name: informaticsmatters/virt-screening-rdkit
-      tag: '1.0.7'
+      name: informaticsmatters/vs-nextflow
+      tag: 'latest'
       project-directory: /data
       type: nextflow
     command: >-
       nextflow run enumerate.nf
       --inputs /data/{{ inputFile }}
       --data_dir /data/{{ dataDir }}
+      -with-trace
+      -with-report
     variables:
       inputs:
         type: object
@@ -388,5 +440,68 @@ jobs:
             creates: '{{ dataDir }}/sha256/*/*/*.smi'
             # additional *.smi files might have already been generated
             type: directory
+         trace_file:
+           creates: trace.txt
+           mime-types:
+            - text/plain
+         report_file:
+           creates: report.html
+           mime-types:
+            - text/html
       # there are no options for this job
+      
+  generate-conformer:
+    name: Generate 3D conformer
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - openbabel
+    - ligand preparation
+    - conformer
+    - nextflow
+    image:
+      name: informaticsmatters/vs-nextflow
+      tag: 'latest'
+      project-directory: /data
+      type: nextflow
+    command: >-
+      nextflow run gen_conformer.nf
+      --inputs /data/{{ inputFile }}
+      --data_dir /data/{{ dataDir }}
+      -with-trace
+      -with-report
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        - dataDir
+        properties:
+          inputFile:
+            title: Molecules to process
+            mime-types:
+            - chemical/x-csv
+            type: file
+          dataDir:
+            title: Directory with sharded data
+            type: dir
+      outputs:
+        type: object
+        properties:
+          enumerated:
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ dataDir }}/sha256/*/*/*.sdf'
+            # additional *.sdf files might have already been generated
+            type: directory
+         trace_file:
+           creates: trace.txt
+           mime-types:
+            - text/plain
+         report_file:
+           creates: report.html
+           mime-types:
+            - text/html
+      # there are no options for this job
+
 

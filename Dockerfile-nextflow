@@ -1,0 +1,35 @@
+FROM debian:buster
+LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
+# Note:     When run by the Data Manager the uid and gid
+#           will be set according to the Project we're running against.
+#           Consequently we cannot know in advance the user or group id
+#           for execution, and so we must ensure the code runs
+#           as any user.
+
+
+ENV HOME=/code
+WORKDIR ${HOME}
+
+COPY *.nf *.py site_substructures.smarts ./
+
+
+RUN apt-get update &&\
+ apt-get install -y --no-install-recommends\
+ openjdk-11-jre-headless\
+ curl\
+ git &&\
+ apt-get clean -y
+ 
+# Install nextflow
+RUN curl -s https://get.nextflow.io | bash && \
+    chmod 755 nextflow && \
+    mv nextflow /usr/local/bin/
+
+# Adjust permissions for RunAsAnyUser
+RUN chmod 777 ${HOME} && \
+    chmod 777 ${HOME}/.nextflow && \
+    find ./.nextflow -type d | xargs chmod 777 && \
+    find . -type f -name '*.jar' | xargs chmod 655
+
+ENV HOME=/code
+WORKDIR /code

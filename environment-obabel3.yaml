@@ -1,6 +1,0 @@
-name: vs-obabel3
-channels:
-  - conda-forge
-dependencies:
-  - python=3.9
-  - openbabel=3.1.1

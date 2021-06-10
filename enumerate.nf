@@ -9,7 +9,7 @@ outputsdir = file(params.data_dir)
 
 process splitter {
 
-    container 'informaticsmatters/virt-screening-rdkit:1.0.7'
+    container 'informaticsmatters/vs-prep:1.0.0'
 
     input:
     file inputs from inputsfile
@@ -24,7 +24,7 @@ process splitter {
 
 process enumerate {
 
-    container 'informaticsmatters/virt-screening-rdkit:1.0.7'
+    container 'informaticsmatters/vs-prep:1.0.0'
 
     input:
     file chunks from chunks.flatten()
@@ -32,7 +32,7 @@ process enumerate {
 
 
     """
-    enumerate.py -i $chunks --data-dir $data --interval $params.interval --enumerate-tautomers --enumerate-chirals --enumerate-charges
+    /code/enumerate.py -i $chunks --data-dir $data --interval $params.interval --enumerate-tautomers --enumerate-chirals --enumerate-charges
     """
 }
 

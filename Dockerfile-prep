@@ -1,4 +1,4 @@
-FROM informaticsmatters/obabel:3.1.1
+FROM continuumio/miniconda3:4.9.2
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -11,13 +11,10 @@ ENV PYTHONUNBUFFERED=1
 ENV HOME=/code
 WORKDIR ${HOME}
 
-# Do stuff as root
-USER 0
-COPY --chown=obabel gen_conformer.* ./
-RUN chmod 755 *.py
+COPY *.py *.nf site_substructures.smarts ./
 
-# Adjust the path
-ENV PATH="${PATH}:${HOME}"
+# conda install our requirements, including RDKit and OpenBabel
+RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.2 openbabel=3.1.1 &&\
+  pip install im-standardize-molecule==0.1.0 &&\
+  conda init bash
 
-# Finally, return to the obabel user id.
-USER obabel
