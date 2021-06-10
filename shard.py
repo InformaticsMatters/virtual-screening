@@ -157,7 +157,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                         data['uuid'] = uid
                         
                     if not 'suppliers' in data:
-                        data['suppliers'] = {}
+                        data['suppliers'] = {}errors_file
                     if name_column is not None:
                         if source not in data['suppliers']:
                             data['suppliers'][source] = []

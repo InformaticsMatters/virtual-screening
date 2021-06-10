@@ -168,3 +168,20 @@ Or run with Docker:
 ```
 docker run -it --rm -v $PWD/molecules:/molecules informaticsmatters/vs-prep:$IMAGE_TAG ./gen_candidates.py -i /molecules/16-25.smi -o /molecules/16-25-candidates.sdf -d /molecules/sha256
 ```
+
+## 8. Prepare PDB file for rDock
+
+rDock need the protein to be input in mol2 format, but the typical starting point is a PDB file.
+We'll use OpenBabel to do the conversion, and to prototnate the protein at a suitable pH.
+rDock needs polar hydrogens to be present, but doesn't care if non-polar ones are present or not.
+We now need to assemble all the required 3D conformers into a single SD file that can be used for docking.
+```
+obabel data/receptor.pdb -O molecules/receptor-ph7.mol2 -p 7
+```
+Use the `vs-obabel3` conda environment to run this.
+
+Or run with Docker:
+```
+docker run -it --rm -v $PWD/molecules:/molecules -v $PWD/data:/data informaticsmatters/vs-prep:$IMAGE_TAG obabel /data/receptor.pdb -O /molecules/receptor-ph7.mol2 -p 7
+```
+
