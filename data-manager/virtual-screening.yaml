@@ -31,6 +31,10 @@ repository-tag: '1.0.3'
 # Job identities must only container lower-case letters, numbers or a hyphen
 # and must begin with a letter.
 jobs:
+
+  # simple (non-nextflow) jobs ------------------------------------------------
+  # Where image->type is 'simple' (the default)
+
   shard:
     # An arbitrary name.
     # The job is actually referred to in the API using the job (above),
@@ -50,10 +54,13 @@ jobs:
     # (in v1, these are hosted on Docker Hub)
     # ... along with the image tag
     # and the project directory (mount-point) to use for the Project data.
+    # You can also add a type enumeration ('simple' or 'nextflow'),
+    # although this field is optional.
     image:
       name: informaticsmatters/vs-prep
       tag: '1.0.0'
       project-directory: /data
+      type: simple
     # The command that will be used as the Kubernetes Pod 'command'
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
@@ -345,7 +352,7 @@ jobs:
             type: string
             default: need-conf.smi
 
-generate-candidates:
+  generate-candidates:
     name: Assemble 3D conformers into a single SDF for docking
     version: '1.0.0'
     category: virtual screening
@@ -394,7 +401,8 @@ generate-candidates:
             type: string
             default: candidates.sdf
   
-  # nextflow jobs                      
+  # nextflow jobs -------------------------------------------------------------
+
   enumerate-candidates:
     name: Enumerate microstates, tautomers and undefined chiral centres
     version: '1.0.0'
@@ -440,13 +448,13 @@ generate-candidates:
             creates: '{{ dataDir }}/sha256/*/*/*.smi'
             # additional *.smi files might have already been generated
             type: directory
-         trace_file:
-           creates: trace.txt
-           mime-types:
+          trace_file:
+            creates: trace.txt
+            mime-types:
             - text/plain
-         report_file:
-           creates: report.html
-           mime-types:
+          report_file:
+            creates: report.html
+            mime-types:
             - text/html
       # there are no options for this job
       
@@ -494,14 +502,12 @@ generate-candidates:
             creates: '{{ dataDir }}/sha256/*/*/*.sdf'
             # additional *.sdf files might have already been generated
             type: directory
-         trace_file:
-           creates: trace.txt
-           mime-types:
+          trace_file:
+            creates: trace.txt
+            mime-types:
             - text/plain
-         report_file:
-           creates: report.html
-           mime-types:
+          report_file:
+            creates: report.html
+            mime-types:
             - text/html
       # there are no options for this job
-
-
