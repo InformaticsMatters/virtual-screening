@@ -415,7 +415,7 @@ jobs:
       project-directory: /data
     command: >-
       obabel
-       /data/{{ inputFile }}
+      /data/{{ inputFile }}
       -O /data/{{ outputFile }}
       -p {{ pH }}
     variables:
