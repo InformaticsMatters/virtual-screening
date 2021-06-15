@@ -41,6 +41,13 @@ jobs:
     # e.g. 'shard-molecules'. The name is simply here as a human-friendly
     # reference.
     name: Shard candidate molecules
+    # Human readable description
+    description: >-
+      Standardise input molecules and generate shards based on heavy atom count and
+      calculate a range of molecular properties that can be used for filtering.
+      Basic properties of the molecules, including the vendor code and SMILES are
+      stored in a data structure (based on the SHA256 digest of the standardised SMILES)
+      that can be shared between multiple datasets.
     # The job version.
     # Any string, but typically something compatible with SemVer 2.0.0
     version: '1.0.0'
@@ -77,6 +84,12 @@ jobs:
     # Every 'variable' expected by the command must be represented by a
     # corresponding property in 'inputs', 'outputs' or 'options'.
     variables:
+      order:
+        options:
+        - supplierName
+        - supplierVersion
+        - codeFieldIndex
+        - outputDir
       inputs:
         type: object
         required:
@@ -104,10 +117,10 @@ jobs:
       options:
         type: object
         required:
-        - codeFieldIndex
-        - outputDir
         - supplierName
         - supplierVersion
+        - codeFieldIndex
+        - outputDir
         properties:
           codeFieldIndex:
             title: Index of vendor code field
@@ -127,6 +140,9 @@ jobs:
 
   filter:
     name: Filter candidate molecules
+    description: >-
+      Filter molecules based on molecular properties. The inputs are those generated using the
+      shard job.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -154,6 +170,22 @@ jobs:
       {% if minSp3 is defined %}--min-sp3 {{ minSp3 }}{% endif %}
       {% if maxSp3 is defined %}--max-sp3 {{ maxSp3 }}{% endif %}
     variables:
+      order:
+        options:
+        - minHac
+        - maxHac
+        - minRotb
+        - maxRotb
+        - minRings
+        - maxRings
+        - minAroRings
+        - maxAroRings
+        - minChiralCentres
+        - maxChiralCentres
+        - minUndefinedChiralCentres
+        - maxUndefinedChiralCentres
+        - minSp3
+        - maxSp3
       inputs:
         type: object
         required:
@@ -242,6 +274,9 @@ jobs:
             
   max-min-picker:
     name: Select diverse subset of molecules
+    description: >-
+      Select a diverse subset of molecules using the RDKit MaxMin Picker.
+      Morgan 2 fingerprints and Tanimoto distance is used.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -292,7 +327,10 @@ jobs:
             minimum: 1
 
   prep-enum-conf-lists:
-    name: Prepare lists of molecules requiring enumeration or 3D conformer generation
+    name: Prepare enumeration and conformer lists
+    description: >-
+      Prepare lists of molecules that need enumeration of microstates, tautomers and undefined
+      chiral centres, and those that need 3D conformer generation.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -354,7 +392,9 @@ jobs:
             default: need-conf.smi
 
   generate-candidates:
-    name: Assemble 3D conformers into a single SDF for docking
+    name: Assemble conformers
+    description: >-
+      Assemble 3D conformers into a single SDF for suitable as input to docking.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -394,16 +434,17 @@ jobs:
       options:
         type: object
         required:
-        - outputFileEnum
-        - outputFileConf
+        - outputFile
         properties:
-          outputFileEnum:
+          outputFile:
             title: Filename for SDF output
             type: string
             default: candidates.sdf
             
   prepare-protein-pdb-to-mol2:
-    name: Protonate protein. Input and outputs in PDB or MOL2 formats. 
+    name: Protonate protein
+    description: >-
+      Protonate protein using OpenBabel. Input and outputs can be in PDB or MOL2 formats.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -411,7 +452,7 @@ jobs:
     - openbabel
     image:
       name: informaticsmatters/vs-prep
-      tag: '1.0.0'
+      tag: 'latest'
       project-directory: /data
     command: >-
       obabel
@@ -452,10 +493,71 @@ jobs:
             title: pH to protonate at
             type: float
             default: 7.0
-              
+
+  prepare-rdock:
+    name: rDock prepare
+    description: >-
+      Prepare rDock configuration file (.prm file) and the cavity definition (.as file).
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - protein preparation
+    - rdock
+    image:
+      name: informaticsmatters/vs-rdock
+      tag: 'latest'
+      project-directory: /data
+    command: >-
+      /code/prepare_rdock.py 
+      --receptor /data/{{ receptorFile }}
+      --ligand /data/{{ ligandFile }}
+      --output /data/{{ outputBaseName }}
+    variables:
+      inputs:
+        type: object
+        required:
+        - receptorFile
+        - ligandFile
+        properties:
+          receptorFile:
+            title: MOL2 file for receptor
+            mime-types:
+            - chemical/x-mol2
+            type: file
+          ligandFile:
+            title: Molfile file for ligand
+            mime-types:
+            - chemical/x-mdl-molfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          prmFile:
+            mime-types:
+            - squonk/x-rdock-prm
+            creates: '{{ outputBaseName }}.prm'
+            type: file
+          asFile:
+            mime-types:
+            - squonk/x-rdock-as
+            creates: '{{ outputBaseName }}.as'
+            type: file
+      options:
+        type: object
+        required:
+        - outputBaseName
+        properties:
+          outputBaseName:
+            title: Base name for output files
+            type: string
+            default: docking
+                          
   # nextflow jobs                      
   enumerate-candidates:
     name: Enumerate microstates, tautomers and undefined chiral centres
+    description: >-
+      Enumerate microstates, tautomers and undefined chiral centres. Inputs are defined
+      by the prep-enum-conf-lists job. 
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -511,6 +613,9 @@ jobs:
       
   generate-conformer:
     name: Generate 3D conformer
+    description: >-
+      Generate a single 3D conformer of molecules. Inputs are defined
+      by the prep-enum-conf-lists job.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -521,7 +626,7 @@ jobs:
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
-      project-directory: /data
+      project-directory: /datasquonk/x-rdock-prm
       type: nextflow
     command: >-
       nextflow run /code/gen_conformer.nf
@@ -553,6 +658,145 @@ jobs:
             creates: '{{ dataDir }}/sha256/*/*/*.sdf'
             # additional *.sdf files might have already been generated
             type: directory
+          trace_file:
+            creates: trace.txt
+            mime-types:
+            - text/plain
+          report_file:
+            creates: report.html
+            mime-types:
+            - text/html
+      # there are no options for this job
+      
+  run-rdock:
+    name: Run rRock
+    description: >-
+      Run rDock docking.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdock
+    - docking
+    - nextflow
+    image:
+      name: informaticsmatters/vs-nextflow
+      tag: 'latest'
+      project-directory: /data
+      type: nextflow
+    command: >-
+      nextflow run rdock-docking.nf
+      --ligands /data/{{ ligandsSDF }}
+      --protein /data/{{ proteinMOL2 }}
+      --prmfile /data/{{ prmFile }}
+      --asfile /data/{{ asFile }}
+      -with-trace
+      -with-report
+    variables:
+      inputs:
+        type: object
+        required:
+        - ligandsSDF
+        - proteinMOL2
+        - prmFile
+        - asFile
+        properties:
+          ligandsSDF:
+            title: Candidate ligands to process (SDF format)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          proteinMOL2:
+            title: Prepared receptor (MOL2 format)
+            mime-types:
+            - chemical/x-mol2
+            type: file
+          prmFile:
+            title: rDock configuration (.prm file)
+            mime-types:
+            - squonk/x-rdock-prm
+            type: file
+          asFile:
+            title: Cavity definition (.as file)
+            mime-types:
+            - squonk/x-rdock-as
+            type: file
+      outputs:
+        type: object
+        properties:
+          dockedSDF:
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: 'results/results.sdf.gz'
+            type: file
+          dockedTXT:
+            mime-types:
+            - text/csv
+            creates: 'results/results.txt'
+            type: file
+          trace_file:
+            creates: trace.txt
+            mime-types:
+            - text/plain
+          report_file:
+            creates: report.html
+            mime-types:
+            - text/html
+      options:
+        type: object
+        required:
+        - numDockings
+        properties:
+          numDockings:
+            title: Number of dockings for each molecule
+            type: integer
+            default: 50
+
+  oddt-score-interactions:
+    name: ODDT rescoring and interactions
+    description: >-
+      Generate rescoring functions and interactions using ODDT.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - oddt
+    - docking
+    - nextflow
+    image:
+      name: informaticsmatters/vs-nextflow
+      tag: 'latest'
+      project-directory: /data
+      type: nextflow
+    command: >-
+      nextflow run oddt.nf
+      --ligands /data/{{ ligandsSDF }}
+      --protein /data/{{ proteinPDB }}
+      -with-trace
+      -with-report
+    variables:
+      inputs:
+        type: object
+        required:
+        - ligandsSDF
+        - proteinPDB
+        properties:
+          ligandsSDF:
+            title: Candidate ligands to process (SDF format)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          proteinPDB:
+            title: Prepared receptor (PDB format)
+            mime-types:
+            - chemical/x-pdb
+            type: file
+      outputs:
+        type: object
+        properties:
+          scoredSDF:
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: 'results/results_inters.sdf.gz'
+            type: file
           trace_file:
             creates: trace.txt
             mime-types:

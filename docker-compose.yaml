@@ -19,3 +19,9 @@ services:
       context: .
       dockerfile: Dockerfile-nextflow
     image: informaticsmatters/vs-nextflow:${IMAGE_TAG:-latest}
+    
+  rdock:
+    build:
+      context: .
+      dockerfile: Dockerfile-rdock
+    image: informaticsmatters/vs-rdock:${IMAGE_TAG:-latest}
