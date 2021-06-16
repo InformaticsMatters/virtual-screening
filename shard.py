@@ -72,7 +72,6 @@ def shard(inputs, source, version, output_dir, delimiter,
         with (gzip.open(input, 'rt') if input.endswith('.gz') else open(input, 'rt')) as f:
         
             if skip_lines:
-                utils.log('Skipping {} lines'.format(skip_lines))
                 for i in range(skip_lines):
                     line = f.readline()
                     
@@ -95,13 +94,13 @@ def shard(inputs, source, version, output_dir, delimiter,
                         std_smi, mol = standardize_to_iso_smiles(o_smi)
                     except Exception as ex:
                         errors += 1
-                        utils.log('Error during standardisation of', line)
+                        utils.log_dm_event('Error during standardisation of', line)
                         write_error(line, err_f)
                         continue
                     
                     if not mol:
                         errors += 1
-                        utils.log("Failed to process", line)
+                        utils.log_dm_event("Failed to process", line)
                         write_error(line, err_f)
                         continue
                         
@@ -114,7 +113,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                     sha256_digest = sha256(bytes(std_smi, 'utf-8')).hexdigest()
                     hac = mol.GetNumHeavyAtoms()
                     if hac > 99:
-                        utils.log('Molecule has {} atoms - skipping'.format(hac))
+                        utils.log_dm_event('Molecule has {} atoms - skipping'.format(hac))
                         continue
                     num_rot_bonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
                     num_rings = rdMolDescriptors.CalcNumRings(mol)
@@ -146,7 +145,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                             data = json.load(f)
                         if 'smiles' in data:
                             if data['smiles'] != std_smi:
-                                utils.log('WARNING: SMILES are inconsistent {} {}'.format(data['smiles'], std_smi))
+                                utils.log_dm_event('WARNING: SMILES are inconsistent {} {}'.format(data['smiles'], std_smi))
                                 continue
                         else:
                             data['smiles'] = std_smi
@@ -157,7 +156,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                         data['uuid'] = uid
                         
                     if not 'suppliers' in data:
-                        data['suppliers'] = {}errors_file
+                        data['suppliers'] = {}
                     if name_column is not None:
                         if source not in data['suppliers']:
                             data['suppliers'][source] = []
@@ -198,7 +197,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log("shard: ", args)
+    utils.log_dm_event("shard: ", args)
     
     t0 = time.time()
     count, errors = shard(args.input, args.source, args.version, args.outdir, args.delimiter, name_column=args.name_column,

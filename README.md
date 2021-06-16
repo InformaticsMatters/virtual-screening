@@ -81,7 +81,7 @@ docker run -it --rm -v $PWD/data:/data -v $PWD/molecules:/molecules \
 ```
 
 You may want to run as your user ID rather than the default of `root` so that the created files have the correct ownnership.
-Do this by adding `-u 1000:1000` tot he docker run options (replace 1000 with your actual user ID).
+Do this by adding `-u 1000:1000` to the docker run options (replace 1000 with your actual user ID).
 You will need to create the `molecules` dir before running this so that it has the right ownership.
 
 ## 2. Filter
