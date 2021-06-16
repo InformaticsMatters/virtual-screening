@@ -121,7 +121,7 @@ def execute(input, data_dir, enumerate_chirals=False,
             add_hydrogens=False,
             interval=0):
 
-    utils.log('Executing ...')
+    utils.log_dm_event('Executing ...')
 
     if enumerate_tautomers or combinatorial:
         enumerator = TautomerEnumerator()
@@ -141,12 +141,12 @@ def execute(input, data_dir, enumerate_chirals=False,
             digest = tokens[2]
             
             if interval and count % interval == 0:
-                    utils.log("Processed {} records".format(count))
+                    utils.log_dm_event("Processed {} records".format(count))
                     
             mol = Chem.MolFromSmiles(smi)
             if not mol:
                 errors += 1
-                utils.log("Failed to create molecule", count)
+                utils.log_dm_event("Failed to create molecule", count)
                 continue
 
             # if we have HAC filters apply them
@@ -235,7 +235,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log("enumerate_candidates: ", args)
+    utils.log_dm_event("enumerate_candidates: ", args)
 
     # save the arguments
     input = args.input
@@ -273,7 +273,7 @@ def main():
                                    interval=interval
                                    )
 
-    utils.log(count, total, excluded, errors)
+    utils.log_dm_event('Count:', count, 'Total', total, 'Excluded:', excluded, 'Errors:', errors)
 
 
 

@@ -30,7 +30,7 @@ def execute(infile_smiles, data_dir, interval=0):
             inputs += 1
             
             if interval and inputs % interval == 0:
-                utils.log("Processed {} records".format(inputs))
+                utils.log_dm_event("Processed {} records".format(inputs))
             
             tokens1 = line.strip().split('\t')
             std_smi = tokens1[0]
@@ -47,7 +47,7 @@ def execute(infile_smiles, data_dir, interval=0):
                 
             smi_in = os.path.join(path, digest + '.smi')
             if not os.path.exists(smi_in):
-                utils.log('WARNING, smiles file', smi_in, 'not found')
+                utils.log_dm_event('WARNING, smiles file', smi_in, 'not found')
                 errors += 1
                 continue
                 
@@ -96,13 +96,13 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log("gen_conformer:", args)
+    utils.log_dm_event("gen_conformer:", args)
 
 
 
     inputs, outputs, errors = execute(args.input, args.data_dir, interval=args.interval)
 
-    utils.log(inputs, 'inputs', outputs, 'outputs', errors, "errors")
+    utils.log_dm_event(inputs, 'inputs', outputs, 'outputs', errors, "errors")
 
 
 

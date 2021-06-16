@@ -2,7 +2,7 @@ params.inputs = 'need-conf.smi'
 params.data_dir = 'combined'
 params.chunk_size = 1000
 params.digits = 6
-params.interval = 10000
+params.interval = 100
 
 inputsfile = file(params.inputs)
 outputsdir = file(params.data_dir)

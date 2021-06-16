@@ -33,7 +33,7 @@ def execute(input, output, data_dir, interval=0):
                 inputs += 1
                 
                 if interval and inputs % interval == 0:
-                    utils.log("Processed {} records".format(inputs))
+                    utils.log_dm_event("Processed {} records".format(inputs))
                 
                 tokens = line.strip().split('\t')
                 smi = tokens[0]
@@ -43,7 +43,7 @@ def execute(input, output, data_dir, interval=0):
                 parts.extend(utils.get_path_from_digest(digest))
                 path = os.path.join(*parts)
                 if not os.path.isdir(path):
-                    utils.log('WARNING, path', path, 'not found')
+                    utils.log_dm_event('WARNING, path', path, 'not found')
                     errors += 1
                     continue
                     
@@ -56,8 +56,13 @@ def execute(input, output, data_dir, interval=0):
                 total += 1
                     
                 conf = os.path.join(path, digest + '.sdf')
-                with open(conf) as sdf:
-                    shutil.copyfileobj(sdf, outf)
+                if os.path.isfile(conf):
+                    with open(conf) as sdf:
+                        shutil.copyfileobj(sdf, outf)
+                else:
+                    utils.log_dm_event('WARNING, file', conf, 'not found')
+                    errors += 1
+                    
                 
     return inputs, total, errors, duplicates
     
@@ -77,13 +82,13 @@ def main():
 
 
     args = parser.parse_args()
-    utils.log("prepare_enum_conf_lists.py: ", args)
+    utils.log_dm_event("prepare_enum_conf_lists.py: ", args)
     
     t0 = time.time()
     inputs, total, errors, duplicates  = execute(args.input, args.output, args.data_dir, interval=args.interval)
     t1 = time.time()
     
-    utils.log('Processed {} inputs with {} unique mols in {}s. {} errors, {} duplicates'.format(inputs, total, (t1 - t0), errors, duplicates))
+    utils.log_dm_event('Processed {} inputs with {} unique mols in {}s. {} errors, {} duplicates'.format(inputs, total, (t1 - t0), errors, duplicates))
     
     
 if __name__ == "__main__":
