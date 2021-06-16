@@ -9,7 +9,7 @@ outputsdir = file(params.data_dir)
 
 process splitter {
 
-    container 'informaticsmatters/vs-prep:1.0.0'
+    container 'informaticsmatters/vs-prep:latest'
 
     input:
     file inputs from inputsfile
@@ -24,7 +24,7 @@ process splitter {
 
 process enumerate {
 
-    container 'informaticsmatters/vs-prep:1.0.0'
+    container 'informaticsmatters/vs-prep:latest'
 
     input:
     file chunks from chunks.flatten()

@@ -65,7 +65,7 @@ jobs:
     # although this field is optional.
     image:
       name: informaticsmatters/vs-prep
-      tag: '1.0.0'
+      tag: 'latest'
       project-directory: /data
       type: simple
     # The command that will be used as the Kubernetes Pod 'command'
@@ -151,7 +151,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: '1.0.0'
+      tag: 'latest'
       project-directory: /data
     command: >-
       /code/filter.py -i /data/{{ inputDir }} -o /data/{{ outputFile }}
@@ -286,7 +286,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: '1.0.0'
+      tag: 'latest'
       project-directory: /data
     command: >-
       /code/max_min_picker.py --input /data/{{ inputFile }} 
@@ -340,7 +340,7 @@ jobs:
     - conformer generation
     image:
       name: informaticsmatters/vs-prep
-      tag: '1.0.0'
+      tag: 'latest'
       project-directory: /data
     command: >-
       /code/prepare_enum_conf_lists.py 
@@ -401,7 +401,7 @@ jobs:
     - ligand preparation
     image:
       name: informaticsmatters/vs-prep
-      tag: '1.0.0'
+      tag: 'latest'
       project-directory: /data
     command: >-
       /code/gen_candidates.py 
@@ -626,7 +626,7 @@ jobs:
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
-      project-directory: /datasquonk/x-rdock-prm
+      project-directory: /data
       type: nextflow
     command: >-
       nextflow run /code/gen_conformer.nf
