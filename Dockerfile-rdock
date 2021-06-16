@@ -4,4 +4,5 @@ LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 RUN yum -y update && yum -y install python-jinja2 && yum clean all
 
 COPY prepare_rdock.py /code/
+RUN chmod 755 /code/prepare_rdock.py
 
