@@ -689,6 +689,7 @@ jobs:
       --protein /data/{{ proteinMOL2 }}
       --prmfile /data/{{ prmFile }}
       --asfile /data/{{ asFile }}
+      --num_dockings {{ numDockings }}
       -with-trace
       -with-report
     variables:

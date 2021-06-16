@@ -2,7 +2,7 @@
 
 // params
 params.chunk = 1000
-params.scratch = true
+params.scratch = false
 params.ligands = 'ligands.sdf'
 params.protein = 'receptor.pdb'
 params.key_hbond = 1

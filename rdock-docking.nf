@@ -1,14 +1,13 @@
 #!/usr/bin/env nextflow
 
 params.chunk = 25
-params.scratch = true
+params.scratch = false
 
 // docking params
 params.ligands = 'ligands.sdf'
 params.protein = 'receptor.mol2'
 params.prmfile = 'docking.prm'
 params.asfile = 'docking.as'
-params.pharmafile = 'pharma.restr'
 params.num_dockings = 50
 
 
@@ -17,7 +16,6 @@ ligands = file(params.ligands)
 protein = file(params.protein)
 prmfile = file(params.prmfile)
 asfile = file(params.asfile)
-pharmafile = file(params.pharmafile)
 
 
 process sdsplit {
@@ -58,7 +56,6 @@ process rdock {
     file 'receptor.mol2' from protein
     file 'docking.prm' from prmfile
     file 'docking.as' from asfile
-    file 'pharma.restr' from pharmafile
 
     output:
     file 'Docked_*.sd' optional true into docked_parts
