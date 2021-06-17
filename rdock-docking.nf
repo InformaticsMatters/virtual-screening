@@ -70,7 +70,7 @@ process rdock {
 process collect_and_report {
 
     container 'informaticsmatters/vs-rdock:latest'
-    publishDir $params.publishDir, mode: 'move'
+    publishDir params.publishDir, mode: 'move'
 
     input:
     file part from docked_parts.collect()
