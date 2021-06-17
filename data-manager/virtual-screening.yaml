@@ -684,7 +684,7 @@ jobs:
       project-directory: /data
       type: nextflow
     command: >-
-      nextflow run rdock-docking.nf
+      cd /data && nextflow run /code/rdock-docking.nf
       --ligands /data/{{ ligandsSDF }}
       --protein /data/{{ proteinMOL2 }}
       --prmfile /data/{{ prmFile }}

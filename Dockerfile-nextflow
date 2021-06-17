@@ -17,6 +17,7 @@ RUN apt-get update &&\
  apt-get install -y --no-install-recommends\
  openjdk-11-jre-headless\
  curl\
+ procps\
  git &&\
  apt-get clean -y
  

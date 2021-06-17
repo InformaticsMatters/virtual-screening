@@ -9,6 +9,7 @@ params.protein = 'receptor.mol2'
 params.prmfile = 'docking.prm'
 params.asfile = 'docking.as'
 params.num_dockings = 50
+params.publishDir = "./results"
 
 
 // files
@@ -20,7 +21,7 @@ asfile = file(params.asfile)
 
 process sdsplit {
 
-    container 'informaticsmatters/rdock:2013.1'
+    container 'informaticsmatters/vs-rdock:latest'
 
     input:
     file ligands
@@ -46,14 +47,14 @@ process sdsplit {
 
 process rdock {
 
-    container 'informaticsmatters/rdock:2013.1'
+    container 'informaticsmatters/vs-rdock:latest'
     errorStrategy 'retry'
     maxRetries 3
     scratch params.scratch
 
     input:
     file part from ligand_parts.flatten()
-    file 'receptor.mol2' from protein
+    file protein
     file 'docking.prm' from prmfile
     file 'docking.as' from asfile
 
@@ -61,15 +62,15 @@ process rdock {
     file 'Docked_*.sd' optional true into docked_parts
 
     """
-    rbdock -r $prmfile -p dock.prm -n $params.num_dockings -i $part -o ${part.name.replace('ligands', 'Docked')[0..-4]} > docked_out.log
+    rbdock -r docking.prm -p dock.prm -n $params.num_dockings -i $part -o ${part.name.replace('ligands', 'Docked')[0..-4]} > docked_out.log
     """
 }
 
 
 process collect_and_report {
 
-    container 'informaticsmatters/rdock:2013.1'
-    publishDir "./results", mode: 'move'
+    container 'informaticsmatters/vs-rdock:latest'
+    publishDir $params.publishDir, mode: 'move'
 
     input:
     file part from docked_parts.collect()
