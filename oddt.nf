@@ -11,6 +11,7 @@ params.key_halogen = 1
 params.key_salt_bridge = 1
 params.key_pi_stacking = 1
 params.key_pi_cation = 1
+params.publishDir = './results'
 
 // files
 ligands = file(params.ligands)
@@ -76,18 +77,17 @@ process interactions {
 process collate {
 
     container 'informaticsmatters/rdkit_pipelines:inters'
-    publishDir "./results", mode: 'move'
+    publishDir params.publishDir, mode: 'move'
 
     input:
     file part from interactions_parts.collect()
 
     output:
-    file 'results_inters.sdf.gz'
+    file 'results_oddt.sdf'
 
     """
     rm -f results_inters.sdf
-    ls INT_*.sdf | xargs cat >> results_inters.sdf
-    gzip results_inters.sdf
+    ls INT_*.sdf | xargs cat >> results_oddt.sdf
     """
 }
 

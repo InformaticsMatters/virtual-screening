@@ -769,9 +769,10 @@ jobs:
       project-directory: /data
       type: nextflow
     command: >-
-      nextflow run oddt.nf
+      nextflow run /code/oddt.nf
       --ligands /data/{{ ligandsSDF }}
       --protein /data/{{ proteinPDB }}
+      -publishDir /data/results
       -with-trace
       -with-report
     variables:

@@ -9,7 +9,7 @@ params.protein = 'receptor.mol2'
 params.prmfile = 'docking.prm'
 params.asfile = 'docking.as'
 params.num_dockings = 50
-params.publishDir = "./results"
+params.publishDir = './results'
 
 
 // files
@@ -76,14 +76,13 @@ process collect_and_report {
     file part from docked_parts.collect()
 
     output:
-    file 'results.sdf.gz'
-    file 'results.txt'
+    file 'results_rdock.sdf'
+    file 'results_rdock.txt'
 
     """
-    rm -f results.sdf
-    ls Docked_*.sd | xargs cat >> results.sdf
-    sdreport -t results.sdf > results.txt
-    gzip results.sdf
+    rm -f results_rdock.sdf
+    ls Docked_*.sd | xargs cat >> results_rdock.sdf
+    sdreport -t results_rdock.sdf > results_rdock.txt
     """
 }
 
