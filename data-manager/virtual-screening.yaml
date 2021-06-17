@@ -772,7 +772,7 @@ jobs:
       nextflow run /code/oddt.nf
       --ligands /data/{{ ligandsSDF }}
       --protein /data/{{ proteinPDB }}
-      -publishDir /data/results
+      --publishDir /data/results
       -with-trace
       -with-report
     variables:
