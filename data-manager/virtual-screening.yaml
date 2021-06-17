@@ -72,7 +72,8 @@ jobs:
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
     command: >-
-      /code/shard.py -i /data/{{ inputFile }} -s {{ supplierName }}
+      /code/shard.py -i{% for file in inputFile %} {{ file }}{% endfor %}
+      /data/{{ inputFile }} -s {{ supplierName }}
       -v {{ supplierVersion }} -o /data/{{ outputDir }} -n {{ codeFieldIndex }}
       --errors-file {{ supplierName }}_{{ supplierVersion }}_errors.smi
       --interval 10000
