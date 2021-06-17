@@ -684,12 +684,13 @@ jobs:
       project-directory: /data
       type: nextflow
     command: >-
-      cd /data && nextflow run /code/rdock-docking.nf
+      nextflow run -c /code/nextflow.config /code/rdock-docking.nf
       --ligands /data/{{ ligandsSDF }}
       --protein /data/{{ proteinMOL2 }}
       --prmfile /data/{{ prmFile }}
       --asfile /data/{{ asFile }}
       --num_dockings {{ numDockings }}
+      --publishDir /data/results
       -with-trace
       -with-report
     variables:
