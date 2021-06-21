@@ -443,7 +443,7 @@ jobs:
             default: candidates.sdf
             
   obabel-convert:
-    name: Protonate protein
+    name: Convert molecule format
     description: >-
       Convert molecular formats using OpenBabel. Can be used to prepare a protein for docking.
       See https://open-babel.readthedocs.io/en/latest/Command-line_tools/babel.html
@@ -775,13 +775,13 @@ jobs:
       type: nextflow
     command: >-
       nextflow run -c /code/nextflow.config /code/smina-docking.nf
-      -l /data/{{ ligands }}
-      -r /data/{{ protein }}
-      --autobox_ligand {{ ligand }}
-      --autobox_add {{ boxPadding }}
+      --ligands /data/{{ ligands }}
+      --protein /data/{{ protein }}
+      --ligand {{ ligand }}
+      --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
+      --scoring_function {{ scoringFunction }}
       --publishDir /data/results
-      --cpu 1
       -with-trace
       -with-report
     variables:
@@ -805,7 +805,7 @@ jobs:
             - chemical/x-pdbqt
             type: file
           ligand:
-            title: Ligand file for box (PDBQT, PDB or MOL2 format)
+            title: Ligand file for box (PDBQT, PDB, MOL or MOL2 format)
             mime-types:
             - chemical/x-mdl-molfile
             - chemical/x-mol2
@@ -832,7 +832,9 @@ jobs:
       options:
         type: object
         required:
-        - numDockings
+        - boxPadding
+        - exhaustiveness
+        - scoringFunction
         properties:
           boxPadding:
             title: Box definition padding
@@ -900,7 +902,7 @@ jobs:
           scoredSDF:
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results/results_inters.sdf.gz'
+            creates: 'results/results_oddt.sdf.gz'
             type: file
           trace_file:
             creates: trace.txt

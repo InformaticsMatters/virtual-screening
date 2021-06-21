@@ -55,10 +55,10 @@ process interactions {
     file protein
 
     output:
-    file 'INT_*.sdf' into interactions_parts
+    file 'oddt_*.sdf' into interactions_parts
 
     """
-    python -m pipelines.xchem.calc_interactions -i '$part' -if sdf -p $protein -o 'INT_${part.name[0..-4]}' -of sdf --no-gzip\
+    python -m pipelines.xchem.calc_interactions -i '$part' -if sdf -p $protein -o 'oddt_${part.name[0..-4]}' -of sdf --no-gzip\
       ${params.key_hbond ? '--key-hbond ' + params.key_hbond : ''}\
       ${params.key_hydrophobic ? '--key-hydrophobic ' + params.key_hydrophobic : ''}\
       ${params.key_halogen ? '--key-halogen ' + params.key_halogen : ''}\
@@ -87,7 +87,7 @@ process collate {
 
     """
     rm -f results_inters.sdf
-    ls INT_*.sdf | xargs cat >> results_oddt.sdf
+    ls oddt_*.sdf | xargs cat >> results_oddt.sdf
     """
 }
 
