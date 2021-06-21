@@ -125,7 +125,7 @@ jobs:
         properties:
           codeFieldIndex:
             title: Index of vendor code field
-            default: 1
+            default: 2
             minimum: 1
             type: integer
           outputDir:
@@ -442,10 +442,12 @@ jobs:
             type: string
             default: candidates.sdf
             
-  prepare-protein-pdb-to-mol2:
+  obabel-convert:
     name: Protonate protein
     description: >-
-      Protonate protein using OpenBabel. Input and outputs can be in PDB or MOL2 formats.
+      Convert molecular formats using OpenBabel. Can be used to prepare a protein for docking.
+      See https://open-babel.readthedocs.io/en/latest/Command-line_tools/babel.html
+      for a list of all the options.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -458,8 +460,8 @@ jobs:
     command: >-
       obabel
       /data/{{ inputFile }}
+      {{ options }}
       -O /data/{{ outputFile }}
-      -p {{ pH }}
     variables:
       inputs:
         type: object
@@ -467,10 +469,12 @@ jobs:
         - inputFile
         properties:
           inputFile:
-            title: PDB or MOL2 file
+            title: Input file (e.g. pdb, pdbqt, mol or mol2 extension)
             mime-types:
             - chemical/x-pdb
+            - chemical/x-pdbqt
             - chemical/x-mol2
+            - chemical/x-mol
             type: file
       outputs:
         type: object
@@ -478,22 +482,22 @@ jobs:
           outputFile:
             mime-types:
             - chemical/x-pdb
+            - chemical/x-pdbqt
             - chemical/x-mol2
+            - chemical/x-mol
             creates: '{{ outputFile }}'
             type: file
       options:
         type: object
         required:
         - outputFile
-        - pH
         properties:
           outputFile:
-            title: Filename for output (use .pdb or .mol2 as the extension)
+            title: Filename for output (e.g. pdb, pdbqt, mol or mol2 extension)
             type: string
-          pH:
-            title: pH to protonate at
-            type: float
-            default: 7.0
+          options:
+            title: Additional options. e.g. -p 7.0
+            type: string
 
   prepare-rdock:
     name: rDock prepare
@@ -670,7 +674,7 @@ jobs:
       # there are no options for this job
       
   run-rdock:
-    name: Run rRock
+    name: Run rRock docking
     description: >-
       Run rDock docking.
     version: '1.0.0'
@@ -754,6 +758,103 @@ jobs:
             type: integer
             default: 50
 
+  run-smina:
+    name: Run smina docking
+    description: >-
+      Run smina docking.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - smina
+    - docking
+    - nextflow
+    image:
+      name: informaticsmatters/vs-nextflow
+      tag: 'latest'
+      project-directory: /data
+      type: nextflow
+    command: >-
+      nextflow run -c /code/nextflow.config /code/smina-docking.nf
+      -l /data/{{ ligands }}
+      -r /data/{{ protein }}
+      --autobox_ligand {{ ligand }}
+      --autobox_add {{ boxPadding }}
+      --exhaustiveness {{ exhaustiveness }}
+      --publishDir /data/results
+      --cpu 1
+      -with-trace
+      -with-report
+    variables:
+      inputs:
+        type: object
+        required:
+        - ligands
+        - ligand
+        - protein
+        properties:
+          ligands:
+            title: Candidate ligands to process (SDF format)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          protein:
+            title: Prepared receptor (PDBQT, PDB or MOL2 format)
+            mime-types:
+            - chemical/x-mol2
+            - chemical/x-pdb
+            - chemical/x-pdbqt
+            type: file
+          ligand:
+            title: Ligand file for box (PDBQT, PDB or MOL2 format)
+            mime-types:
+            - chemical/x-mdl-molfile
+            - chemical/x-mol2
+            - chemical/x-pdb
+            - chemical/x-pdbqt
+            type: file
+
+      outputs:
+        type: object
+        properties:
+          dockedSDF:
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: 'results/results_smina.sdf'
+            type: file
+          trace_file:
+            creates: trace.txt
+            mime-types:
+            - text/plain
+          report_file:
+            creates: report.html
+            mime-types:
+            - text/html
+      options:
+        type: object
+        required:
+        - numDockings
+        properties:
+          boxPadding:
+            title: Box definition padding
+            type: number
+            default: 4.0
+          exhaustiveness:
+            title: Exhaustiveness setting
+            type: integer
+            default: 8
+          scoringFunction:
+            title: Scoring function to use
+            type: array
+            items:
+            - type: string
+              enum:
+              - ad4_scoring
+              - dkoes_fast
+              - dkoes_scoring
+              - dkoes_scoring_old
+              - vina
+              - vinardo
+            
   oddt-score-interactions:
     name: ODDT rescoring and interactions
     description: >-

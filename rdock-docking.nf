@@ -59,10 +59,10 @@ process rdock {
     file 'docking.as' from asfile
 
     output:
-    file 'Docked_*.sd' optional true into docked_parts
+    file 'rdock_part_*.sd' optional true into docked_parts
 
     """
-    rbdock -r docking.prm -p dock.prm -n $params.num_dockings -i $part -o ${part.name.replace('ligands', 'Docked')[0..-4]} > docked_out.log
+    rbdock -r docking.prm -p dock.prm -n $params.num_dockings -i $part -o ${part.name.replace('ligands', 'rdock')[0..-4]} > rdock_out.log
     """
 }
 
@@ -81,7 +81,7 @@ process collect_and_report {
 
     """
     rm -f results_rdock.sdf
-    ls Docked_*.sd | xargs cat >> results_rdock.sdf
+    ls rdock_*.sd | xargs cat >> results_rdock.sdf
     sdreport -t results_rdock.sdf > results_rdock.txt
     """
 }

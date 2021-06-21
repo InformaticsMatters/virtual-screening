@@ -25,3 +25,9 @@ services:
       context: .
       dockerfile: Dockerfile-rdock
     image: informaticsmatters/vs-rdock:${IMAGE_TAG:-latest}
+
+  smina:
+    build:
+      context: .
+      dockerfile: Dockerfile-smina
+    image: informaticsmatters/vs-smina:${IMAGE_TAG:-latest}
