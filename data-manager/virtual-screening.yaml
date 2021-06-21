@@ -777,7 +777,7 @@ jobs:
       nextflow run -c /code/nextflow.config /code/smina-docking.nf
       --ligands /data/{{ ligands }}
       --protein /data/{{ protein }}
-      --ligand {{ ligand }}
+      --ligand /data/{{ ligand }}
       --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
       --scoring_function {{ scoringFunction }}
