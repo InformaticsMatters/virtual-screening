@@ -565,7 +565,12 @@ jobs:
         type: object
         required:
         - outfileBasename
+        - ph
         properties:
+          ph:
+            title: pH to protonate at
+            type: number
+            default: 7
           outfileBasename:
             title: Base filename for output (do not include the extension)
             type: string
