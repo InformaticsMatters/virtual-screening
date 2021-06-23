@@ -69,7 +69,7 @@ process format_ligand {
     if( ligand.name.endsWith('.pdb') || ligand.name.endsWith('.mol2') || ligand.name.endsWith('.mol') )
       """
       echo 'Converting ligand to PDBQT format'
-      obabel $ligand -O ready_ligand.pdbqt
+      obabel $ligand -h -O ready_ligand.pdbqt
       """
       
     else if( ligand.name.endsWith('.pdbqt') )

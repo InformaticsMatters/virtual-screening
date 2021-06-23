@@ -106,11 +106,13 @@ jobs:
         type: object
         properties:
           hacSlices:
+            title: HAC slices
             mime-types:
             - chemical/x-csv
             creates: '{{ outputDir }}/{{ supplierName }}_{{ supplierVersion }}/*.smi'
             type: directory
           shards:
+            title: Sharded molecule data
             mime-types:
             - appliction/json
             creates: '{{ outputDir }}/sha256/*/*/*.json'
@@ -201,6 +203,7 @@ jobs:
         type: object
         properties:
           outputFile:
+            title: Filtered output
             mime-types:
             - chemical/x-csv
             creates: '{{ outputFile }}'
@@ -309,6 +312,7 @@ jobs:
         type: object
         properties:
           outputFile:
+            title: Output file
             mime-types:
             - chemical/x-csv
             creates: '{{ outputFile }}'
@@ -368,11 +372,13 @@ jobs:
         type: object
         properties:
           outputFileEnum:
+            title: Molecules needing enumeration
             mime-types:
             - chemical/x-csv
             creates: '{{ outputFileEnum }}'
             type: file
           outputFileConf:
+            title: Molcules needing conformer generation
             mime-types:
             - chemical/x-csv
             creates: '{{ outputFileConf }}'
@@ -428,6 +434,7 @@ jobs:
         type: object
         properties:
           outputFile:
+            title: Assembled candidates
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
@@ -480,6 +487,7 @@ jobs:
         type: object
         properties:
           outputFile:
+            title: Converted molecule
             mime-types:
             - chemical/x-pdb
             - chemical/x-pdbqt
@@ -499,6 +507,70 @@ jobs:
             title: Additional options. e.g. -p 7.0
             type: string
 
+  pdb2pqr:
+    name: Prepare protein using pdb2pqr
+    description: >-
+      Prepare a protein for docking by using pdb2pqr. This can replace missing heavy atoms
+      and protnate the protein at a specific pH taking into account the local environment 
+      of titratable groups, such as the hydrogen bonding network. 
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - protein preparation
+    - pdb2pqr
+    - protonation
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+    command: >-
+      pdb2pqr30 --with-ph {{ ph }}
+      --titration-state-method propka
+      --pdb-output /data/{{ outfileBasename }}.pdb
+      /data/{{ inputFile }}
+      /data/{{ outfileBasename }}.pqr
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input PDB file
+            mime-types:
+            - chemical/x-pdb
+            type: file
+      outputs:
+        type: object
+        properties:
+          pdbFile:
+            title: PDB file
+            mime-types:
+            - chemical/x-pdb
+            creates: '{{ outfileBasename }}.pdb'
+            type: file
+          pqrFile:
+            title: PQR file
+            mime-types:
+            - chemical/x-pqr
+            creates: '{{ outfileBasename }}.pqr'
+            type: file
+          logFile:
+            title: Log file
+            mime-types:
+            - text/plain
+            creates: '{{ outfileBasename }}.log'
+            type: file
+      options:
+        type: object
+        required:
+        - outfileBasename
+        properties:
+          outfileBasename:
+            title: Base filename for output (do not include the extension)
+            type: string
+
+            
   prepare-rdock:
     name: rDock prepare
     description: >-
@@ -538,11 +610,13 @@ jobs:
         type: object
         properties:
           prmFile:
+            title: Docking configuration file
             mime-types:
             - squonk/x-rdock-prm
             creates: '{{ outputBaseName }}.prm'
             type: file
           asFile:
+            title: Cavity definition file
             mime-types:
             - squonk/x-rdock-as
             creates: '{{ outputBaseName }}.as'
@@ -601,16 +675,19 @@ jobs:
         type: object
         properties:
           enumerated:
+            title: Enumerated molecules
             mime-types:
             - chemical/x-csv
             creates: '{{ dataDir }}/sha256/*/*/*.smi'
             # additional *.smi files might have already been generated
             type: directory
           trace_file:
+            title: Nextflow trace file
             creates: trace.txt
             mime-types:
             - text/plain
           report_file:
+            title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
@@ -658,16 +735,19 @@ jobs:
         type: object
         properties:
           enumerated:
+            title: 3D conformers
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{{ dataDir }}/sha256/*/*/*.sdf'
             # additional *.sdf files might have already been generated
             type: directory
           trace_file:
+            title: Nextflow trace tile
             creates: trace.txt
             mime-types:
             - text/plain
           report_file:
+            title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
@@ -731,20 +811,24 @@ jobs:
         type: object
         properties:
           dockedSDF:
+            title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
             creates: 'results/results.sdf.gz'
             type: file
           dockedTXT:
+            title: Pose report file
             mime-types:
             - text/csv
             creates: 'results/results.txt'
             type: file
           trace_file:
+            title: Nextflow trace file
             creates: trace.txt
             mime-types:
             - text/plain
           report_file:
+            title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
@@ -817,15 +901,18 @@ jobs:
         type: object
         properties:
           dockedSDF:
+            title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
             creates: 'results/results_smina.sdf'
             type: file
           trace_file:
+            title: Nextflow trace file
             creates: trace.txt
             mime-types:
             - text/plain
           report_file:
+            title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
@@ -900,15 +987,18 @@ jobs:
         type: object
         properties:
           scoredSDF:
+            title: Scored poses
             mime-types:
             - chemical/x-mdl-sdfile
             creates: 'results/results_oddt.sdf.gz'
             type: file
           trace_file:
+            title: Nextflow trace file
             creates: trace.txt
             mime-types:
             - text/plain
           report_file:
+            title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
