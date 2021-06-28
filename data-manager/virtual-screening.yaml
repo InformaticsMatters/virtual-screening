@@ -175,6 +175,7 @@ jobs:
     variables:
       order:
         options:
+        - outputFile
         - minHac
         - maxHac
         - minRotb
