@@ -19,7 +19,7 @@ protein = file(params.protein)
 
 process sdsplit {
 
-    container 'informaticsmatters/rdock:2013.1'
+    container 'informaticsmatters/vs-rdock:latest'
 
     input:
     file ligands
