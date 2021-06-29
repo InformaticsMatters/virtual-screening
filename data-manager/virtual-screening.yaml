@@ -157,6 +157,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       /code/filter.py -i /data/{{ inputDir }} -o /data/{{ outputFile }}
       --min-hac {{ minHac }}
