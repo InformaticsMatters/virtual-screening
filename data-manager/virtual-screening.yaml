@@ -939,7 +939,7 @@ jobs:
             default: 8
           scoringFunction:
             title: Scoring function to use
-            type: array
+            type: string
             items:
             - type: string
               enum:
