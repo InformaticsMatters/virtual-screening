@@ -1,0 +1,14 @@
+FROM debian:bullseye
+# bullseye release includes openbabel 3.1.1
+LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
+# Note:     When run by the Data Manager the uid and gid
+#           will be set according to the Project we're running against.
+#           Consequently we cannot know in advance the user or group id
+#           for execution, and so we must ensure the code runs
+#           as any user.
+
+RUN apt-get -y update &&\
+  apt-get -y install procps openbabel &&\
+  apt-get clean
+
+COPY bin/smina.static /usr/local/bin/smina

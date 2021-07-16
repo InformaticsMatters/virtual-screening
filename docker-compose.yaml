@@ -8,13 +8,13 @@ version: '3.0'
 
 services:
 
-  rdkit:
+  prep:
     build:
       context: .
       dockerfile: Dockerfile-prep
     image: informaticsmatters/vs-prep:${IMAGE_TAG:-latest}
 
-  obabel:
+  nextflow:
     build:
       context: .
       dockerfile: Dockerfile-nextflow

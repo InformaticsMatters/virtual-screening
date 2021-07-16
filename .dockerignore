@@ -2,8 +2,9 @@ data
 molecules*
 combined
 misc
-chemspace_feb_2021
-molport_apr2021
 work
 2021-02_Chemspace_Building_Blocks_Make-on-Demand_20M_SMILES.smiles
+results_*
+expand_*
+.nextflow*
 __pycache__

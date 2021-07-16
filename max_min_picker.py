@@ -21,7 +21,7 @@ from rdkit import Chem, SimDivFilters
 from rdkit.Chem import rdMolDescriptors
 
 
-def pick(input, output, count, threshold, interval=0):
+def pick(input, seeds, output, count, threshold, interval=0):
 
     inputs = 0
     num_dups = 0
@@ -30,12 +30,22 @@ def pick(input, output, count, threshold, interval=0):
     fingerprints = []
     
     duplicates = set()
+
+    seed_molecules = set()
+    if seeds:
+        with open(seeds) as seedsf:
+            for line in seedsf:
+                tokens = line.strip().split('\t')
+                smi = tokens[0]
+                seed_molecules.add(smi)
+        utils.log_dm_event("Found", len(seed_molecules), 'seeds')
     
     with open(input) as inf:
         with open(output, 'w') as outf:
             
             utils.log_dm_event('Starting fingerprinting ...')
             t0 = time.time()
+            first_picks = []
             for line in inf:
                 inputs += 1
                 
@@ -56,8 +66,13 @@ def pick(input, output, count, threshold, interval=0):
                 mol = Chem.MolFromSmiles(smi)
                 if not mol:
                     continue
-                
-                fingerprints.append(rdMolDescriptors.GetMorganFingerprintAsBitVect(mol,2))
+
+                fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(mol,2)
+                fingerprints.append(fp)
+
+                if smi in seed_molecules:
+                    first_picks.append(fp)
+
                 data.append((smi, uid, digest))
                 
             t1 = time.time()
@@ -69,7 +84,7 @@ def pick(input, output, count, threshold, interval=0):
             if not count:
                 count = len(fingerprints)
             if threshold:
-                picks, thresh = mmp.LazyBitVectorPickWithThreshold(fingerprints, len(fingerprints), count, 1.0 - threshold)
+                picks, thresh = mmp.LazyBitVectorPickWithThreshold(fingerprints, len(fingerprints), count, 1.0 - threshold, firstPicks=first_picks)
                 utils.log_dm_event('Final pick threshold was', 1.0 - thresh)
             else:
                 picks = mmp.LazyBitVectorPick(fingerprints, len(fingerprints), count)
@@ -96,6 +111,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Prepare enumeration and conformer lists')
     parser.add_argument('-i', '--input', required=True, help="File with inputs")
+    parser.add_argument('-s', '--seeds', help="File with molecules that have already been picked")
     parser.add_argument('-o', '--output', required=True, help="Output file")
     parser.add_argument('-c', '--count', type=int, help="Number to pick")
     parser.add_argument('-t', '--threshold', type=float, help="Similarity threshold")
@@ -108,7 +124,7 @@ def main():
         utils.log('Must specify count or threshold or both')
         exit(1)
     
-    total, candidates, picked, dups = pick(args.input, args.output, args.count, args.threshold, interval=args.interval)
+    total, candidates, picked, dups = pick(args.input, args.seeds, args.output, args.count, args.threshold, interval=args.interval)
     utils.log_dm_event('Picked {} from {} molecules. {} duplicates'.format(picked, candidates, dups))
     
     

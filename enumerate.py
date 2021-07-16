@@ -37,8 +37,6 @@ def enumerate_undefined_chirals(mol):
     :return:
     """
 
-    global num_swap_success
-
     chiral_centers = Chem.FindMolChiralCenters(mol, force=True, includeUnassigned=True)
     #utils.log('  Chiral centers:', chiral_centers, 'Free atom counts:', free_counts)
 
@@ -65,7 +63,6 @@ def enumerate_undefined_chirals(mol):
                 nm2.GetAtomWithIdx(chiral_targets[j]).SetChiralTag(Chem.ChiralType.CHI_TETRAHEDRAL_CCW)
                 new_enum_mols.append(nm2)
                 chiral_swaps = new_enum_mols
-                num_swap_success += len(chiral_swaps)
     else:
         chiral_swaps = [Chem.RWMol(mol)]
     #utils.log('  Mols to embed:', len(chiral_swaps))

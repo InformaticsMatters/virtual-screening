@@ -68,7 +68,7 @@ def check_value(tokens, prop, min_value, max_value):
     
     
 
-def filter(input_dir, output_file, min_hac=None, max_hac=None,
+def filter(input_dirs, output_file, min_hac=None, max_hac=None,
     min_rotb=None, max_rotb=None,
     min_rings=None, max_rings=None,
     min_aro_rings=None, max_aro_rings=None,
@@ -76,15 +76,18 @@ def filter(input_dir, output_file, min_hac=None, max_hac=None,
     min_undefined_chiral_centres=None, max_undefined_chiral_centres=None,
     min_sp3=None, max_sp3=None):
     
-    files = list_files(input_dir, min_hac, max_hac)
-    utils.log_dm_event('Files to process:', files)
+    all_files = []
+    for input_dir in input_dirs:
+        files = list_files(input_dir, min_hac, max_hac)
+        all_files.extend(files)
+    utils.log_dm_event('Files to process:', all_files)
     count = 0
     total = 0
     num_dups = 0
     duplicates = set()
     
     with open(output_file, 'w') as out:
-        for i, file in enumerate(files):
+        for i, file in enumerate(all_files):
             utils.log_dm_event('Processing', file)
             with open(file) as f:
                 header_line = f.readline()
@@ -135,7 +138,7 @@ def main():
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Shard HAC')
-    parser.add_argument('-i', '--input', required=True, help="Directory with inputs")
+    parser.add_argument('-i', '--inputs', nargs='+', required=True, help="Directories with inputs")
     parser.add_argument('-o', '--outfile', required=True, help="Output file")
     parser.add_argument('--min-hac', type=int, help="Min value for heavy atom count")
     parser.add_argument('--max-hac', type=int, help="Max value for heavy atom count")
@@ -155,7 +158,7 @@ def main():
     args = parser.parse_args()
     utils.log("filter: ", args)
     
-    total, count, num_dups = filter(args.input, args.outfile, 
+    total, count, num_dups = filter(args.inputs, args.outfile, 
         min_hac=args.min_hac, max_hac=args.max_hac,
         min_rotb=args.min_rotb, max_rotb=args.max_rotb,
         min_rings=args.min_rings, max_rings=args.max_rings,

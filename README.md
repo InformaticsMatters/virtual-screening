@@ -109,7 +109,7 @@ handled. This uses the RDKit MaxMinPicker.
 ```
 ./max_min_picker.py -i 16-25.smi -o 16-25-1000.smi -c 1000
 ```
-Use the `vs-rdkit` conda environment to run this.
+Use the `im-vs-prep` conda environment to run this.
 
 Or run with Docker:
 ```
@@ -140,7 +140,7 @@ Enumerate charges, tautomers and undefined chiral centres.
 ```
 nextflow run enumerate.nf --inputs need-enum.smi --data_dir molecules/sha256 -with-conda <path-to-conda-environment>
 ```
-Note: you need to have created the `vs-rdkit` conda environment and specify the path to it.
+Note: you need to have created the `im-vs-prep` conda environment and specify the path to it.
 
 Or run with Docker:
 ```
@@ -155,7 +155,7 @@ each of the enumerated molecules.
 ```
 nextflow run gen_conformer.nf --inputs need-conf.smi --data_dir molecules/sha256 -with-conda <path-to-conda-environment>
 ```
-Note: you need to have created the `vs-obabel3` conda environment and specify the path to it.
+Note: you need to have created the `im-vs-prep` conda environment and specify the path to it.
 
 Or run with Docker:
 ```
@@ -168,7 +168,7 @@ We now need to assemble all the required 3D conformers into a single SD file tha
 ```
 ./gen_candidates.py -i 16-25-1000.smi -o 16-25-candidates.sdf -d molecules/sha256
 ```
-Use the `vs-obabel3` conda environment to run this.
+Use the `im-vs-prep` conda environment to run this.
 
 Or run with Docker:
 ```
@@ -187,7 +187,7 @@ rDock needs polar hydrogens to be present, but doesn't care if non-polar ones ar
 ```
 obabel data/dhfr-receptor.pdb -O dhfr-receptor-ph7.mol2 -p 7
 ```
-Use the `vs-obabel3` conda environment to run this.
+Use the `im-vs-prep` conda environment to run this.
 Similar commands can be used to generate PDBQT format for input to smina.
 
 Or run with Docker:
