@@ -924,6 +924,21 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: 'results/results_smina.sdf'
             type: file
+            annotation-properties:
+              creates: 'results/results_smina.sdf.annotations'
+              fields-descriptor:
+                origin: squonk2-job
+                description: Run smina docking
+                properties:
+                  minimizedAffinity:
+                    type: number
+                    description: >-
+                      Binding affinity predicted by smina using the vinardo scoring function
+                    required: true
+                    active: true
+                    semantic-type: 'https://thomas.exner.org/biology/0123456789'
+              service-execution:
+                service_ref: 'https://squonk.it/some/stuff/run-smina.html'
           trace_file:
             title: Nextflow trace file
             creates: trace.txt
