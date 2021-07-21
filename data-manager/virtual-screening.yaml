@@ -67,6 +67,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
       type: simple
     # The command that will be used as the Kubernetes Pod 'command'
     # (after variable expansion). This is a jinja2 template with its variables
@@ -156,6 +157,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       /code/filter.py -i /data/{{ inputDir }} -o /data/{{ outputFile }}
       --min-hac {{ minHac }}
@@ -293,6 +295,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       /code/max_min_picker.py --input /data/{{ inputFile }} 
       --output /data/{{ outputFile }}
@@ -348,6 +351,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       /code/prepare_enum_conf_lists.py 
       --input /data/{{ inputFile }}
@@ -411,6 +415,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       /code/gen_candidates.py 
       --input /data/{{ inputFile }}
@@ -465,6 +470,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       obabel
       /data/{{ inputFile }}
@@ -524,6 +530,7 @@ jobs:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       pdb2pqr30 --with-ph {{ ph }}
       --titration-state-method propka
@@ -590,6 +597,7 @@ jobs:
       name: informaticsmatters/vs-rdock
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
     command: >-
       /code/prepare_rdock.py 
       --receptor /data/{{ receptorFile }}
@@ -655,6 +663,7 @@ jobs:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
       type: nextflow
     command: >-
       nextflow run /code/enumerate.nf
@@ -715,6 +724,7 @@ jobs:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
       type: nextflow
     command: >-
       nextflow run /code/gen_conformer.nf
@@ -773,6 +783,7 @@ jobs:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
       type: nextflow
     command: >-
       nextflow run -c /code/nextflow.config /code/rdock-docking.nf
@@ -862,6 +873,7 @@ jobs:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
       type: nextflow
     command: >-
       nextflow run -c /code/nextflow.config /code/smina-docking.nf
@@ -912,6 +924,20 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: 'results/results_smina.sdf'
             type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Run smina docking
+                fields:
+                  minimizedAffinity:
+                    type: number
+                    description: >-
+                      Binding affinity predicted by smina using the vinardo scoring function
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://squonk.it/some/stuff/run-smina.html'
+              derived-from: ligands
           trace_file:
             title: Nextflow trace file
             creates: trace.txt
@@ -964,6 +990,7 @@ jobs:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
+      working-directory: /data
       type: nextflow
     command: >-
       nextflow run /code/oddt.nf
