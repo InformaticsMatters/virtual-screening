@@ -75,7 +75,7 @@ jobs:
     command: >-
       /code/shard.py -i{% for file in inputFiles %} /data/{{ file }}{% endfor %}
       -s {{ supplierName }}
-      -v {{ supplierVersion }} -o /data/{{ outputDir }} -n {{ codeFieldIndex }}
+      -v {{ supplierVersion }} -o {{ outputDir }} -n {{ codeFieldIndex }}
       --errors-file {{ supplierName }}_{{ supplierVersion }}_errors.smi
       --interval 10000
     # Command variables - using JSONSchema to allow for simplified client
@@ -159,7 +159,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/filter.py -i /data/{{ inputDir }} -o /data/{{ outputFile }}
+      /code/filter.py -i /data/{{ inputDir }} -o {{ outputFile }}
       --min-hac {{ minHac }}
       --max-hac {{ maxHac }}
       {% if minRotb is defined %}--min-rotb {{ minRotb }}{% endif %}
@@ -298,7 +298,7 @@ jobs:
       working-directory: /data
     command: >-
       /code/max_min_picker.py --input /data/{{ inputFile }} 
-      --output /data/{{ outputFile }}
+      --output {{ outputFile }}
       --count {{ count }}
       --interval 10000
     variables:
@@ -327,7 +327,7 @@ jobs:
         - count
         properties:
           outputFile:
-            titldata_dire: Output file name
+            title: Output file name
             type: string
             default: diverse.smi
           count:
@@ -356,8 +356,8 @@ jobs:
       /code/prepare_enum_conf_lists.py 
       --input /data/{{ inputFile }}
       --data-dir /data/{{ dataDir }}
-      --outfile-enum /data/{{ outputFileEnum }}
-      --outfile-conf /data/{{ outputFileConf }}
+      --outfile-enum {{ outputFileEnum }}
+      --outfile-conf {{ outputFileConf }}
     variables:
       inputs:
         type: object
@@ -420,7 +420,7 @@ jobs:
       /code/gen_candidates.py 
       --input /data/{{ inputFile }}
       --data-dir /data/{{ dataDir }}
-      --output /data/{{ outputFile }}
+      --output {{ outputFile }}
     variables:
       inputs:
         type: object
@@ -475,7 +475,7 @@ jobs:
       obabel
       /data/{{ inputFile }}
       {{ options }}
-      -O /data/{{ outputFile }}
+      -O {{ outputFile }}
     variables:
       inputs:
         type: object
@@ -534,9 +534,9 @@ jobs:
     command: >-
       pdb2pqr30 --with-ph {{ ph }}
       --titration-state-method propka
-      --pdb-output /data/{{ outfileBasename }}.pdb
+      --pdb-output {{ outfileBasename }}.pdb
       /data/{{ inputFile }}
-      /data/{{ outfileBasename }}.pqr
+      {{ outfileBasename }}.pqr
     variables:
       inputs:
         type: object
@@ -602,7 +602,7 @@ jobs:
       /code/prepare_rdock.py 
       --receptor /data/{{ receptorFile }}
       --ligand /data/{{ ligandFile }}
-      --output /data/{{ outputBaseName }}
+      --output {{ outputBaseName }}
     variables:
       inputs:
         type: object
@@ -792,7 +792,6 @@ jobs:
       --prmfile /data/{{ prmFile }}
       --asfile /data/{{ asFile }}
       --num_dockings {{ numDockings }}
-      --publishDir /data/results
       -with-trace
       -with-report
     variables:
@@ -883,7 +882,6 @@ jobs:
       --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
       --scoring_function {{ scoringFunction }}
-      --publishDir /data/results
       -with-trace
       -with-report
     variables:
@@ -996,7 +994,6 @@ jobs:
       nextflow run /code/oddt.nf
       --ligands /data/{{ ligandsSDF }}
       --protein /data/{{ proteinPDB }}
-      --publishDir /data/results
       -with-trace
       -with-report
     variables:

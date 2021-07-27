@@ -11,7 +11,7 @@ params.key_halogen = 1
 params.key_salt_bridge = 1
 params.key_pi_stacking = 1
 params.key_pi_cation = 1
-params.publishDir = './results'
+params.publishDir = './'
 
 // files
 ligands = file(params.ligands)

@@ -10,7 +10,7 @@ params.protein = 'receptor.pdbqt'
 params.scoring_function = 'default'
 params.exhaustiveness = 8
 params.padding = 4
-params.publishDir = './results'
+params.publishDir = './'
 params.cpu = 1
 
 

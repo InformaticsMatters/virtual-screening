@@ -33,11 +33,12 @@ def pick(input, seeds, output, count, threshold, interval=0):
 
     seed_molecules = set()
     if seeds:
-        with open(seeds) as seedsf:
-            for line in seedsf:
-                tokens = line.strip().split('\t')
-                smi = tokens[0]
-                seed_molecules.add(smi)
+        for seed in seeds:
+            with open(seed) as seedsf:
+                for line in seedsf:
+                    tokens = line.strip().split('\t')
+                    smi = tokens[0]
+                    seed_molecules.add(smi)
         utils.log_dm_event("Found", len(seed_molecules), 'seeds')
     
     with open(input) as inf:
@@ -111,7 +112,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Prepare enumeration and conformer lists')
     parser.add_argument('-i', '--input', required=True, help="File with inputs")
-    parser.add_argument('-s', '--seeds', help="File with molecules that have already been picked")
+    parser.add_argument('-s', '--seeds', nargs='+', help="File(s) with molecules that have already been picked")
     parser.add_argument('-o', '--output', required=True, help="Output file")
     parser.add_argument('-c', '--count', type=int, help="Number to pick")
     parser.add_argument('-t', '--threshold', type=float, help="Similarity threshold")

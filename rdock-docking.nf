@@ -9,7 +9,7 @@ params.protein = 'receptor.mol2'
 params.prmfile = 'docking.prm'
 params.asfile = 'docking.as'
 params.num_dockings = 25
-params.publishDir = './results'
+params.publishDir = './'
 params.score_field = 'SCORE.norm'
 
 
