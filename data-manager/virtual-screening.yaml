@@ -795,6 +795,12 @@ jobs:
       -with-trace
       -with-report
     variables:
+      order:
+        options:
+        - ligandsSDF
+        - proteinMOL2
+        - prmFile
+        - asFile
       inputs:
         type: object
         required:
@@ -830,13 +836,13 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results/results.sdf.gz'
+            creates: 'results.sdf.gz'
             type: file
           dockedTXT:
             title: Pose report file
             mime-types:
             - text/csv
-            creates: 'results/results.txt'
+            creates: 'results.txt'
             type: file
           trace_file:
             title: Nextflow trace file
@@ -920,7 +926,7 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results/results_smina.sdf'
+            creates: 'results_smina.sdf'
             type: file
             annotation-properties:
               fields-descriptor:
@@ -1020,7 +1026,7 @@ jobs:
             title: Scored poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results/results_oddt.sdf.gz'
+            creates: 'results_oddt.sdf.gz'
             type: file
           trace_file:
             title: Nextflow trace file
