@@ -49,8 +49,8 @@ def shard(inputs, source, version, output_dir, delimiter,
 
     if not os.path.isdir(output_dir):
         utils.log('Creating outdir', output_dir)
-        os.mkdir(output_dir)
-        
+        os.makedirs(output_dir, exist_ok=True)
+
     hacdir = os.path.join(output_dir, source + '_' + version)
     if not os.path.isdir(hacdir):
         utils.log('Creating hacdir', hacdir)

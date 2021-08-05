@@ -20,6 +20,8 @@
 import argparse, os, subprocess, time, datetime
 from jinja2 import Template
 
+import utils
+
 template = Template('''RBT_PARAMETER_FILE_V1.00
 TITLE rDockdocking
 
@@ -67,6 +69,7 @@ def execute(receptor, ligand, output):
     
     # write the rdock configuration file (the .prm file)
     log("Generating prm file")
+    utils.expand_path(prmfile)
     with open(prmfilename, 'w') as prmfile:
         prmfile.write(content)
         

@@ -111,13 +111,13 @@ jobs:
             mime-types:
             - chemical/x-csv
             creates: '{{ outputDir }}/{{ supplierName }}_{{ supplierVersion }}/*.smi'
-            type: directory
+            type: files
           shards:
             title: Sharded molecule data
             mime-types:
             - appliction/json
             creates: '{{ outputDir }}/sha256/*/*/*.json'
-            type: directory
+            type: files
       options:
         type: object
         required:
@@ -201,7 +201,7 @@ jobs:
             title: Directory with molecules to filter
             mime-types:
             - chemical/x-csv
-            type: dir
+            type: directory
       outputs:
         type: object
         properties:
@@ -372,7 +372,7 @@ jobs:
             type: file
           dataDir:
             title: Directory with sharded data
-            type: dir
+            type: directory
       outputs:
         type: object
         properties:
@@ -435,7 +435,7 @@ jobs:
             type: file
           dataDir:
             title: Directory with sharded data
-            type: dir
+            type: directory
       outputs:
         type: object
         properties:
@@ -685,7 +685,7 @@ jobs:
             type: file
           dataDir:
             title: Directory with sharded data
-            type: dir
+            type: directory
       outputs:
         type: object
         properties:
@@ -695,17 +695,19 @@ jobs:
             - chemical/x-csv
             creates: '{{ dataDir }}/sha256/*/*/*.smi'
             # additional *.smi files might have already been generated
-            type: directory
+            type: files
           trace_file:
             title: Nextflow trace file
             creates: trace.txt
             mime-types:
             - text/plain
+            type: file
           report_file:
             title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
+            type: file
       # there are no options for this job
       
   generate-conformer:
@@ -746,7 +748,7 @@ jobs:
             type: file
           dataDir:
             title: Directory with sharded data
-            type: dir
+            type: directory
       outputs:
         type: object
         properties:
@@ -756,17 +758,19 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: '{{ dataDir }}/sha256/*/*/*.sdf'
             # additional *.sdf files might have already been generated
-            type: directory
+            type: files
           trace_file:
             title: Nextflow trace tile
             creates: trace.txt
             mime-types:
             - text/plain
+            type: file
           report_file:
             title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
+            type: file
       # there are no options for this job
       
   run-rdock:
@@ -801,6 +805,7 @@ jobs:
         - proteinMOL2
         - prmFile
         - asFile
+        - numDockings
       inputs:
         type: object
         required:
@@ -836,7 +841,7 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results.sdf.gz'
+            creates: 'results.sdf'
             type: file
           dockedTXT:
             title: Pose report file
@@ -849,11 +854,13 @@ jobs:
             creates: trace.txt
             mime-types:
             - text/plain
+            type: file
           report_file:
             title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
+            type: file
       options:
         type: object
         required:
@@ -947,11 +954,13 @@ jobs:
             creates: trace.txt
             mime-types:
             - text/plain
+            type: file
           report_file:
             title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
+            type: file
       options:
         type: object
         required:
@@ -1026,16 +1035,18 @@ jobs:
             title: Scored poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results_oddt.sdf.gz'
+            creates: 'results_oddt.sdf'
             type: file
           trace_file:
             title: Nextflow trace file
             creates: trace.txt
             mime-types:
             - text/plain
+            type: file
           report_file:
             title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
+            type: file
       # there are no options for this job

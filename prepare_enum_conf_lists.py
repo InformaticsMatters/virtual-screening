@@ -34,7 +34,9 @@ def prepare_3d_list(infile, outfile_enum, outfile_conf, data_dir):
     
     utils.log_dm_event('Processing file', infile)
     with open(infile) as inf:
+        utils.expand_path(outfile_enum)
         with open(outfile_enum, 'w') as outenum:
+            utils.expand_path(outfile_conf)
             with open(outfile_conf, 'w') as outconf:
                 for line in inf:
                     total += 1

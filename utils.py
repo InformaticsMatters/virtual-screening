@@ -1,7 +1,7 @@
 import io
 from datetime import datetime, timezone
 import logging
-import sys
+import sys, os
 
 default_num_chars = 2
 default_num_levels = 2
@@ -38,4 +38,16 @@ def get_path_from_digest(digest, num_chars=default_num_chars, num_levels=default
         parts.append(p)
         start = start + num_chars
     return parts
+
+
+def expand_path(path):
+    """
+    Create any necessary directories to ensure that the file path is valid
     
+    :param path: a filename or directory that might or not exist
+    """
+    head_tail = os.path.split(path)
+    if head_tail[0]:
+        if not os.path.isdir(head_tail[0]):
+            log('Creating directories for', head_tail[0])
+            os.makedirs(head_tail[0], exist_ok=True)

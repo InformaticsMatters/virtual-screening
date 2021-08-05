@@ -85,7 +85,8 @@ def filter(input_dirs, output_file, min_hac=None, max_hac=None,
     total = 0
     num_dups = 0
     duplicates = set()
-    
+
+    utils.expand_path(output_file)
     with open(output_file, 'w') as out:
         for i, file in enumerate(all_files):
             utils.log_dm_event('Processing', file)

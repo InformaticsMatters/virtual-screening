@@ -42,6 +42,7 @@ def pick(input, seeds, output, count, threshold, interval=0):
         utils.log_dm_event("Found", len(seed_molecules), 'seeds')
     
     with open(input) as inf:
+        utils.expand_path(output)
         with open(output, 'w') as outf:
             
             utils.log_dm_event('Starting fingerprinting ...')

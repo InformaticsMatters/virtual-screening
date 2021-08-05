@@ -28,6 +28,7 @@ def execute(input, output, data_dir, interval=0):
     dups = set()
     
     with open(input) as inf:
+        utils.expand_path(output)
         with open(output, 'w') as outf:
             for line in inf:
                 inputs += 1

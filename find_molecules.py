@@ -18,7 +18,7 @@ import argparse, os, json
 from hashlib import sha256
 import utils
 
-from rdkit import RDLogger
+from rdkit import Chem, RDLogger
 
 from standardize_molecule import standardize_to_iso_smiles
 
@@ -88,11 +88,17 @@ def main():
     all_inputs = []
     if args.inputs:
         for input in args.inputs:
-            with open(input, 'r') as f:
-                lines = f.read().splitlines()
-                utils.log('Found', len(lines), 'inputs in', input)
-                all_inputs.extend(lines)
-
+            if input.endswith('.smi'):
+                with open(input, 'r') as f:
+                    lines = f.read().splitlines()
+                    utils.log('Found', len(lines), 'inputs in', input)
+                    all_inputs.extend(lines)
+            elif input.endswith('.sdf'):
+                supplr = Chem.ForwardSDMolSupplier(input)
+                for mol in supplr:
+                    all_inputs.append(Chem.MolToSmiles(mol))
+            else:
+                raise ValueError('Unsuppported file format: ' + input)
 
     # this does the processing
     num_hits, num_misses = process(all_inputs, args.data_dir,
