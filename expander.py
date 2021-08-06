@@ -35,7 +35,7 @@ from standardize_molecule import standardize_to_noniso_smiles
 
 RDLogger.logger().setLevel(RDLogger.ERROR)
 
-def process(inputs, hac_min=None, hac_max=None, rac_min=None, rac_max=None, hops=1,
+def process(input, outdir='./', hac_min=None, hac_max=None, rac_min=None, rac_max=None, hops=1,
             server='https://fragnet-search.xchem-dev.diamond.ac.uk/fragnet-search-api',
             token=None, index_as_filename=False, exclude_inputs=False, excludes=None):
 
@@ -51,10 +51,10 @@ def process(inputs, hac_min=None, hac_max=None, rac_min=None, rac_max=None, hops
     duplicates = set()
     excluded_mols = set()
 
-    # process the inputs, keeping only non-duplicates
+    # process the input, keeping only non-duplicates
     count = 0
     num_duplicates = 0
-    supplr = Chem.SDMolSupplier(inputs)
+    supplr = Chem.SDMolSupplier(input)
     for mol in supplr:
         count += 1
         name = mol.GetProp('_Name')
@@ -98,12 +98,16 @@ def process(inputs, hac_min=None, hac_max=None, rac_min=None, rac_max=None, hops
                         basename = name
             if not basename:
                 basename = str(count)
+            
+            if not outdir.endswith('/'):
+                outdir = outdir + '/'    
+            utils.expand_path(outdir)
 
-            with open(basename + '.json', 'w') as f:
+            with open(outdir + basename + '.json', 'w') as f:
                 s = json.dumps(j)
                 f.write(s)
 
-            with open(basename + '.smi', 'w') as f:
+            with open(outdir + basename + '.smi', 'w') as f:
                 members = j['members']
                 incl = 0
                 excl = 0
@@ -129,7 +133,8 @@ def main():
     #  python expander.py -i inputs.smi --hac-min 3 --hac-max 3 --rac-min 1 --rac-max 1 --hops 1 --token $KEYCLOAK_TOKEN
 
     parser = argparse.ArgumentParser(description='Fragnet expand')
-    parser.add_argument('-i', '--input', help='Input file')
+    parser.add_argument('-i', '--input', help='Input SDF file')
+    parser.add_argument('-o', '--outdir', default='./', help='Directory for outputs')
     parser.add_argument('--hac-min', type=int, default=3, help='The min change in heavy atom count')
     parser.add_argument('--hac-max', type=int, default=3, help='The max change in heavy atom count')
     parser.add_argument('--rac-min', type=int, default=1, help='The min change in ring atom count')
@@ -137,7 +142,7 @@ def main():
     parser.add_argument('--hops', type=int, default=1, help='The number of graph traversals (hops)')
     parser.add_argument('-s', '--server', default='https://fragnet-search.xchem-dev.diamond.ac.uk/fragnet-search-api', help='The fragnet search server')
     parser.add_argument('--token', help='Keycloak auth token (or specify as KEYCLOAK_TOKEN env variable')
-    parser.add_argument('--index-as-filename', action='store_true', help='Use the index as the file name instead of the molecule name')
+    parser.add_argument('--index-as-filename', action='store_true', help='Use the molecule index as the file name instead of the molecule name')
     parser.add_argument('--exclude-inputs', action='store_true', help='Exclude inputs in the .smi output')
     parser.add_argument('-e', '--excludes', nargs='*', help='Exclude these from the output')
 
@@ -152,7 +157,7 @@ def main():
         utils.log('WARNING: no authentication token found in environment variable KEYCLOAK_TOKEN')
 
     # this does the processing
-    count, duplicates = process(args.input, hac_min=args.hac_min, hac_max=args.hac_max, rac_min=args.rac_min, rac_max=args.rac_max,
+    count, duplicates = process(args.input, outdir=args.outdir, hac_min=args.hac_min, hac_max=args.hac_max, rac_min=args.rac_min, rac_max=args.rac_max,
             hops=args.hops,
             server=args.server, token=auth_token,
             index_as_filename=args.index_as_filename,
