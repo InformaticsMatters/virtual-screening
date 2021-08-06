@@ -662,7 +662,7 @@ jobs:
     command: >-
       /code/expander.py
       --input {{ inputFile }}
-      --outdir {{ outputDir }}
+      {% if outputDir is defined %}--outdir {{ outputDir }}{% endif %}
       --hac-min {{ hacMin }}
       --hac-max {{ hacMax }}
       --rac-min {{ racMin }}
@@ -673,6 +673,9 @@ jobs:
       {% if excludeFiles is defined %}--excludes {{ excludeFiles }}{% endif %}
     variables:
       order:
+        inputs:
+        - inputFile
+        - excludes
         options:
         - outputDir
         - hacMin
@@ -693,7 +696,7 @@ jobs:
             - chemical/x-mdl-sdfile
             type: file
           excludes:
-            title: Exclude molecules from these files in the outputs
+            title: Exclude molecules from these files in the outputs (optional)
             mime-types:
             - chemical/x-mdl-sdfile
             type: file
@@ -716,7 +719,6 @@ jobs:
       options:
         type: object
         required:
-        - outputDir
         - hacMin
         - hacMax
         - racMin
