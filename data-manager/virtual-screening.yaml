@@ -5,7 +5,7 @@ kind: DataManagerJobDefinition
 kind-version: '2021.1'
 
 # An arbitrary name (ignored by the DataManager)
-name: RDKit virtual screening tools
+name: Virtual screening tools using RDkit, OpenBabel and other open source tools
 
 # The 'collection' for the jobs named in this definition.
 #
@@ -57,6 +57,8 @@ jobs:
     keywords:
     - rdkit
     - ligand preparation
+    # link to documetnation for the job
+    doc-url: https://discourse.squonk.it/t/job-shard/67
     # The container image that contains the Job implementation
     # (in v1, these are hosted on Docker Hub)
     # ... along with the image tag
@@ -153,6 +155,7 @@ jobs:
     - rdkit
     - ligand preparation
     - filter
+    doc-url: https://discourse.squonk.it/t/job-filter/68
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -198,17 +201,16 @@ jobs:
         - inputDir
         properties:
           inputDir:
-            title: Directory with molecules to filter
-            mime-types:
-            - chemical/x-csv
+            title: Directories with molecules to filter
             type: directory
+            multiple: true
       outputs:
         type: object
         properties:
           outputFile:
             title: Filtered output
             mime-types:
-            - chemical/x-csv
+            - squonk/x-smiles
             creates: '{{ outputFile }}'
             type: file
       options:
@@ -291,15 +293,18 @@ jobs:
     - ligand preparation
     - diverse subset
     - filter
+    doc-url: https://discourse.squonk.it/t/job-max-min-picker/69
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/max_min_picker.py --input /data/{{ inputFile }} 
+      /code/max_min_picker.py --input /data/{{ inputFile }}
+      {% if seeds is defined %}--seeds{% for file in seeds %} {{ file }}{% endfor %}{% endif %}
       --output {{ outputFile }}
       --count {{ count }}
+      {% if threshold is defined %}--threshold {{ threshold }}{% endif %}
       --interval 10000
     variables:
       inputs:
@@ -310,8 +315,14 @@ jobs:
           inputFile:
             title: Molecules to pick from
             mime-types:
-            - chemical/x-csv
+            - squonk/x-smiles
             type: file
+          seeds:
+            title: Molecules that are already picked
+            mime-types:
+            - squonk/x-smiles
+            type: file
+            multiple: true
       outputs:
         type: object
         properties:
@@ -334,6 +345,11 @@ jobs:
             title: Number of molecules to pick
             type: integer
             minimum: 1
+          threshold:
+            title: Similarity threshold
+            type: number
+            minimum: 0
+            maximum: 1
 
   prep-enum-conf-lists:
     name: Prepare enumeration and conformer lists
@@ -347,6 +363,7 @@ jobs:
     - ligand preparation
     - enumeration
     - conformer generation
+    doc-url: https://discourse.squonk.it/t/job-prep-enum-conf-lists/70
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -411,6 +428,7 @@ jobs:
     category: virtual screening
     keywords:
     - ligand preparation
+    doc-url: https://discourse.squonk.it/t/job-generate-candidates/73
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -466,6 +484,7 @@ jobs:
     keywords:
     - protein preparation
     - openbabel
+    doc-url: https://discourse.squonk.it/t/job-obabel-convert/77
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -526,6 +545,7 @@ jobs:
     - protein preparation
     - pdb2pqr
     - protonation
+    doc-url: https://discourse.squonk.it/t/job-pdb2pqr/76
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -593,6 +613,7 @@ jobs:
     keywords:
     - protein preparation
     - rdock
+    doc-url: https://discourse.squonk.it/t/job-prepare-rdock/75
     image:
       name: informaticsmatters/vs-rdock
       tag: 'latest'
@@ -743,7 +764,7 @@ jobs:
             type: integer
             default: 1
           racMax:
-            title: Ring atom count increase
+            title: Ring atom count increasehttps://discourse.squonk.it/t/job-run-rdock/74
             type: integer
             default: 1
           hops:
@@ -775,6 +796,7 @@ jobs:
     - enumeration
     - dimorphite_dl
     - nextflow
+    doc-url: https://discourse.squonk.it/t/job-enumerate-candidates/71
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -811,7 +833,7 @@ jobs:
             - chemical/x-csv
             creates: '{{ dataDir }}/sha256/*/*/*.smi'
             # additional *.smi files might have already been generated
-            type: files
+            type: filesenumeration
           trace_file:
             title: Nextflow trace file
             creates: trace.txt
@@ -819,7 +841,7 @@ jobs:
             - text/plain
             type: file
           report_file:
-            title: Nextflow report file
+            title: Nextflow report fileusing the `prepare-rdock` job
             creates: report.html
             mime-types:
             - text/html
@@ -838,6 +860,7 @@ jobs:
     - ligand preparation
     - conformer
     - nextflow
+    doc-url: https://discourse.squonk.it/t/job-generate-conformer/72
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -899,6 +922,7 @@ jobs:
     - rdock
     - docking
     - nextflow
+    doc-url: https://discourse.squonk.it/t/job-run-rdock/74
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -983,7 +1007,7 @@ jobs:
         - numDockings
         properties:
           numDockings:
-            title: Number of dockings for each molecule
+            title: Number of dockings
             type: integer
             default: 50
 
@@ -997,6 +1021,7 @@ jobs:
     - smina
     - docking
     - nextflow
+    doc-url: https://discourse.squonk.it/t/job-run-smina/78
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -1115,6 +1140,7 @@ jobs:
     - oddt
     - docking
     - nextflow
+    doc-url: https://discourse.squonk.it/t/job-oddt-score-interactions/79
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
