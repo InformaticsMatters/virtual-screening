@@ -20,8 +20,6 @@
 import argparse, os, subprocess, time, datetime
 from jinja2 import Template
 
-import utils
-
 template = Template('''RBT_PARAMETER_FILE_V1.00
 TITLE rDockdocking
 
@@ -52,10 +50,23 @@ END_SECTION
 
 ''')
 
+# these 2 methods are duplicated from utils.py because of the pytnon2 issue
 def log(msg):
     msg_time = datetime.datetime.utcnow().replace(microsecond=0)
     print('%s # INFO -EVENT- %s' % (msg_time, msg))
 
+def expand_path(path):
+    """
+    Create any necessary directories to ensure that the file path is valid
+    
+    :param path: a filename or directory that might or not exist
+    """
+    head_tail = os.path.split(path)
+    if head_tail[0]:
+        if not os.path.isdir(head_tail[0]):
+            log('Creating directories for', head_tail[0])
+            os.makedirs(head_tail[0], exist_ok=True)
+            
 
 def execute(receptor, ligand, output):
 
@@ -69,7 +80,7 @@ def execute(receptor, ligand, output):
     
     # write the rdock configuration file (the .prm file)
     log("Generating prm file")
-    utils.expand_path(prmfile)
+    expand_path(prmfilename)
     with open(prmfilename, 'w') as prmfile:
         prmfile.write(content)
         
