@@ -137,6 +137,8 @@ docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-prep
 ## 5. Enumeration
 
 Enumerate charges, tautomers and undefined chiral centres.
+By default enumerated steroisomers are checked for sanity (e.g. at bridgehead atoms) and no
+more than 2 charge groups are allowed.
 ```
 nextflow run enumerate.nf --inputs need-enum.smi --data_dir molecules/sha256 -with-conda <path-to-conda-environment>
 ```

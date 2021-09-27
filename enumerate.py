@@ -23,52 +23,24 @@ import os, sys, argparse, traceback, uuid
 import utils
 
 from rdkit import Chem
-from rdkit.Chem.rdForceFieldHelpers import UFFGetMoleculeForceField
 from rdkit.Chem.MolStandardize.rdMolStandardize import TautomerEnumerator
+from rdkit.Chem.EnumerateStereoisomers import EnumerateStereoisomers, StereoEnumerationOptions
 
 from dimorphite_dl import run_with_mol_list
 
 
-def enumerate_undefined_chirals(mol):
+def enumerate_undefined_chirals(mol, tryEmbedding=False):
     """
     Enumerate undefined chiral centres that are points of substitution.
     Chiral centres that are already specifically defined are left untouched.
     :param mol: The mol to enumerate
-    :return:
+    :return: A list of enumerated molecules
     """
+    opts = StereoEnumerationOptions(tryEmbedding=tryEmbedding)
+    isomers = tuple(EnumerateStereoisomers(mol, options=opts))
+    return isomers
 
-    chiral_centers = Chem.FindMolChiralCenters(mol, force=True, includeUnassigned=True)
-    #utils.log('  Chiral centers:', chiral_centers, 'Free atom counts:', free_counts)
 
-    chiral_targets = []
-    for i, cc in enumerate(chiral_centers):
-        if cc[1] == '?':  # only enumerate if the stereo is undefined
-            chiral_targets.append(cc[0])
-
-    if chiral_targets:
-        chiral_swaps = []
-        mol_cw = Chem.RWMol(mol)
-        mol_cw.GetAtomWithIdx(chiral_targets[0]).SetChiralTag(Chem.ChiralType.CHI_TETRAHEDRAL_CW)
-        chiral_swaps.append(mol_cw)
-        mol_ccw = Chem.RWMol(mol)
-        mol_ccw.GetAtomWithIdx(chiral_targets[0]).SetChiralTag(Chem.ChiralType.CHI_TETRAHEDRAL_CCW)
-        chiral_swaps.append(mol_ccw)
-        for j in range(1, len(chiral_targets)):
-            new_enum_mols = []
-            for m in chiral_swaps:
-                nm1 = Chem.RWMol(m)
-                nm1.GetAtomWithIdx(chiral_targets[j]).SetChiralTag(Chem.ChiralType.CHI_TETRAHEDRAL_CW)
-                new_enum_mols.append(nm1)
-                nm2 = Chem.RWMol(m)
-                nm2.GetAtomWithIdx(chiral_targets[j]).SetChiralTag(Chem.ChiralType.CHI_TETRAHEDRAL_CCW)
-                new_enum_mols.append(nm2)
-                chiral_swaps = new_enum_mols
-    else:
-        chiral_swaps = [Chem.RWMol(mol)]
-    #utils.log('  Mols to embed:', len(chiral_swaps))
-    return chiral_swaps
-
-    
 def gen_tautomers(mols, enumerator):
     tautomers = []
     for m in mols:
@@ -115,7 +87,7 @@ def execute(input, data_dir, enumerate_chirals=False,
             min_charge=None, max_charge=None, num_charges=None,
             min_hac=None, max_hac=None,
             min_ph=5.0, max_ph=9.0,
-            add_hydrogens=False,
+            try_embedding=False,
             interval=0):
 
     utils.log_dm_event('Executing ...')
@@ -170,7 +142,7 @@ def execute(input, data_dir, enumerate_chirals=False,
                     add_molecule(enumerated_mols, mol, 'B')
 
                     if enumerate_chirals:
-                        mols = enumerate_undefined_chirals(mol)
+                        mols = enumerate_undefined_chirals(mol, tryEmbedding=try_embedding)
                         add_molecules(enumerated_mols, mols, 'C')
 
                     if combinatorial:
@@ -229,6 +201,7 @@ def main():
     parser.add_argument("--max-charge", type=int, help="Maximum charge of molecule to process")
     parser.add_argument("--num-charges", type=int, help="Maximum number of atoms with a charge")
     parser.add_argument('--add-hydrogens', action='store_true', help='Include hydrogens in the output')
+    parser.add_argument('--try-embedding', action='store_true', help='Try to embed a 3D molecule to verify the stereochemisty is sane')
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
@@ -249,7 +222,7 @@ def main():
     min_charge = args.min_charge
     max_charge = args.max_charge
     num_charges = args.num_charges
-    add_hydrogens = args.add_hydrogens
+    try_embedding = args.try_embedding
     interval = args.interval 
 
 
@@ -262,13 +235,15 @@ def main():
     sys.argv = sys.argv[:1]
 
     count, total, excluded, errors = execute(input, data_dir, enumerate_chirals=enumerate_chirals,
-                                   enumerate_charges=enumerate_charges, enumerate_tautomers=enumerate_tautomers,
-                                   combinatorial=combinatorial,
-                                   min_charge=min_charge, max_charge=max_charge, num_charges=num_charges,
-                                   min_hac=min_hac, max_hac=max_hac,
-                                   min_ph=min_ph, max_ph=max_ph, add_hydrogens=add_hydrogens,
-                                   interval=interval
-                                   )
+                                             enumerate_charges=enumerate_charges,
+                                             enumerate_tautomers=enumerate_tautomers,
+                                             combinatorial=combinatorial,
+                                             min_charge=min_charge, max_charge=max_charge, num_charges=num_charges,
+                                             min_hac=min_hac, max_hac=max_hac,
+                                             min_ph=min_ph, max_ph=max_ph,
+                                             try_embedding=try_embedding,
+                                             interval=interval
+                                             )
 
     utils.log_dm_event('Count:', count, 'Total', total, 'Excluded:', excluded, 'Errors:', errors)
 

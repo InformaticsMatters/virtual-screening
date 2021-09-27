@@ -42,8 +42,7 @@ def process(input, outdir='./', hac_min=None, hac_max=None, rac_min=None, rac_ma
     url = server + '/fragnet-search/rest/v2/search/expand/'
     params = {'hops': hops, 'hac_min': hac_min, 'hac_max': hac_max, 'rac_min': rac_min, 'rac_max': rac_max}
     # utils.log('URL', url, "Params:" + str(params))
-    # headers = {'Content-Type': 'chemical/x-daylight-smiles'}
-    headers = {'Content-Type': 'chemical/x-mdl-molfile'}
+    headers = {'Content-Type': 'chemical/x-daylight-smiles'}
     if token:
         headers['Authorization'] = 'bearer ' + token
 
@@ -82,10 +81,9 @@ def process(input, outdir='./', hac_min=None, hac_max=None, rac_min=None, rac_ma
         std_smi = item[1]
         mol = item[2]
         name = item[3]
-        molfile = Chem.MolToMolBlock(mol)
-        utils.log('Processing', count, name, std_smi, Chem.MolToSmiles(mol))
+        utils.log('Processing', count, name, std_smi)
 
-        r = requests.post(url, params=params, headers=headers, data=molfile)
+        r = requests.get(url + requests.utils.quote(std_smi), params=params, headers=headers)
         if r.status_code == requests.codes.ok:
             j = r.json()
             num_mols = j['size']

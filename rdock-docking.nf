@@ -10,8 +10,6 @@ params.prmfile = 'docking.prm'
 params.asfile = 'docking.as'
 params.num_dockings = 25
 params.publishDir = './'
-params.report_fields = 'SCORE.norm,SCORE'
-params.score_field = 'SCORE.norm'
 
 
 // files
@@ -79,22 +77,10 @@ process collect_and_report {
 
     output:
     file 'results_rdock.sdf'
-    file 'results_rdock.txt'
-    file 'results_rdock_1poseperlig.sdf'
-    file 'results_rdock_1poseperlig.txt'
-    file 'results_rdock_1poseperlig_sorted.sdf'
-    file 'results_rdock_1poseperlig_sorted_top50.sdf'
-    file 'results_rdock_1poseperlig_sorted_top50.txt'
     
     """
     rm -f results_rdock.sdf
     ls rdock_*.sd | xargs cat >> results_rdock.sdf
-    sdreport -t$params.report_fields results_rdock.sdf > results_rdock.txt
-    sdsort -n -s -f$params.score_field results_rdock.sdf | sdfilter -f'\$_COUNT == 1' -s_TITLE1 > results_rdock_1poseperlig.sdf
-    sdreport -t$params.report_fields results_rdock_1poseperlig.sdf | awk '{print \$2,\$3,\$4}' > results_rdock_1poseperlig.txt
-    sdsort -n -f$params.score_field results_rdock_1poseperlig.sdf > results_rdock_1poseperlig_sorted.sdf
-    sdfilter -f'\$_REC <= 50' results_rdock_1poseperlig_sorted.sdf > results_rdock_1poseperlig_sorted_top50.sdf
-    sdreport -t$params.report_fields results_rdock_1poseperlig_sorted_top50.sdf | awk '{print \$2,\$3,\$4}' > results_rdock_1poseperlig_sorted_top50.txt
     """
 }
 

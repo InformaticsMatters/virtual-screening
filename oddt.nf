@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 // params
-params.chunk = 1000
+params.chunk = 5000
 params.scratch = false
 params.ligands = 'ligands.sdf'
 params.protein = 'receptor.pdb'

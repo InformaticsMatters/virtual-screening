@@ -2,6 +2,8 @@ params.inputs = 'inputs.smi'
 params.data_dir = 'combined'
 params.chunk_size = 10000
 params.digits = 6
+params.num_charges = 2
+params.try_embedding = true
 params.interval = 1000
 
 inputsfile = file(params.inputs)
@@ -32,7 +34,10 @@ process enumerate {
 
 
     """
-    /code/enumerate.py -i $chunks --data-dir $data --interval $params.interval --enumerate-tautomers --enumerate-chirals --enumerate-charges
+    /code/enumerate.py -i $chunks --data-dir $data --interval $params.interval\
+      --enumerate-tautomers --enumerate-chirals --enumerate-charges\
+      ${params.num_charges ? '--num-charges ' + params.num_charges : ''}\
+      ${params.try_embedding ? '--try-embedding' : ''}
     """
 }
 
