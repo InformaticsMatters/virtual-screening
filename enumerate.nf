@@ -1,6 +1,6 @@
 params.inputs = 'inputs.smi'
 params.data_dir = 'combined'
-params.chunk_size = 10000
+params.chunk_size = 1000
 params.digits = 6
 params.num_charges = 2
 params.try_embedding = true
