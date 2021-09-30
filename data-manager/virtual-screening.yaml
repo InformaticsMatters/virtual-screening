@@ -1121,7 +1121,7 @@ jobs:
         properties:
           outputDir:
             title: Directory for results
-            type: directory
+            type: string
             default: ./
           outputFile:
             title: Filename for results
