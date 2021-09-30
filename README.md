@@ -1,5 +1,7 @@
 # Virtual screening tools
 
+![build](https://github.com/InformaticsMatters/virtual-screening/workflows/build/badge.svg)
+
 This repo contains a set of tools to prepare inputs for virtual screening.
 
 ## Prepare Docker images
