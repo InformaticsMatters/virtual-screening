@@ -1,0 +1,40 @@
+---
+
+yaml-files:
+- '*.yaml'
+- '*.yml'
+- '.yamllint'
+
+ignore: |
+  .github/
+
+rules:
+  indentation:
+    spaces: 2
+    indent-sequences: no
+  trailing-spaces: {}
+  truthy:
+    allowed-values:
+    - 'yes'
+    - 'no'
+    - 'true'
+    - 'false'
+  new-lines:
+    type: unix
+  new-line-at-end-of-file: enable
+  key-duplicates: {}
+  hyphens:
+    max-spaces-after: 1
+  empty-lines:
+    max: 2
+  document-start:
+    present: yes
+  document-end:
+    present: no
+  colons:
+    max-spaces-before: 0
+    max-spaces-after: 1
+  commas:
+    max-spaces-before: 0
+    min-spaces-after: 1
+    max-spaces-after: 1

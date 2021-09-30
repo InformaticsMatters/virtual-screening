@@ -280,7 +280,7 @@ jobs:
             title: Maximum sp3
             type: integer
             minimum: 0
-            
+
   max-min-picker:
     name: Select diverse subset of molecules
     description: >-
@@ -370,7 +370,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/prepare_enum_conf_lists.py 
+      /code/prepare_enum_conf_lists.py
       --input /data/{{ inputFile }}
       --data-dir /data/{{ dataDir }}
       --outfile-enum {{ outputFileEnum }}
@@ -435,7 +435,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/gen_candidates.py 
+      /code/gen_candidates.py
       --input /data/{{ inputFile }}
       --data-dir /data/{{ dataDir }}
       --output {{ outputFile }}
@@ -472,7 +472,7 @@ jobs:
             title: Filename for SDF output
             type: string
             default: candidates.sdf
-            
+
   obabel-convert:
     name: Convert molecule format
     description: >-
@@ -537,8 +537,8 @@ jobs:
     name: Prepare protein using pdb2pqr
     description: >-
       Prepare a protein for docking by using pdb2pqr. This can replace missing heavy atoms
-      and protnate the protein at a specific pH taking into account the local environment 
-      of titratable groups, such as the hydrogen bonding network. 
+      and protnate the protein at a specific pH taking into account the local environment
+      of titratable groups, such as the hydrogen bonding network.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -603,7 +603,6 @@ jobs:
             title: Base filename for output (do not include the extension)
             type: string
 
-            
   prepare-rdock:
     name: rDock prepare
     description: >-
@@ -620,7 +619,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/prepare_rdock.py 
+      /code/prepare_rdock.py
       --receptor /data/{{ receptorFile }}
       --ligand /data/{{ ligandFile }}
       --output {{ outputBaseName }}
@@ -780,14 +779,14 @@ jobs:
             type: boolean
             default: true
 
-  ####################                                    
-  # nextflow jobs     
-  ####################                 
+  ####################
+  # nextflow jobs
+  ####################
   enumerate-candidates:
     name: Enumerate microstates, tautomers and undefined chiral centres
     description: >-
       Enumerate microstates, tautomers and undefined chiral centres. Inputs are defined
-      by the prep-enum-conf-lists job. 
+      by the prep-enum-conf-lists job.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -847,7 +846,7 @@ jobs:
             - text/html
             type: file
       # there are no options for this job
-      
+
   generate-conformer:
     name: Generate 3D conformer
     description: >-
@@ -911,7 +910,7 @@ jobs:
             - text/html
             type: file
       # there are no options for this job
-      
+
   run-rdock:
     name: Run rRock docking
     description: >-
@@ -1146,7 +1145,7 @@ jobs:
             - dkoes_scoring_old
             - vina
             - vinardo
-            
+
   oddt-score-interactions:
     name: ODDT rescoring and interactions
     description: >-
