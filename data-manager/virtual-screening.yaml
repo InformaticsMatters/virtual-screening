@@ -1120,15 +1120,13 @@ jobs:
           scoringFunction:
             title: Scoring function to use
             type: string
-            items:
-            - type: string
-              enum:
-              - ad4_scoring
-              - dkoes_fast
-              - dkoes_scoring
-              - dkoes_scoring_old
-              - vina
-              - vinardo
+            enum:
+            - ad4_scoring
+            - dkoes_fast
+            - dkoes_scoring
+            - dkoes_scoring_old
+            - vina
+            - vinardo
             
   oddt-score-interactions:
     name: ODDT rescoring and interactions
