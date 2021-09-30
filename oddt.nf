@@ -86,7 +86,7 @@ process collate {
     file 'results_oddt.sdf'
 
     """
-    rm -f results_inters.sdf
+    rm -f results_oddt.sdf
     ls oddt_*.sdf | xargs cat >> results_oddt.sdf
     """
 }

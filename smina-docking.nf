@@ -12,6 +12,7 @@ params.exhaustiveness = 8
 params.padding = 4
 params.publishDir = './'
 params.cpu = 1
+params.output_filename = 'results_smina.sdf'
 
 
 // files
@@ -145,11 +146,11 @@ process collect_and_report {
     file part from docked_parts.collect()
 
     output:
-    file 'results_smina.sdf'
+    file params.output_filename
 
     """
     rm -f results_smina.sdf
-    ls smina_*.sd | xargs cat >> results_smina.sdf
+    ls smina_*.sd | xargs cat >> $params.output_filename
     """
 }
 

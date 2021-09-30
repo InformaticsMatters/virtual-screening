@@ -1036,9 +1036,18 @@ jobs:
       --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
       --scoring_function {{ scoringFunction }}
-      -with-trace
-      -with-report
+      --publishDir {{ outputDir }}
+      --output_filename {{ outputFile }}
+      -with-trace {{ outputDir }}/trace.txt
+      -with-report {{ outputDir }}/report.html
     variables:
+      order:
+        options:
+        - outputDir
+        - outputFile
+        - boxPadding
+        - exhaustiveness
+        - scoringFunction
       inputs:
         type: object
         required:
@@ -1074,7 +1083,7 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results_smina.sdf'
+            creates: '{{ outputDir }}/{{ outputFile }}'
             type: file
             annotation-properties:
               fields-descriptor:
@@ -1092,13 +1101,13 @@ jobs:
               derived-from: ligands
           trace_file:
             title: Nextflow trace file
-            creates: trace.txt
+            creates: {{ outputDir }}/trace.txt
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: report.html
+            creates: {{ outputDir }}/report.html
             mime-types:
             - text/html
             type: file
@@ -1108,7 +1117,17 @@ jobs:
         - boxPadding
         - exhaustiveness
         - scoringFunction
+        - outputDir
+        - outputFile
         properties:
+          outputDir:
+            title: Directory for results
+            type: directory
+            default: ./
+          outputFile:
+            title: Filename for results
+            type: string
+            default: results_smina.sdf
           boxPadding:
             title: Box definition padding
             type: number
