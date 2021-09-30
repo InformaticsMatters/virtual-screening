@@ -1101,13 +1101,13 @@ jobs:
               derived-from: ligands
           trace_file:
             title: Nextflow trace file
-            creates: {{ outputDir }}/trace.txt
+            creates: '{{ outputDir }}/trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: {{ outputDir }}/report.html
+            creates: '{{ outputDir }}/report.html'
             mime-types:
             - text/html
             type: file
