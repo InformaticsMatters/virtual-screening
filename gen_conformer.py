@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This module is deprecated as the OpenBabel Python bindings generate some quirky structures
+# that cause problems with rDock, and probably other programs too.
+#
+# Instead the enumerate.py module was enhanced to generate 3D structures using RDKit. Use that instead.
 
 import os, argparse
 from openbabel import pybel

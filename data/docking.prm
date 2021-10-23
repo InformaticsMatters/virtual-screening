@@ -1,7 +1,7 @@
 RBT_PARAMETER_FILE_V1.00
-TITLE @@BASENAME@@
+TITLE rDockdocking
 
-RECEPTOR_FILE receptor.mol2
+RECEPTOR_FILE dhfr-receptor-ph7.mol2
 RECEPTOR_FLEX 3.0
 
 ##################################################################
@@ -9,7 +9,7 @@ RECEPTOR_FLEX 3.0
 ##################################################################
 SECTION MAPPER
     SITE_MAPPER RbtLigandSiteMapper
-    REF_MOL ligand.mol
+    REF_MOL dhfr-ligand.mol
     RADIUS 3.0
     SMALL_SPHERE 1.0
     MIN_VOLUME 100
@@ -18,7 +18,6 @@ SECTION MAPPER
     GRIDSTEP 0.5
 END_SECTION
 
-
 #################################
 #CAVITY RESTRAINT PENALTY
 #################################
@@ -26,4 +25,3 @@ SECTION CAVITY
     SCORING_FUNCTION RbtCavityGridSF
     WEIGHT 1.0
 END_SECTION
-

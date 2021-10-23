@@ -139,34 +139,26 @@ docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-prep
 ## 5. Enumeration
 
 Enumerate charges, tautomers and undefined chiral centres.
-By default enumerated steroisomers are checked for sanity (e.g. at bridgehead atoms) and no
-more than 2 charge groups are allowed.
+Note that with the default settings enumerated steroisomers are checked for sanity (e.g. at bridgehead atoms) and no
+more than 2 charge groups are allowed. Hydrogens are added as these are required (on polar atoms) by rDock.
+
+For each input SMILES two output files are generated within the sharded directory system containing the enumerated
+molecules:
+1. A `.smi` file
+2. A `.sdf` file containing molecules with 3D coordinates
+Both files contain the same molecules, just in different format.
+
 ```
-nextflow run enumerate.nf --inputs need-enum.smi --data_dir molecules/sha256 -with-conda <path-to-conda-environment>
+nextflow run enumerate.nf --inputs need-enum.smi -with-conda <path-to-conda-environment>
 ```
 Note: you need to have created the `im-vs-prep` conda environment and specify the path to it.
 
 Or run with Docker:
 ```
-nextflow run enumerate.nf --inputs need-enum.smi --data_dir molecules/sha256 -with-docker informaticsmatters/vs-prep:$IMAGE_TAG
+nextflow run enumerate.nf --inputs need-enum.smi -with-docker informaticsmatters/vs-prep:$IMAGE_TAG
 ```
 
-## 6. 3D conformer generation
-
-Docking needs the ligands to have 3D structures so we use OpenBabel to generate a single 3D conformation of
-each of the enumerated molecules. 
-
-```
-nextflow run gen_conformer.nf --inputs need-conf.smi --data_dir molecules/sha256 -with-conda <path-to-conda-environment>
-```
-Note: you need to have created the `im-vs-prep` conda environment and specify the path to it.
-
-Or run with Docker:
-```
-nextflow run gen_conformer.nf --inputs need-conf.smi --data_dir molecules/sha256 -with-docker informaticsmatters/vs-prep:$IMAGE_TAG
-```
-
-## 7. Prepare SD file for docking
+## 6. Prepare SD file for docking
 
 We now need to assemble all the required 3D conformers into a single SD file that can be used for docking.
 ```
@@ -180,7 +172,7 @@ docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-prep
   /code/gen_candidates.py -i 16-25-1000.smi -o 16-25-candidates.sdf -d molecules/sha256
 ```
 
-## 8. Prepare PDB file for docking using OpenBabel
+## 7. Prepare PDB file for docking using OpenBabel
 
 Docking tools need the protein to be properly prepared, wich is quite a complex topic.
 rDock needs the protein to be input in MOL2 format, whereas smina needs it in PDBQT format,
@@ -200,7 +192,7 @@ docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-prep
   obabel data/dhfr-receptor.pdb -O dhfr-receptor-ph7.mol2 -p 7
 ```
 
-## 9. Prepare PDB file for docking using pdb2pqr
+## 8. Prepare PDB file for docking using pdb2pqr
 
 OpenBabel only does a very basic preparation of the protein, protonating at a specific pH but
 not taking the precise environment of the titratable groups into consideration.
@@ -225,7 +217,7 @@ Note: if using pdb2pqr you still need to convert to MOL2 and/or PDBQT formats fo
 using OpenBabel as above, but don't specify the `-p 7` option so that OpenBabel does not
 protonate the protein.
 
-## 10. Docking with rDock
+## 9. Docking with rDock
 
 We use the [](rdock-docking.nf) Nextflow workflow for performing the docking.
 This workflow splits the input SDF into multiple chunks that can be docked in parallel, and then
@@ -258,7 +250,7 @@ nextflow run rdock-docking.nf\
 We use `--num_dockings 5` to speed things up. A real run would typically use 25-50 dockings for each candidate.
 
 
-## 11. Docking with smina
+## 10. Docking with smina
 
 Alternatively we can use [smina](https://sourceforge.net/projects/smina/), an
 [AutoDock VINA](http://vina.scripps.edu/) derivative that is faster and easier to use.
@@ -294,7 +286,7 @@ Note that the workflow is quite smart in that you can pass in the receptor and l
 formats and they will be converted to PDBQT format automatically.
 
 
-## 12. Rescoring and interactions using ODDT
+## 11. Rescoring and interactions using ODDT
 [ODDT](https://github.com/oddt/oddt) provides a wide range of tools that are useful in virtual screening.
 We use it to run some more sophisticated scoring functions on the docked poses and to calculate the
 interactions the poses make with the receptor to help in prioritising the docked poses.

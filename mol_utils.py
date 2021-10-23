@@ -1,67 +1,34 @@
-import io
-from datetime import datetime, timezone
-import logging
-import sys, os
+#!/usr/bin/env python
 
-default_num_chars = 2
-default_num_levels = 2
+# Copyright 2021 Informatics Matters Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-_SBUF = io.StringIO()
-_INFO = logging.getLevelName(logging.INFO)
 
-def log(*args, **kwargs):
-    """Log output to STDERR
+def updateChargeFlagInAtomBlock(mb):
     """
-    print(*args, file=sys.stderr, **kwargs)
-
-
-def log_dm_event(*args):
-    """Generate a Data Manager-compliant event message.
-    The Data Manager watches stdout and interprets certain formats
-    as an 'event'. These are then made available to the client.
-    Here we write the message using the expected format.
-    """
-    _ = _SBUF.truncate(0)
-    print(*args, file=_SBUF)
-    msg_time = datetime.now(timezone.utc).replace(microsecond=0)
-    print('%s # %s -EVENT- %s' % (msg_time.isoformat(),
-                                  _INFO,
-                                  _SBUF.getvalue().strip()))
-
-
-def get_path_from_digest(digest, num_chars=default_num_chars, num_levels=default_num_levels):
-    parts = []
-    start = 0
-    for l in range(0, num_levels):
-        end = start + num_chars
-        p = digest[start:end]
-        parts.append(p)
-        start = start + num_chars
-    return parts
-
-
-def expand_path(path):
-    """
-    Create any necessary directories to ensure that the file path is valid
-    
-    :param path: a filename or directory that might or not exist
-    """
-    head_tail = os.path.split(path)
-    if head_tail[0]:
-        if not os.path.isdir(head_tail[0]):
-            log('Creating directories for', head_tail[0])
-            os.makedirs(head_tail[0], exist_ok=True)
-
-def UpdateChargeFlagInAtomBlock(mb):
-    """
+    Add data for the charges to the atom block. This data is now deprecated and should be specified using "M  CHG" lines
+    but some old software such as rDock only handle the old syntax. RDKit only supports the new syntax so this method
+    handles adding the old syntax as well.
+    This function is based on work by Jose Manuel Gally that can be found here:
     See https://sourceforge.net/p/rdkit/mailman/message/36425493/
     """
     f="{:>10s}"*3+"{:>2}{:>4s}"+"{:>3s}"*11
     chgs = []    # list of charges
     lines = mb.split("\n")
-    if mb[0] == '' or mb[0] == "\n":
-        del lines[0]
-    CTAB = lines[2]
+    #if mb[0] == '' or mb[0] == "\n":
+    #    del lines[0]
+    CTAB = lines[3]
     atomCount = int(CTAB.split()[0])
     # parse mb line per line
     for l in lines:
@@ -80,10 +47,10 @@ def UpdateChargeFlagInAtomBlock(mb):
 
     # that we have a list for the current molblock, attribute each charges
     for chg in chgs:
-        i=3
-        while i < 3+atomCount:    # do not read from beginning each time, rather continue parsing mb!
+        i=4
+        while i < 4+atomCount:    # do not read from beginning each time, rather continue parsing mb!
             # when finding the idx of the atom we want to update, extract all fields and rewrite whole sequence
-            if i-2 == chg[0]:    # -4 to take into account the CTAB headers, +1 because idx begin at 1 and not 0
+            if i-3 == chg[0]:    # -4 to take into account the CTAB headers, +1 because idx begin at 1 and not 0
                 fields = lines[i].split()
                 x=fields[0]
                 y=fields[1]
@@ -120,7 +87,5 @@ def UpdateChargeFlagInAtomBlock(mb):
                 # update modatom block line
                 lines[i] = f.format(x,y,z,symb,massDiff,charge,sp,hc,scb,v,hd,nu1,nu2,aamn,irf,ecf)
             i+=1
-    #print("\n".join(lines))
-    del lines[-1]    # remove empty element left because last character before $$$$ is \n
-    upmb = "\n" + "\n".join(lines)
+    upmb = "\n".join(lines)
     return(upmb)

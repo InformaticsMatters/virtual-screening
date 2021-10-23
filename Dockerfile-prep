@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.9.2
+FROM continuumio/miniconda3:4.10.3
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -18,7 +18,7 @@ WORKDIR ${HOME}
 COPY *.py *.nf site_substructures.smarts ./
 
 # conda install our requirements, including RDKit and OpenBabel
-RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.2 openbabel=3.1.1 pdb2pqr=3.1.0 scikit-learn=0.24.2 &&\
+RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 openbabel=3.1.1 pdb2pqr=3.2.0 scikit-learn=0.24.2 &&\
   pip install im-standardize-molecule==0.1.0 &&\
   conda init bash
 

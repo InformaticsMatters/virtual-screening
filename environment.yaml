@@ -3,9 +3,9 @@ channels:
   - conda-forge
 dependencies:
   - pip=21.1.1
-  - rdkit=2021.03.2
+  - rdkit=2021.03.5
   - openbabel=3.1.1
-  - pdb2pqr=3.1.0
+  - pdb2pqr=3.2.0
   - jinja2=3.0.1
   - pip:
     - im-standardize-molecule==0.1.0

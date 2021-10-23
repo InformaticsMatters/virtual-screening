@@ -1,9 +1,11 @@
 params.inputs = 'inputs.smi'
-params.data_dir = 'combined'
+params.data_dir = 'molecules/sha256'
 params.chunk_size = 1000
 params.digits = 6
 params.num_charges = 2
 params.try_embedding = true
+params.add_hydrogens = true
+params.max_tautomers = 25
 params.interval = 1000
 
 inputsfile = file(params.inputs)
@@ -37,7 +39,9 @@ process enumerate {
     /code/enumerate.py -i $chunks --data-dir $data --interval $params.interval\
       --enumerate-tautomers --enumerate-chirals --enumerate-charges\
       ${params.num_charges ? '--num-charges ' + params.num_charges : ''}\
-      ${params.try_embedding ? '--try-embedding' : ''}
+      ${params.try_embedding ? '--try-embedding' : ''}\
+      ${params.add_hydrogens ? '--add-hydrogens' : ''}\
+      --max-tautomers $params.max_tautomers
     """
 }
 
