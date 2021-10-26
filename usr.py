@@ -141,8 +141,8 @@ def main():
 
     parser = argparse.ArgumentParser(description='Prepare enumeration and conformer lists')
     parser.add_argument('-i', '--inputs', required=True, help="File with inputs")
-    parser.add_argument('-q', '--queries', required=True, help="File with the query molecules")
-    parser.add_argument('--outfile', default='usrsim.sdf', help="Output SD file for results")
+    parser.add_argument('-q', '--queries', required=True, help="File with the 3D query molecules")
+    parser.add_argument('--outfile', default='usr-similarity.sdf', help="Output SD file for results")
     parser.add_argument('-d', '--data-dir', default='molecules/sha256', help="Directory with data")
     parser.add_argument('-t', '--threshold', required=True, type=float, help="Score threshold")
     parser.add_argument('-m', '--method', required=True, choices=['usr', 'electroshape', 'usrcat'],

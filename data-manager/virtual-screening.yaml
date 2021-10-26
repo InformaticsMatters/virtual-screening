@@ -362,7 +362,7 @@ jobs:
     - rdkit
     - ligand preparation
     - enumeration
-    - conformer generation
+    - conformer
     doc-url: https://discourse.squonk.it/t/job-prep-enum-conf-lists/70
     image:
       name: informaticsmatters/vs-prep
@@ -390,6 +390,7 @@ jobs:
           dataDir:
             title: Directory with sharded data
             type: directory
+            default: molecules/sha256
       outputs:
         type: object
         properties:
@@ -454,6 +455,7 @@ jobs:
           dataDir:
             title: Directory with sharded data
             type: directory
+            default: molecules/sha256
       outputs:
         type: object
         properties:
@@ -537,7 +539,7 @@ jobs:
     name: Prepare protein using pdb2pqr
     description: >-
       Prepare a protein for docking by using pdb2pqr. This can replace missing heavy atoms
-      and protnate the protein at a specific pH taking into account the local environment
+      and protonate the protein at a specific pH taking into account the local environment
       of titratable groups, such as the hydrogen bonding network.
     version: '1.0.0'
     category: virtual screening
@@ -664,6 +666,93 @@ jobs:
             title: Base name for output files
             type: string
             default: docking
+
+
+  ultrafast-shape-recognition:
+    name: Molecular shape similarity
+    description: >-
+      Filters molecules using 3D shape similarity and the USR, Electroshape or USRCAT algorithms
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+      - oddt
+      - similarity
+      - shape
+      - usr
+      - electroshape
+      - usrcat
+      - filter
+    doc-url: https://discourse.squonk.it/t/job-max-min-picker/69
+    image:
+      name: informaticsmatters/rdkit_pipelines
+      tag: 'inters'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/usr.py --input /data/{{ inputFile }}
+      --queries {{ queryFile }}
+      --outfile {{ outputFile }}
+      --data-dir /data/{{ dataDir }}
+      --threshold {{ threshold }}
+      {% if groupby is defined %}--group-by-field {{ groupby }}{% endif %}
+      --interval 1000
+    variables:
+      order:
+        inputs:
+          - queryFile
+          - inputFile
+          - dataDir
+      inputs:
+        type: object
+        required:
+          - queryFile
+          - inputFile
+          - dataDir
+        properties:
+          inputFile:
+            title: Molecules to pick from
+            mime-types:
+              - squonk/x-smiles
+            type: file
+          queryFile:
+            title: Query molecules
+            mime-types:
+              - chemical/x-mdl-sdfile
+            type: file
+          dataDir:
+            title: Directory with sharded data
+            type: directory
+            default: molecules/sha256
+
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+              - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+
+      options:
+        type: object
+        required:
+          - threshold
+          - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: usr-similarity.sdf
+          threshold:
+            title: Similarity threshold
+            type: number
+            minimum: 0
+            maximum: 1
+          groupby:
+            title: Group by field
+            type: string
+            default: std_smi
 
   fragment-network-expand:
     name: Fragment network expansion
@@ -823,6 +912,7 @@ jobs:
           dataDir:
             title: Directory with sharded data
             type: directory
+            default: molecules/sha256
       outputs:
         type: object
         properties:
@@ -847,19 +937,19 @@ jobs:
             type: file
       # there are no options for this job
 
-  generate-conformer:
-    name: Generate 3D conformer
+  generate-low-energy-conformers:
+    name: Generate 3D conformers
     description: >-
-      Generate a single 3D conformer of molecules. Inputs are defined
+      Generate a low energy 3D conformers of molecules. Inputs are defined
       by the prep-enum-conf-lists job.
     version: '1.0.0'
     category: virtual screening
     keywords:
-    - openbabel
+    - rdkit
     - ligand preparation
     - conformer
     - nextflow
-    doc-url: https://discourse.squonk.it/t/job-generate-conformer/72
+    doc-url: https://discourse.squonk.it/t/job-generate-low-energy-conformers/86
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -867,7 +957,7 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run /code/gen_conformer.nf
+      nextflow run /code/le_conformers.nf
       --inputs /data/{{ inputFile }}
       --data_dir /data/{{ dataDir }}
       -with-trace
@@ -887,6 +977,7 @@ jobs:
           dataDir:
             title: Directory with sharded data
             type: directory
+            default: molecules/sha256
       outputs:
         type: object
         properties:
@@ -894,7 +985,7 @@ jobs:
             title: 3D conformers
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{{ dataDir }}/sha256/*/*/*.sdf'
+            creates: '{{ dataDir }}/sha256/*/*/*_le_confs.sdf'
             # additional *.sdf files might have already been generated
             type: files
           trace_file:
