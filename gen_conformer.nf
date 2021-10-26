@@ -1,5 +1,5 @@
 params.inputs = 'need-conf.smi'
-params.data_dir = 'combined'
+params.data_dir = 'molecules/sha256'
 params.chunk_size = 1000
 params.digits = 6
 params.interval = 100

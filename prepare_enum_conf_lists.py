@@ -20,13 +20,13 @@ import utils
 from utils import get_path_from_digest
 
 
-def prepare_3d_list(infile, outfile_enum, outfile_conf, data_dir):
+def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir):
 
     total = 0
     existing_enum = 0
-    existing_conf = 0
+    existing_le_confs = 0
     count_enum = 0
-    count_conf = 0
+    count_le_confs = 0
     duplicates = 0
     errors = 0
     
@@ -36,8 +36,9 @@ def prepare_3d_list(infile, outfile_enum, outfile_conf, data_dir):
     with open(infile) as inf:
         utils.expand_path(outfile_enum)
         with open(outfile_enum, 'w') as outenum:
-            utils.expand_path(outfile_conf)
-            with open(outfile_conf, 'w') as outconf:
+            utils.expand_path(outfile_le_confs)
+            with open(outfile_le_confs, 'w') as outleconfs:
+
                 for line in inf:
                     total += 1
                     tokens = line.strip().split('\t')
@@ -51,52 +52,58 @@ def prepare_3d_list(infile, outfile_enum, outfile_conf, data_dir):
                         utils.log('WARNING, path', path, 'not found')
                         errors += 1
                         continue
-                    
-                    tgt_enum = os.path.join(path, digest + '.smi')
-                    tgt_conf = os.path.join(path, digest + '.sdf')
-                    
+
+                    tgt_enum_smi = os.path.join(path, digest + '.smi')
+                    tgt_enum_sdf = os.path.join(path, digest + '.sdf')
+                    tgt_le_confs = os.path.join(path, digest + '_le_confs.sdf')
+
                     if smi in dups:
                         duplicates += 1
                         continue
                     else:
                         dups.add(smi)
-                        
-                    if os.path.exists(tgt_enum):
+
+                    if os.path.exists(tgt_enum_smi) and os.path.exists(tgt_enum_sdf):
                         existing_enum += 1
                     else:
                         outenum.write(smi + '\t' + uid + '\t' + digest + '\n')
                         count_enum += 1
-                        
-                    if os.path.exists(tgt_conf):
-                        existing_conf += 1
+
+                    if os.path.exists(tgt_le_confs):
+                        existing_le_confs += 1
                     else:
-                        outconf.write(smi + '\t' + uid + '\t' + digest + '\n')
-                        count_conf += 1
-                
-                
-    return total, existing_enum, existing_conf, count_enum, count_conf, duplicates, errors
+                        outleconfs.write(smi + '\t' + uid + '\t' + digest + '\n')
+                        count_le_confs += 1
+
+    return total, existing_enum, existing_le_confs, count_enum, count_le_confs, duplicates, errors
                     
                     
 def main():
 
     # Example:
-    #   python3 prepare_enum_conf_lists.py -i foo.smi --outfile-enum bar.smi --outfile-conf baz.smi -d combined
+    #   python3 prepare_enum_conf_lists.py -i foo.smi --outfile-enum need-enum.smi --outfile-le-confs need-confs.smi
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Prepare enumeration and conformer lists')
     parser.add_argument('-i', '--input', required=True, help="File with inputs")
-    parser.add_argument('--outfile-enum', required=True, help="Output file for molecules needing enumeration")
-    parser.add_argument('--outfile-conf', required=True, help="Output file for molecules needing 3D conformer generation")
-    parser.add_argument('-d', '--data-dir', required=True, help="Directory with data")
+    parser.add_argument('--outfile-enum', default='need-enum.smi', help="Output file for molecules needing enumeration")
+    parser.add_argument('--outfile-confs', default='need-confs.smi',
+                        help="Output file for molecules needing low energy 3D conformer generation")
+    parser.add_argument('-d', '--data-dir', default='molecules/sha256', help="Directory with sharded data")
 
     args = parser.parse_args()
     utils.log("prepare_enum_conf_lists.py: ", args)
-    
-    total, existing_enum, existing_conf, count_enum, count_conf, duplicates, errors = prepare_3d_list(
-        args.input, args.outfile_enum, args.outfile_conf, args.data_dir)
-    utils.log_dm_event('Processed {} records. {} already enumerated, {} already have conformer, {} needing enumeration, {} needing conformer generation, {} duplicates, {} errors'.format(
-        total, existing_enum, existing_conf, count_enum, count_conf, duplicates, errors))
+
+    total, existing_enum, existing_confs, count_enum, count_confs, duplicates, errors = \
+        prepare_lists(args.input, args.outfile_enum, args.outfile_confs, args.data_dir)
+
+    tmpl = 'Processed {} records. {} duplicates, {} errors.\
+ {} already enumerated, {} already have low energy conformers,\
+ {} need enumeration, {} need low energy conformers generated'
+
+    utils.log_dm_event(tmpl.format(
+        total, duplicates, errors, existing_enum, existing_confs, count_enum, count_confs))
     
     
 if __name__ == "__main__":

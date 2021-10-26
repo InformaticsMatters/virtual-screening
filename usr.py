@@ -31,6 +31,8 @@ def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_fie
     input_count = 0
     output_count = 0
     error_count = 0
+    sum_similarity = 0.0
+    count_similarity = 0
 
     if method == 'usr':
         method_func = shape.usr
@@ -98,6 +100,8 @@ def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_fie
                 conf.removeh()
                 cshape = method_func(conf)
                 similarity = shape.usr_similarity(qshape, cshape)
+                sum_similarity += similarity
+                count_similarity += 1
                 if similarity > threshold:
                     conf.data[method + '_similarity'] = similarity
                     print(similarity, input[0])
@@ -119,20 +123,19 @@ def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_fie
     finally:
         writer.close()
 
-    return input_count, output_count, error_count
+    mean_similarity = sum_similarity / count_similarity
+    return input_count, output_count, error_count, mean_similarity
                     
 
 def write_best_mol(writer, mols):
     mols.sort(key=lambda t: t[0])
-    writer.write(mols[0])
-
-
+    writer.write(mols[0][1])
 
 
 def main():
 
     # Example:
-    #   python3 usr.py -i foo.smi -t 0.6 -m usr
+    #   python3 usr.py -i foo.smi -q foo.sdf -t 0.6 -m usr
 
     ### command line args definitions #########################################
 
@@ -149,12 +152,12 @@ def main():
     args = parser.parse_args()
     utils.log("usr.py: ", args)
 
-    input_count, output_count, error_count = \
+    input_count, output_count, error_count, mean_similarity = \
         execute(args.inputs, args.queries, args.outfile, args.data_dir, args.method, args.group_by_field, args.threshold)
 
-    tmpl = 'Processed {} inputs. {} outputs. {} errors.'
+    tmpl = 'Processed {} inputs. {} outputs. {} errors. Average similarity is {}'
     utils.log_dm_event(tmpl.format(
-        input_count, output_count, error_count))
+        input_count, output_count, error_count, mean_similarity))
     
     
 if __name__ == "__main__":

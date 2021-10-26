@@ -84,7 +84,7 @@ def add_molecules(mydict, mols, code):
 def add_molecule(mydict, mol, code):
     smiles = Chem.MolToSmiles(mol)
     if smiles not in mydict:
-        mol.SetProp('CODE', code)
+        mol.SetProp('enum_code', code)
         mydict[smiles] = mol
 
 
@@ -174,11 +174,13 @@ def execute(input, data_dir, delimiter='\t',
 
                         for m in enumerated_mols.values():
 
-                            code = m.GetProp('CODE')
+                            code = m.GetProp('enum_code')
                             if code == 'B':
                                 u = uid
                             else:
                                 u = str(uuid.uuid4())
+
+                            enum_smi = Chem.MolToSmiles(m)
 
                             # generate 3D conformer
                             m2 = Chem.AddHs(m)
@@ -186,8 +188,6 @@ def execute(input, data_dir, delimiter='\t',
                             AllChem.MMFFOptimizeMolecule(m2)
                             if not add_hydrogens:
                                 m2 = Chem.RemoveHs(m2)
-
-                            enum_smi = Chem.MolToSmiles(m2)
 
                             m2.SetProp('uuid', u)
                             m2.SetProp('_Name', u)
