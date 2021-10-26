@@ -930,7 +930,7 @@ jobs:
             - text/plain
             type: file
           report_file:
-            title: Nextflow report fileusing the `prepare-rdock` job
+            title: Nextflow report file
             creates: report.html
             mime-types:
             - text/html
