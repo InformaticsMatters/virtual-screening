@@ -737,8 +737,8 @@ jobs:
       options:
         type: object
         required:
-          - threshold
-          - outputFile
+        - threshold
+        - outputFile
         properties:
           outputFile:
             title: Output file name
