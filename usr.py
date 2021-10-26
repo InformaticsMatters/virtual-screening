@@ -19,20 +19,17 @@ import argparse, os
 import utils
 from utils import get_path_from_digest
 
-from rdkit import Chem
-from rdkit.Chem import AllChem
-
 from oddt import toolkit
 from oddt import shape
 
 
-def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_field, threshold):
+def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_field, threshold, interval=None):
 
     input_count = 0
     output_count = 0
     error_count = 0
     sum_similarity = 0.0
-    count_similarity = 0
+    similarity_count = 0
 
     if method == 'usr':
         method_func = shape.usr
@@ -56,13 +53,14 @@ def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_fie
             digest = tokens[2]
             inputs.append((smi, uid, digest))
 
+    utils.log_dm_event('Read', input_count, 'inputs')
+
     # read the query molecule
     qmol = next(toolkit.readfile('sdf', queries_sdf))
     qmol.removeh()
     qshape = method_func(qmol)
 
-    print('opening', outfile_sdf)
-    # with Chem.SDWriter('foo.sdf') as writer:
+    utils.log_dm_event('Opening', outfile_sdf, 'as output')
     writer = toolkit.Outputfile('sdf', outfile_sdf, overwrite=True)
     try:
         # iterate through the inputs
@@ -101,30 +99,37 @@ def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_fie
                 cshape = method_func(conf)
                 similarity = shape.usr_similarity(qshape, cshape)
                 sum_similarity += similarity
-                count_similarity += 1
+                similarity_count += 1
+
+                if interval and similarity_count % interval == 0:
+                    utils.log_dm_event("Processed {} molecules".format(similarity_count))
+
                 if similarity > threshold:
                     conf.data[method + '_similarity'] = similarity
-                    print(similarity, input[0])
+                    utils.log(similarity, input[0])
                     if group_by_field:
                         if group_by_field in conf.data:
                             value = conf.data[group_by_field]
-                            if not current_group_field_value or current_group_field_value == value:
-                                mols_in_group.append((similarity, conf))
-                            else:
+                            if current_group_field_value and current_group_field_value != value:
                                 mols_to_write = mols_in_group.copy()
                                 mols_in_group = [(similarity, conf)]
-                                current_group_field_value = value
+                            else:
+                                mols_in_group.append((similarity, conf))
+                            current_group_field_value = value
                         else:
                             raise ValueError('Grouping field', group_by_field, 'not present')
                     else:
                         mols_to_write = [(similarity, conf)]
 
+            if mols_in_group:
+                write_best_mol(writer, mols_in_group)
+                output_count += 1
 
     finally:
         writer.close()
 
-    mean_similarity = sum_similarity / count_similarity
-    return input_count, output_count, error_count, mean_similarity
+    mean_similarity = sum_similarity / similarity_count
+    return input_count, similarity_count, output_count, error_count, mean_similarity
                     
 
 def write_best_mol(writer, mols):
@@ -148,16 +153,18 @@ def main():
     parser.add_argument('-m', '--method', required=True, choices=['usr', 'electroshape', 'usrcat'],
                         help='Shape method [usr, electroshape, usrcat]')
     parser.add_argument('-g', '--group-by-field', help="Field name to group records by and report only the best")
+    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     utils.log("usr.py: ", args)
 
-    input_count, output_count, error_count, mean_similarity = \
-        execute(args.inputs, args.queries, args.outfile, args.data_dir, args.method, args.group_by_field, args.threshold)
+    input_count, similarity_count, output_count, error_count, mean_similarity = \
+        execute(args.inputs, args.queries, args.outfile, args.data_dir, args.method, args.group_by_field,
+                args.threshold, interval=args.interval)
 
-    tmpl = 'Processed {} inputs. {} outputs. {} errors. Average similarity is {}'
+    tmpl = 'Processed {} inputs and {} conformers. Generated {} outputs. {} errors. Average similarity is {}'
     utils.log_dm_event(tmpl.format(
-        input_count, output_count, error_count, mean_similarity))
+        input_count, similarity_count, output_count, error_count, mean_similarity))
     
     
 if __name__ == "__main__":

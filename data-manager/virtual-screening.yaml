@@ -675,17 +675,17 @@ jobs:
     version: '1.0.0'
     category: virtual screening
     keywords:
-      - oddt
-      - similarity
-      - shape
-      - usr
-      - electroshape
-      - usrcat
-      - filter
-    doc-url: https://discourse.squonk.it/t/job-max-min-picker/69
+    - oddt
+    - similarity
+    - shape
+    - usr
+    - electroshape
+    - usrcat
+    - filter
+    doc-url: https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87
     image:
-      name: informaticsmatters/rdkit_pipelines
-      tag: 'inters'
+      name: informaticsmatters/vs-oddt
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
     command: >-
@@ -699,25 +699,25 @@ jobs:
     variables:
       order:
         inputs:
-          - queryFile
-          - inputFile
-          - dataDir
+        - queryFile
+        - inputFile
+        - dataDir
       inputs:
         type: object
         required:
-          - queryFile
-          - inputFile
-          - dataDir
+        - queryFile
+        - inputFile
+        - dataDir
         properties:
           inputFile:
             title: Molecules to pick from
             mime-types:
-              - squonk/x-smiles
+            - squonk/x-smiles
             type: file
           queryFile:
             title: Query molecules
             mime-types:
-              - chemical/x-mdl-sdfile
+            - chemical/x-mdl-sdfile
             type: file
           dataDir:
             title: Directory with sharded data
@@ -730,7 +730,7 @@ jobs:
           outputFile:
             title: Output file
             mime-types:
-              - chemical/x-mdl-sdfile
+            - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
             type: file
 

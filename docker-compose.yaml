@@ -31,3 +31,9 @@ services:
       context: .
       dockerfile: Dockerfile-smina
     image: informaticsmatters/vs-smina:${IMAGE_TAG:-latest}
+
+  oddt:
+    build:
+      context: .
+      dockerfile: Dockerfile-oddt
+    image: informaticsmatters/vs-oddt:${IMAGE_TAG:-latest}
