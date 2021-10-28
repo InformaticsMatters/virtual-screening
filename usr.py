@@ -23,7 +23,7 @@ from oddt import toolkit
 from oddt import shape
 
 
-def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_field, threshold, interval=None):
+def execute(inputs_smi, queries_file, outfile_sdf, data_dir, method, group_by_field, threshold, interval=None):
 
     input_count = 0
     output_count = 0
@@ -55,8 +55,9 @@ def execute(inputs_smi, queries_sdf, outfile_sdf, data_dir, method, group_by_fie
 
     utils.log_dm_event('Read', input_count, 'inputs')
 
-    # read the query molecule
-    qmol = next(toolkit.readfile('sdf', queries_sdf))
+    # read the query molecule. Can be SDF or Mol format
+    # if SDF then the first molecule is used.
+    qmol = next(toolkit.readfile('sdf', queries_file))
     qmol.removeh()
     qshape = method_func(qmol)
 
@@ -146,7 +147,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Prepare enumeration and conformer lists')
     parser.add_argument('-i', '--inputs', required=True, help="File with inputs")
-    parser.add_argument('-q', '--queries', required=True, help="File with the 3D query molecules")
+    parser.add_argument('-q', '--query', required=True, help="File with the 3D query molecules (SDF or MOL)")
     parser.add_argument('--outfile', default='usr-similarity.sdf', help="Output SD file for results")
     parser.add_argument('-d', '--data-dir', default='molecules/sha256', help="Directory with data")
     parser.add_argument('-t', '--threshold', required=True, type=float, help="Score threshold")

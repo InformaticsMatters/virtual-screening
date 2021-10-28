@@ -43,11 +43,10 @@ jobs:
     name: Shard candidate molecules
     # Human readable description
     description: >-
-      Standardise input molecules and generate shards based on heavy atom count and
-      calculate a range of molecular properties that can be used for filtering.
-      Basic properties of the molecules, including the vendor code and SMILES are
-      stored in a data structure (based on the SHA256 digest of the standardised SMILES)
-      that can be shared between multiple datasets.
+      Standardize input molecules and generate shards based on heavy atom count and
+      calculate a range of molecular properties used for filtering.
+      Basic properties of the molecules, including the vendor code are
+      stored in a data structure that can be shared between multiple datasets.
     # The job version.
     # Any string, but typically something compatible with SemVer 2.0.0
     version: '1.0.0'
@@ -479,8 +478,7 @@ jobs:
     name: Convert molecule format
     description: >-
       Convert molecular formats using OpenBabel. Can be used to prepare a protein for docking.
-      See https://open-babel.readthedocs.io/en/latest/Command-line_tools/babel.html
-      for a list of all the options.
+      See the docs for more info of all the options.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -689,8 +687,8 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/usr.py --input /data/{{ inputFile }}
-      --queries {{ queryFile }}
+      /code/usr.py --inputs /data/{{ inputFile }}
+      --query {{ queryFile }}
       --outfile {{ outputFile }}
       --data-dir /data/{{ dataDir }}
       --threshold {{ threshold }}
@@ -715,8 +713,9 @@ jobs:
             - squonk/x-smiles
             type: file
           queryFile:
-            title: Query molecules
+            title: Query molecule
             mime-types:
+            - chemical/x-mdl-molfile
             - chemical/x-mdl-sdfile
             type: file
           dataDir:
