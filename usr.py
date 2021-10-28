@@ -141,11 +141,11 @@ def write_best_mol(writer, mols):
 def main():
 
     # Example:
-    #   python3 usr.py -i foo.smi -q foo.sdf -t 0.6 -m usr
+    #   python3 usr.py -i foo.smi -q foo.mol -t 0.6 -m usr
 
     ### command line args definitions #########################################
 
-    parser = argparse.ArgumentParser(description='Prepare enumeration and conformer lists')
+    parser = argparse.ArgumentParser(description='Ultrafast Shape Recognition')
     parser.add_argument('-i', '--inputs', required=True, help="File with inputs")
     parser.add_argument('-q', '--query', required=True, help="File with the 3D query molecules (SDF or MOL)")
     parser.add_argument('--outfile', default='usr-similarity.sdf', help="Output SD file for results")

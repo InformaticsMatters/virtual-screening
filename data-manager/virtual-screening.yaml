@@ -1182,11 +1182,11 @@ jobs:
                   minimizedAffinity:
                     type: number
                     description: >-
-                      Binding affinity predicted by smina using the vinardo scoring function
+                      Binding affinity predicted by smina docking
                     required: true
                     active: true
               service-execution:
-                service_ref: 'https://squonk.it/some/stuff/run-smina.html'
+                service_ref: 'https://discourse.squonk.it/t/job-run-smina/78'
               derived-from: ligands
           trace_file:
             title: Nextflow trace file
