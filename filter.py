@@ -151,13 +151,15 @@ def main():
     parser.add_argument('--max-aro-rings', type=int, help="Max value for aromatic ring count")
     parser.add_argument('--min-chiral-centres', type=int, help="Min value for number of tetrahedral chiral centres")
     parser.add_argument('--max-chiral-centres', type=int, help="Max value for number of tetrahedral chiral centres")
-    parser.add_argument('--min-undefined-chiral-centres', type=int, help="Min value for number of undefined tetrahedral chiral centres")
-    parser.add_argument('--max-undefined-chiral-centres', type=int, help="Max value for number of undefined tetrahedral chiral centres")
+    parser.add_argument('--min-undefined-chiral-centres', type=int,
+                        help="Min value for number of undefined tetrahedral chiral centres")
+    parser.add_argument('--max-undefined-chiral-centres', type=int,
+                        help="Max value for number of undefined tetrahedral chiral centres")
     parser.add_argument('--min-sp3', type=int, help="Min value for SP3 count")
     parser.add_argument('--max-sp3', type=int, help="Max value for SP3 count")
 
     args = parser.parse_args()
-    utils.log("filter: ", args)
+    utils.log_dm_event("filter: ", args)
     
     total, count, num_dups = filter(args.inputs, args.outfile, 
         min_hac=args.min_hac, max_hac=args.max_hac,
