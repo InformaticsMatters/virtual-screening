@@ -435,11 +435,25 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/gen_candidates.py
+      /code/assemble_conformers.py
       --input /data/{{ inputFile }}
       --data-dir /data/{{ dataDir }}
+      --mode {{ mode }}
       --output {{ outputFile }}
+      {% if excludeBase is defined %}-exclude-base{% endif %}
+      {% if excludeTautomers is defined %}-exclude-tautomers{% endif %}
+      {% if excludeMicrostates is defined %}-exclude-microstates{% endif %}
     variables:
+      order:
+        inputs:
+        - inputFile
+        - dataDir
+        options:
+        - outputFile
+        - mode
+        - excludeBase
+        - excludeTautomers
+        - excludeMicrostates
       inputs:
         type: object
         required:
@@ -459,7 +473,7 @@ jobs:
         type: object
         properties:
           outputFile:
-            title: Assembled candidates
+            title: Assembled conformers
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
@@ -473,6 +487,19 @@ jobs:
             title: Filename for SDF output
             type: string
             default: candidates.sdf
+          mode:
+            title: Conformer mode
+            type: string
+            enum:
+            - single
+            - low-energy
+          excludeBase:
+            title: Exclude base molecules
+            type: boolean
+          excludeTautomers:
+            title: Exclude enumerated tautomers
+          excludeMicrostates:
+            title: Exclude enumerated microstates
 
   obabel-convert:
     name: Convert molecule format
@@ -690,7 +717,6 @@ jobs:
       /code/usr.py --inputs /data/{{ inputFile }}
       --query {{ queryFile }}
       --outfile {{ outputFile }}
-      --data-dir /data/{{ dataDir }}
       --threshold {{ threshold }}
       {% if groupby is defined %}--group-by-field {{ groupby }}{% endif %}
       --interval 1000
@@ -700,6 +726,10 @@ jobs:
         - queryFile
         - inputFile
         - dataDir
+        options:
+        - method
+        - threshold
+        - outputFile
       inputs:
         type: object
         required:
@@ -708,9 +738,9 @@ jobs:
         - dataDir
         properties:
           inputFile:
-            title: Molecules to pick from
+            title: Molecules to screen
             mime-types:
-            - squonk/x-smiles
+            - chemical/x-mdl-sdfile
             type: file
           queryFile:
             title: Query molecule
@@ -732,13 +762,36 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
             type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Molecular shape similarity
+                fields:
+                  similarity:
+                    expression: '{{ method }}_similarity'
+                    type: number
+                    description: >-
+                      Shape similarity
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
+              derived-from: ligands
 
       options:
         type: object
         required:
+        - method
         - threshold
         - outputFile
         properties:
+          method:
+            title: USR method
+            type: string
+            enum:
+            - usr
+            - electroshape
+            - usrcat
           outputFile:
             title: Output file name
             type: string
