@@ -428,7 +428,7 @@ jobs:
     category: virtual screening
     keywords:
     - ligand preparation
-    doc-url: https://discourse.squonk.it/t/job-generate-candidates/73
+    doc-url: https://discourse.squonk.it/t/job-assemble-conformers/73
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -812,7 +812,7 @@ jobs:
                     active: true
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
-              derived-from: ligands
+              derived-from: inputFile
 
       options:
         type: object
