@@ -420,7 +420,7 @@ jobs:
             type: string
             default: need-conf.smi
 
-  generate-candidates:
+  assemble-conformers:
     name: Assemble conformers
     description: >-
       Assemble 3D conformers into a single SDF for suitable as input to docking.
@@ -498,8 +498,10 @@ jobs:
             type: boolean
           excludeTautomers:
             title: Exclude enumerated tautomers
+            type: boolean
           excludeMicrostates:
             title: Exclude enumerated microstates
+            type: boolean
 
   obabel-convert:
     name: Convert molecule format
