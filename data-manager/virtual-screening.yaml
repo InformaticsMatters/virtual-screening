@@ -757,6 +757,7 @@ jobs:
       /code/usr.py --inputs /data/{{ inputFile }}
       --query {{ queryFile }}
       --outfile {{ outputFile }}
+      --method {{ method }}
       --threshold {{ threshold }}
       {% if groupBy is defined %}--group-by-field {{ groupBy }}{% endif %}
       --interval 1000
