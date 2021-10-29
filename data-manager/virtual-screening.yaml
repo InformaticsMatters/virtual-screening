@@ -443,6 +443,7 @@ jobs:
       {% if excludeBase is defined %}-exclude-base{% endif %}
       {% if excludeTautomers is defined %}-exclude-tautomers{% endif %}
       {% if excludeMicrostates is defined %}-exclude-microstates{% endif %}
+      --interval 1000
     variables:
       order:
         inputs:
@@ -720,7 +721,7 @@ jobs:
       --query {{ queryFile }}
       --outfile {{ outputFile }}
       --threshold {{ threshold }}
-      {% if groupby is defined %}--group-by-field {{ groupby }}{% endif %}
+      {% if groupBy is defined %}--group-by-field {{ groupBy }}{% endif %}
       --interval 1000
     variables:
       order:
@@ -731,7 +732,7 @@ jobs:
         options:
         - method
         - threshold
-        - groupby
+        - groupBy
         - outputFile
       inputs:
         type: object
