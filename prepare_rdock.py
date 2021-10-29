@@ -110,7 +110,7 @@ def main():
    
 
     args = parser.parse_args()
-    print("prepare_rdock.py: ", args)
+    log("prepare_rdock.py: ", args)
     
     t0 = time.time()
     execute(args.receptor, args.ligand, args.output)

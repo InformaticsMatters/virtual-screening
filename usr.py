@@ -125,7 +125,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log("usr.py: ", args)
+    utils.log_dm_event("usr.py: ", args)
 
     input_count, output_count, error_count, mean_similarity = \
         execute(args.inputs, args.query, args.outfile, args.method, args.group_by_field,
