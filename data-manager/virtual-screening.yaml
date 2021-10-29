@@ -729,6 +729,7 @@ jobs:
         options:
         - method
         - threshold
+        - groupby
         - outputFile
       inputs:
         type: object
@@ -801,7 +802,7 @@ jobs:
             type: number
             minimum: 0
             maximum: 1
-          groupby:
+          groupBy:
             title: Group by field
             type: string
             default: std_smi
