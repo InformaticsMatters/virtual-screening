@@ -479,43 +479,47 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
             type: file
-            annotation-properties:
-              fields-descriptor:
-                origin: squonk2-job
-                description: Assemble conformers
-                fields:
-                  Energy:
-                    type: number
-                    description: >-
-                      MMFF94 minimised energy
-                    required: true
-                    active: true
-                  Energy_Delta:
-                    type: number
-                    description: >-
-                      Energy difference to lowest energy conformer
-                    required: true
-                    active: true
-                  std_smi:
-                    type: string
-                    description: >-
-                      SMILES of the parent (un-enumerated) molecule
-                    required: true
-                    active: true
-                  enum_smi:
-                    type: string
-                    description: >-
-                      SMILES of the molecule
-                    required: true
-                    active: true
-                  enum_code:
-                    type: string
-                    description: >-
-                      Type of enumerated form. B=base molecule, T=tautomer, M=microstate
-                    required: true
-                    active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
+            annotations:
+              - annotationType : ServiceExecutionAnnotation
+                attributes:
+                  origin: squonk2-job
+                  description: Assemble conformers
+                  fields:
+                    Energy:
+                      type: number
+                      description: >-
+                        MMFF94 minimised energy
+                      required: true
+                      active: true
+                    Energy_Delta:
+                      type: number
+                      description: >-
+                        Energy difference to lowest energy conformer
+                      required: true
+                      active: true
+                    std_smi:
+                      type: string
+                      description: >-
+                        SMILES of the parent (un-enumerated) molecule
+                      required: true
+                      active: true
+                    enum_smi:
+                      type: string
+                      description: >-
+                        SMILES of the molecule
+                      required: true
+                      active: true
+                    enum_code:
+                      type: string
+                      description: >-
+                        Type of enumerated form. B=base molecule, T=tautomer, M=microstate
+                      required: true
+                      active: true
+                  service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
+              - annotationType : LabelAnnotation
+                attributes:
+                  label: label1
+                  value: value1
       options:
         type: object
         required:
@@ -798,21 +802,25 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
             type: file
-            annotation-properties:
-              fields-descriptor:
-                origin: squonk2-job
-                description: Molecular shape similarity
-                fields:
-                  similarity:
-                    expression: '{{ method }}_similarity'
-                    type: number
-                    description: >-
-                      Shape similarity
-                    required: true
-                    active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
-              derived-from: inputFile
+            annotations:
+              - annotationType : ServiceExecutionAnnotation
+                attributes:
+                  origin: squonk2-job
+                  description: Molecular shape similarity
+                  fields:
+                    similarity:
+                      expression: '{{ method }}_similarity'
+                      type: number
+                      description: >-
+                        Shape similarity
+                      required: true
+                      active: true
+                  service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
+                  derived-from: inputFile
+              - annotationType : LabelAnnotation
+                attributes:
+                  label: label1
+                  value: value1
 
       options:
         type: object
@@ -1263,20 +1271,24 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: '{{ outputDir }}/{{ outputFile }}'
             type: file
-            annotation-properties:
-              fields-descriptor:
-                origin: squonk2-job
-                description: Run smina docking
-                fields:
-                  minimizedAffinity:
-                    type: number
-                    description: >-
-                      Binding affinity predicted by smina docking
-                    required: true
-                    active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-run-smina/78'
-              derived-from: ligands
+            annotations:
+              - annotationType : ServiceExecutionAnnotation
+                attributes:
+                  origin: squonk2-job
+                  description: Run smina docking
+                  fields:
+                    minimizedAffinity:
+                      type: number
+                      description: >-
+                        Binding affinity predicted by smina
+                      required: true
+                      active: true
+                  service_ref: 'https://discourse.squonk.it/t/job-run-smina/78'
+                  derived-from: ligands
+              - annotationType : LabelAnnotation
+                attributes:
+                  label: label1
+                  value: value1
           trace_file:
             title: Nextflow trace file
             creates: '{{ outputDir }}/trace.txt'
