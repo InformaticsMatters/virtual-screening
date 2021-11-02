@@ -101,7 +101,8 @@ jobs:
           inputFiles:
             title: Molecules to shard
             mime-types:
-            - chemical/x-csv
+            - squonk/x-smiles
+            - text/csv
             multiple: true
             type: file
       outputs:
