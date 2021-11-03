@@ -162,7 +162,8 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/filter.py -i /data/{{ inputDir }} -o {{ outputFile }}
+      /code/filter.py -i{% for dir in inputDir %} /data/{{ dir }}{% endfor %}
+      -o {{ outputFile }}
       --min-hac {{ minHac }}
       --max-hac {{ maxHac }}
       {% if minRotb is defined %}--min-rotb {{ minRotb }}{% endif %}
