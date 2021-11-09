@@ -400,13 +400,13 @@ jobs:
           outputFileEnum:
             title: Molecules needing enumeration
             mime-types:
-            - chemical/x-csv
+            - squonk/x-smiles
             creates: '{{ outputFileEnum }}'
             type: file
           outputFileConf:
             title: Molecules needing conformer generation
             mime-types:
-            - chemical/x-csv
+            - squonk/x-smiles
             creates: '{{ outputFileConf }}'
             type: file
       options:
@@ -422,7 +422,7 @@ jobs:
           outputFileConf:
             title: Filename for molecules needing 3D conformers
             type: string
-            default: need-conf.smi
+            default: need-confs.smi
 
   assemble-conformers:
     name: Assemble conformers
@@ -468,7 +468,7 @@ jobs:
           inputFile:
             title: Molecules to assemble
             mime-types:
-            - chemical/x-csv
+            - squonk/x-smiles
             type: file
           dataDir:
             title: Directory with sharded data
