@@ -356,6 +356,18 @@ Using the `im-vs-oddt` conda environment:
 ```
 ./usr.py -i $D/16-25-le-conformers.sdf -q notebooks/merged1.mol -o $D/results-merge1-usrcat.sdf -t 0.55 -m usrcat -g std_smi --interval 10000
 ```
+which reports:
+```
+2021-11-09T09:43:51+00:00 # INFO -EVENT- usr.py:  Namespace(group_by_field='std_smi', inputs='results/16-25-le-conformers.sdf', interval=10000, method='usrcat', outfile='results/results-merge1-usrcat.sdf', query='notebooks/merged1.mol', threshold=0.55)
+2021-11-09T09:43:51+00:00 # INFO -EVENT- Opening results/results-merge1-usrcat.sdf as output
+2021-11-09T09:44:33+00:00 # INFO -EVENT- Processed 10000 molecules, 22 hits. 4 outputs
+2021-11-09T09:45:15+00:00 # INFO -EVENT- Processed 20000 molecules, 24 hits. 6 outputs
+...
+...
+2021-11-09T11:49:32+00:00 # INFO -EVENT- Processed 1630000 molecules, 1118 hits. 223 outputs
+2021-11-09T11:50:24+00:00 # INFO -EVENT- Processed 1640000 molecules, 1118 hits. 223 outputs
+2021-11-09T11:50:53+00:00 # INFO -EVENT- Processed 1645327 conformers. Generated 224 outputs. 0 errors. Average similarity is 0.2850839636971317
+```
 
 
 
