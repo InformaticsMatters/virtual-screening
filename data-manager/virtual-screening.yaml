@@ -709,7 +709,7 @@ jobs:
           inputMolfile:
             title: Input molfile
             mime-types:
-              - chemical/x-mdl-molfile
+            - chemical/x-mdl-molfile
             type: file
       outputs:
         type: object
