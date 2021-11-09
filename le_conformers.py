@@ -16,9 +16,12 @@
 
 
 """
-Reads a file of SMILES and generates low energy conformers.
+Reads a file of SMILES and generates low energy conformers for each molecule using the "sharded file system".
+
+See also le_conformers_for_mol.py that provides a simpler way to generate conformers for a single molecule using the
+same methodology that this module uses.
 """
-import os, argparse, traceback, time
+import os, argparse, traceback, time, gzip
 import utils
 
 from rdkit import Chem
@@ -28,6 +31,8 @@ from rdkit.Chem import Descriptors
 
 def determine_num_confs(mol):
     """
+    Determine the number of conformers to generate.
+
     These rules are defined in Ejeber et al.J. Chem. Inf. Model. 2012, 52, 1146-1158
     https://pubs.acs.org/doi/abs/10.1021/ci2004658
     Note that we use a different RMS threshold as the default, 1.0 as opposed to 0.35
@@ -44,7 +49,62 @@ def determine_num_confs(mol):
         return 300
 
 
-def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_threshold=0.35, interval=None):
+def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens):
+
+    num_confs = determine_num_confs(mol)
+    molh = Chem.AddHs(mol)
+
+    cids = AllChem.EmbedMultipleConfs(molh, numConfs=num_confs)
+
+    res = AllChem.MMFFOptimizeMoleculeConfs(molh, maxIters=minimize_cycles)
+    # energies_with_index will contain tuples of (conf_index, not_converged, energy)
+    energies_with_index = []
+    for idx, val in enumerate(res):
+        energies_with_index.append((idx, val[0], val[1]))
+    # sort by energy
+    energies_with_index.sort(key=lambda t: t[2])
+
+    # set properties on the conformers
+    base_energy = energies_with_index[0][2]
+    for val in energies_with_index:
+        energy = val[2]
+        energy_delta = energy - base_energy
+        conf = molh.GetConformer(val[0])
+        conf.SetDoubleProp('Energy', energy)
+        conf.SetDoubleProp('Energy_Delta', energy_delta)
+
+    to_keep = [energies_with_index[0]]
+    utils.log('  Added', to_keep[0])
+    for i in range(1, len(energies_with_index)):
+        to_test = energies_with_index[i]
+        #utils.log('Checking', i, to_test)
+        lowest_rms = 999999999
+        for val in to_keep:
+            rms = AllChem.GetConformerRMS(molh, to_test[0], val[0])
+            if rms < lowest_rms:
+                lowest_rms = rms
+        if lowest_rms > rms_threshold:
+            to_keep.append(to_test)
+        #     utils.log('  Added', to_test, lowest_rms)
+        # else:
+        #     utils.log('  Skipping', to_test, lowest_rms)
+
+    if remove_hydrogens:
+        molh = Chem.RemoveHs(molh)
+
+    # create new mol for the conformers we want to keep
+    final_mol = Chem.RWMol(molh)
+    final_mol.RemoveAllConformers()
+
+    for item in to_keep:
+        idx = item[0]
+        final_mol.AddConformer(molh.GetConformer(idx), assignId=True)
+
+    utils.log("Num conformers:", molh.GetNumConformers(), '->', final_mol.GetNumConformers())
+    return final_mol
+
+
+def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_threshold=1.0, interval=None):
 
     utils.log_dm_event('Executing ...')
 
@@ -75,62 +135,30 @@ def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_th
                     continue
 
                 smi_in = os.path.join(path, digest + '.smi')
-                sdf_out = os.path.join(path, digest + '_le_confs.sdf')
+                sdf_out = os.path.join(path, digest + '_le_confs.sdf.gz')
                 if not os.path.exists(smi_in):
                     utils.log_dm_event('WARNING, smiles file', smi_in, 'not found')
                     error_count += 1
                     continue
 
-                utils.log('INFO, processing file', smi_in)
-                with Chem.SDWriter(sdf_out) as writer:
-                    with open(smi_in) as enums:
-                        for line in enums:
-                            enumerated_count += 1
-                            tokens2 = line.strip().split('\t')
-                            enum_smi = tokens2[0]
-                            uid2 = tokens2[1]
-                            code = tokens2[2]
+                utils.log('INFO, Processing file', smi_in)
+                with gzip.open(sdf_out, 'wt') as gz:
+                    with Chem.SDWriter(gz) as writer:
+                        with open(smi_in) as enums:
+                            for line in enums:
+                                enumerated_count += 1
+                                tokens2 = line.strip().split('\t')
+                                enum_smi = tokens2[0]
+                                uid2 = tokens2[1]
+                                code = tokens2[2]
 
-                            mol = Chem.MolFromSmiles(enum_smi)
-                            if not mol:
-                                error_count += 1
-                                utils.log_dm_event("Failed to create molecule", input_count, enumerated_count)
-                                continue
+                                mol = Chem.MolFromSmiles(enum_smi)
+                                if not mol:
+                                    error_count += 1
+                                    utils.log_dm_event("ERROR, Failed to create molecule", input_count, enumerated_count)
+                                    continue
 
-                            num_confs = determine_num_confs(mol)
-                            molh = Chem.AddHs(mol)
-
-                            cids = AllChem.EmbedMultipleConfs(molh, numConfs=num_confs)
-
-                            res = AllChem.MMFFOptimizeMoleculeConfs(molh, maxIters=minimize_cycles)
-                            energies_with_index = []
-                            for idx, val in enumerate(res):
-                                energies_with_index.append((idx, val[0], val[1]))
-                            energies_with_index.sort(key=lambda t: t[2])
-
-                            to_keep = [energies_with_index[0]]
-                            for i in range(1, len(energies_with_index)):
-                                to_test = energies_with_index[i]
-                                #utils.log('Checking', i, to_test)
-                                lowest_rms = 999999
-                                for val in to_keep:
-                                    rms = AllChem.GetConformerRMS(molh, to_test[0], val[0])
-                                    if rms < lowest_rms:
-                                        lowest_rms = rms
-                                if lowest_rms > rms_threshold:
-                                    to_keep.append(to_test)
-                                    #utils.log('  Added', to_test, lowest_rms)
-                                #else:
-                                #   utils.log('  Skipping', to_test, lowest_rms)
-
-                            if remove_hydrogens:
-                                molh = Chem.RemoveHs(molh)
-
-                            for item in to_keep:
-                                idx = item[0]
-                                molh.SetDoubleProp('Energy', res[idx][1])
-                                molh.SetDoubleProp('Energy_Delta', res[idx][1] - energies_with_index[0][2])
-
+                                molh = Chem.AddHs(mol)
                                 molh.SetProp('_Name', uid2)
                                 molh.SetProp('std_smi', std_smi)
                                 molh.SetProp('enum_smi', enum_smi)
@@ -138,12 +166,17 @@ def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_th
                                 if code != 'B':
                                     molh.SetProp('parent_uuid', uid)
 
-                                writer.write(molh, confId=idx)
-                                conformer_count += 1
-                                conf_count_for_mol += 1
-                            molh.ClearProp('Energy')
+                                mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, remove_hydrogens)
+                                for idx in range(mol_with_confs.GetNumConformers()):
+                                    mol_with_confs.SetDoubleProp('Energy', mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'))
+                                    mol_with_confs.SetDoubleProp('Energy_Delta', mol_with_confs.GetConformer(idx).GetDoubleProp('Energy_Delta'))
+                                    writer.write(mol_with_confs, confId=idx)
+                                    conformer_count += 1
+                                    conf_count_for_mol += 1
+                                mol_with_confs.ClearProp('Energy')
+                                mol_with_confs.ClearProp('Energy_Delta')
 
-                utils.log('Generated', conf_count_for_mol, 'conformers for', std_smi)
+                utils.log('INFO, Generated', conf_count_for_mol, 'conformers for', std_smi)
 
             except:
                 error_count += 1
@@ -161,7 +194,7 @@ def main():
 
     ### command line args definitions #########################################
 
-    parser = argparse.ArgumentParser(description='Enumerate candidates')
+    parser = argparse.ArgumentParser(description='Enumerate conformers')
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES")
     parser.add_argument('--data-dir', default='molecules/sha256', help="Data directory")
     parser.add_argument('-m', '--minimize-cycles', type=int, default=500, help="Number of MMFF minimisation cycles")

@@ -14,10 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Assemble conformers from the sharded data system into a SD file that can be used as input for virtual screening.
+It operates in 2 different modes, specified by the --mode argument:
+1. single: assemble the enumerated molecules of which there is one arbitrary conformer that can typically be used as
+  input for docking
+2. low-energy: assemble the generated low energy conformers that can typically be used as input to shape similarity
+  screening
+"""
 
-import argparse, os, time
-import utils
-
+import argparse, os, time, gzip
+import utils, mol_utils
 from rdkit import Chem
 
 
@@ -25,9 +32,9 @@ def execute(input, output, data_dir, mode,
             exclude_base=False, exclude_tautomers=False, exclude_microstates=False, interval=0):
 
     if mode == 'single':
-        ext = '.sdf'
+        ext = '.sdf.gz'
     elif mode == 'low-energy':
-        ext = '_le_confs.sdf'
+        ext = '_le_confs.sdf.gz'
     else:
         raise ValueError("Must specify a valid mode. 'single' or 'low-energy'")
 
@@ -40,7 +47,7 @@ def execute(input, output, data_dir, mode,
 
     with open(input) as inf:
         utils.expand_path(output)
-        with open(output, 'w') as outf:
+        with (gzip.open(output, 'wt') if output.endswith('.gz') else open(output, 'wt')) as outf:
             for line in inf:
                 inputs += 1
 
@@ -68,12 +75,15 @@ def execute(input, output, data_dir, mode,
                 total += 1
 
                 confs = os.path.join(path, digest + ext)
-                supplr = Chem.SDMolSupplier(confs)
-                for mol in supplr:
+                gz = gzip.open(confs, 'rb')
+
+                for txt in mol_utils.sdf_record_gen(gz):
+                    suppl = Chem.SDMolSupplier()
+                    suppl.SetData(txt)
+                    mol = next(suppl)
                     if not mol:
                         errors += 1
                         continue
-                    txt = supplr.GetItemText(0)
                     code = mol.GetProp('enum_code')
                     if exclude_base and code == 'B':
                         continue
@@ -104,7 +114,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("prepare_enum_conf_lists.py: ", args)
+    utils.log_dm_event("assemble_conformers.py: ", args)
 
     t0 = time.time()
     inputs, total, errors, duplicates = execute(args.input, args.output, args.data_dir, args.mode,

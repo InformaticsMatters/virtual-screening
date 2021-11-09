@@ -20,12 +20,12 @@ Reads a file of SMILES and enumerates undefined chiral centres, tautomers and ch
 Writes the enumerated molecules as SMILES and a single 3D conformer as SDF.
 
 Note that RDKit does not write the charge information to the atom block (this is deprecated in favour of using
-'M   CHG' records, but some old software like rDock requires the charges to be present in the atom block. This
+'M   CHG' records), but some old software like rDock requires the charges to be present in the atom block. This
 script patches the atom blocks to add the charge information. See mol_utils.py for details.
 
 
 """
-import os, sys, argparse, traceback, uuid
+import os, sys, argparse, traceback, uuid, gzip
 import utils, mol_utils
 
 from rdkit import Chem
@@ -144,10 +144,9 @@ def execute(input, data_dir, delimiter='\t',
             #utils.log('Handling', path)
 
             with open(path + '.smi', 'w') as smi_writer:
-                with open(path + '.sdf', 'w') as sdf_writer:
+                with gzip.open(path + '.sdf.gz', 'wt') as gz:
 
                     try:
-
                         # use a dict as we want to keep the order
                         enumerated_mols = {}
                         add_molecule(enumerated_mols, mol, 'B')
@@ -158,13 +157,15 @@ def execute(input, data_dir, delimiter='\t',
 
                         if combinatorial:
                             tautomers = gen_tautomers(enumerated_mols.values(), enumerator)
-                            protonated_mols = gen_charges(tautomers, min_ph, max_ph, min_charge, max_charge, num_charges)
+                            protonated_mols = gen_charges(tautomers, min_ph, max_ph, min_charge, max_charge,
+                                                          num_charges)
                             add_molecules(enumerated_mols, protonated_mols, 'X')
                         else:
                             if enumerate_tautomers:
                                 tautomers = gen_tautomers(enumerated_mols.values(), enumerator)
                             if enumerate_charges:
-                                protonated_mols = gen_charges(enumerated_mols.values(), min_ph, max_ph, min_charge, max_charge, num_charges)
+                                protonated_mols = gen_charges(enumerated_mols.values(), min_ph, max_ph, min_charge,
+                                                              max_charge, num_charges)
                             if enumerate_tautomers:
                                 add_molecules(enumerated_mols, tautomers, 'T')
                             if enumerate_charges:
@@ -198,7 +199,7 @@ def execute(input, data_dir, delimiter='\t',
                             # write to SDF
                             sdf_block = Chem.SDWriter.GetText(m2)
                             chg_block = mol_utils.updateChargeFlagInAtomBlock(sdf_block)
-                            sdf_writer.write(chg_block)
+                            gz.write(chg_block)
 
                             # write the SMILES last so that it's only written if the 3D generation is successful
                             smi_writer.write(enum_smi + '\t' + u + '\t' + code + '\n')
@@ -216,13 +217,13 @@ def execute(input, data_dir, delimiter='\t',
 def main():
 
     # Example:
-    #   python3 enumerate.py -i bar.smi --data-dir combined --enumerate-tautomers --enumerate-chirals --enumerate-charges
+    #   ./enumerate.py -i bar.smi --enumerate-tautomers --enumerate-chirals --enumerate-charges
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Enumerate candidates')
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES")
-    parser.add_argument('--data-dir', required=True, help="Data directory")
+    parser.add_argument('--data-dir', default='molecules/sha256', help="Data directory")
     parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter")
     parser.add_argument('--enumerate-charges', help='Enumerate charge forms', action='store_true')
     parser.add_argument('--enumerate-chirals', help='Enumerate undefined chiral centers', action='store_true')

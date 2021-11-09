@@ -34,6 +34,7 @@ def file_matches(filename, min_hac, max_hac):
 
 def list_files(input_dir, min_hac=None, max_hac=None):
     pattern = os.path.join(input_dir, '[0-9]*.smi')
+    utils.log_dm_event('Inspecting files', pattern)
     files = glob.glob(pattern)
     matched = []
     for file in files:
@@ -138,7 +139,7 @@ def main():
 
     ### command line args definitions #########################################
 
-    parser = argparse.ArgumentParser(description='Shard HAC')
+    parser = argparse.ArgumentParser(description='Filter')
     parser.add_argument('-i', '--inputs', nargs='+', required=True, help="Directories with inputs")
     parser.add_argument('-o', '--outfile', required=True, help="Output file")
     parser.add_argument('--min-hac', type=int, help="Min value for heavy atom count")

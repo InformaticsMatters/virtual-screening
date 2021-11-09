@@ -74,10 +74,10 @@ jobs:
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
     command: >-
-      /code/shard.py -i{% for file in inputFiles %} /data/{{ file }}{% endfor %}
-      -s {{ supplierName }}
-      -v {{ supplierVersion }} -o {{ outputDir }} -n {{ codeFieldIndex }}
-      --errors-file {{ supplierName }}_{{ supplierVersion }}_errors.smi
+      /code/shard.py -i{% for file in inputFiles %} '/data/{{ file }}'{% endfor %}
+      -s '{{ supplierName }}'
+      -v '{{ supplierVersion }}' -o '{{ outputDir }}' -n {{ codeFieldIndex }}
+      --errors-file '{{ supplierName }}_{{ supplierVersion }}_errors.smi'
       --interval 10000
     # Command variables - using JSONSchema to allow for simplified client
     # presentation to the user. 'inputs' and 'outputs' use custom types
@@ -101,8 +101,7 @@ jobs:
           inputFiles:
             title: Molecules to shard
             mime-types:
-            - squonk/x-smiles
-            - text/csv
+            - chemical/x-csv
             multiple: true
             type: file
       outputs:
@@ -140,6 +139,7 @@ jobs:
           supplierName:
             title: Source of the molecules
             type: string
+            format: simple
           supplierVersion:
             title: Version of the molecule source
             type: string
@@ -162,8 +162,8 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/filter.py -i{% for dir in inputDir %} /data/{{ dir }}{% endfor %}
-      -o {{ outputFile }}
+      /code/filter.py -i{% for dir in inputDir %} '/data/{{ dir }}'{% endfor %}
+      -o '{{ outputFile }}'
       --min-hac {{ minHac }}
       --max-hac {{ maxHac }}
       {% if minRotb is defined %}--min-rotb {{ minRotb }}{% endif %}
@@ -301,9 +301,9 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/max_min_picker.py --input /data/{{ inputFile }}
-      {% if seeds is defined %}--seeds{% for file in seeds %} {{ file }}{% endfor %}{% endif %}
-      --output {{ outputFile }}
+      /code/max_min_picker.py --input '/data/{{ inputFile }}'
+      {% if seeds is defined %}--seeds{% for file in seeds %} '{{ file }}'{% endfor %}{% endif %}
+      --output '{{ outputFile }}'
       --count {{ count }}
       {% if threshold is defined %}--threshold {{ threshold }}{% endif %}
       --interval 10000
@@ -341,6 +341,7 @@ jobs:
           outputFile:
             title: Output file name
             type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
             default: diverse.smi
           count:
             title: Number of molecules to pick
@@ -372,10 +373,10 @@ jobs:
       working-directory: /data
     command: >-
       /code/prepare_enum_conf_lists.py
-      --input /data/{{ inputFile }}
-      --data-dir /data/{{ dataDir }}
-      --outfile-enum {{ outputFileEnum }}
-      --outfile-conf {{ outputFileConf }}
+      --input '/data/{{ inputFile }}'
+      --data-dir '/data/{{ dataDir }}'
+      --outfile-enum '{{ outputFileEnum }}'
+      --outfile-conf '{{ outputFileConf }}'
     variables:
       inputs:
         type: object
@@ -438,10 +439,10 @@ jobs:
       working-directory: /data
     command: >-
       /code/assemble_conformers.py
-      --input /data/{{ inputFile }}
-      --data-dir /data/{{ dataDir }}
+      --input '/data/{{ inputFile }}'
+      --data-dir '/data/{{ dataDir }}'
       --mode {{ mode }}
-      --output {{ outputFile }}
+      --output '{{ outputFile }}'
       {% if excludeBase is defined %}-exclude-base{% endif %}
       {% if excludeTautomers is defined %}-exclude-tautomers{% endif %}
       {% if excludeMicrostates is defined %}-exclude-microstates{% endif %}
@@ -561,9 +562,9 @@ jobs:
       working-directory: /data
     command: >-
       obabel
-      /data/{{ inputFile }}
+      '/data/{{ inputFile }}'
       {{ options }}
-      -O {{ outputFile }}
+      -O '{{ outputFile }}'
     variables:
       inputs:
         type: object
@@ -623,9 +624,9 @@ jobs:
     command: >-
       pdb2pqr30 --with-ph {{ ph }}
       --titration-state-method propka
-      --pdb-output {{ outfileBasename }}.pdb
-      /data/{{ inputFile }}
-      {{ outfileBasename }}.pqr
+      --pdb-output '{{ outfileBasename }}.pdb'
+      '/data/{{ inputFile }}'
+      '{{ outfileBasename }}.pqr'
     variables:
       inputs:
         type: object
@@ -672,6 +673,80 @@ jobs:
             title: Base filename for output (do not include the extension)
             type: string
 
+  conformers-for-mol:
+    name: Generate 3D conformers of a molecule
+    description: >-
+      Generate a low energy 3D conformers. The input is a molfile or SMILES. The output is a SD file.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - conformer
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      le_conformers_for_mol.py
+        {% if inputMolfile is defined %}--input '{{ inputMolfile }}'{% endif %}
+        {% if smiles is defined %}--smiles '{{ smiles }}'{% endif %}
+        --output '{{ sdfout }}'
+        --minimize-cycles {{ minimizeCycles }}
+        --rms-threshold {{ rmsThreshold }}
+        {% if removeHydrogens is defined %}--remove-hydrogens{% endif %}
+    variables:
+      order:
+        options:
+        - smiles
+        - sdfout
+        - minimizeCycles
+        - rmsThreshold
+        - removeHydrogens
+      inputs:
+        type: object
+        properties:
+          inputMolfile:
+            title: Input molfile
+            mime-types:
+              - chemical/x-mdl-molfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outfile:
+            title: SDF file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ sdfout }}.sdf'
+            type: file
+
+      options:
+        type: object
+        required:
+        - sdfout
+        - minimizeCycles
+        - rmsThreshold
+        - removeHydrogens
+        properties:
+          smiles:
+            title: SMILES string for input
+            type: string
+          sdfout:
+            title: Filename for output
+            type: string
+            default: conformers.sdf
+          minimizeCycles:
+            title: Number of minimization cycles
+            type: integer
+            default: 500
+          rmsThreshold:
+            type: number
+            default: 1.0
+          removeHydrogens:
+            type: boolean
+            default: true
+
   prepare-rdock:
     name: rDock prepare
     description: >-
@@ -689,9 +764,9 @@ jobs:
       working-directory: /data
     command: >-
       /code/prepare_rdock.py
-      --receptor /data/{{ receptorFile }}
-      --ligand /data/{{ ligandFile }}
-      --output {{ outputBaseName }}
+      --receptor '/data/{{ receptorFile }}'
+      --ligand '/data/{{ ligandFile }}'
+      --output '{{ outputBaseName }}'
     variables:
       inputs:
         type: object
@@ -756,9 +831,9 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/usr.py --inputs /data/{{ inputFile }}
-      --query {{ queryFile }}
-      --outfile {{ outputFile }}
+      /code/usr.py --inputs '/data/{{ inputFile }}'
+      --query '{{ queryFile }}'
+      --outfile '{{ outputFile }}'
       --method {{ method }}
       --threshold {{ threshold }}
       {% if groupBy is defined %}--group-by-field {{ groupBy }}{% endif %}
@@ -860,8 +935,8 @@ jobs:
       working-directory: /data
     command: >-
       /code/expander.py
-      --input {{ inputFile }}
-      {% if outputDir is defined %}--outdir {{ outputDir }}{% endif %}
+      --input '{{ inputFile }}'
+      {% if outputDir is defined %}--outdir '{{ outputDir }}'{% endif %}
       --hac-min {{ hacMin }}
       --hac-max {{ hacMax }}
       --rac-min {{ racMin }}
@@ -983,8 +1058,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow run /code/enumerate.nf
-      --inputs /data/{{ inputFile }}
-      --data_dir /data/{{ dataDir }}
+      --inputs '/data/{{ inputFile }}'
+      --data_dir '/data/{{ dataDir }}'
       -with-trace
       -with-report
     variables:
@@ -1028,10 +1103,10 @@ jobs:
       # there are no options for this job
 
   generate-low-energy-conformers:
-    name: Generate 3D conformers
+    name: Generate 3D conformers (sharded)
     description: >-
       Generate a low energy 3D conformers of molecules. Inputs are defined
-      by the prep-enum-conf-lists job.
+      by the prep-enum-conf-lists job and outputs are written to the sharded file system.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -1048,8 +1123,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow run /code/le_conformers.nf
-      --inputs /data/{{ inputFile }}
-      --data_dir /data/{{ dataDir }}
+      --inputs '/data/{{ inputFile }}'
+      --data_dir '/data/{{ dataDir }}'
       -with-trace
       -with-report
     variables:
@@ -1111,10 +1186,10 @@ jobs:
       type: nextflow
     command: >-
       nextflow run -c /code/nextflow.config /code/rdock-docking.nf
-      --ligands /data/{{ ligandsSDF }}
-      --protein /data/{{ proteinMOL2 }}
-      --prmfile /data/{{ prmFile }}
-      --asfile /data/{{ asFile }}
+      --ligands '/data/{{ ligandsSDF }}'
+      --protein '/data/{{ proteinMOL2 }}'
+      --prmfile '/data/{{ prmFile }}'
+      --asfile '/data/{{ asFile }}'
       --num_dockings {{ numDockings }}
       -with-trace
       -with-report
@@ -1210,16 +1285,16 @@ jobs:
       type: nextflow
     command: >-
       nextflow run -c /code/nextflow.config /code/smina-docking.nf
-      --ligands /data/{{ ligands }}
-      --protein /data/{{ protein }}
-      --ligand /data/{{ ligand }}
+      --ligands '/data/{{ ligands }}'
+      --protein '/data/{{ protein }}'
+      --ligand '/data/{{ ligand }}'
       --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
-      --scoring_function {{ scoringFunction }}
-      --publishDir {{ outputDir }}
-      --output_filename {{ outputFile }}
-      -with-trace {{ outputDir }}/trace.txt
-      -with-report {{ outputDir }}/report.html
+      --scoring_function '{{ scoringFunction }}'
+      --publishDir '{{ outputDir }}'
+      --output_filename '{{ outputFile }}'
+      -with-trace '{{ outputDir }}/trace.txt'
+      -with-report '{{ outputDir }}/report.html'
     variables:
       order:
         options:
@@ -1346,8 +1421,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow run /code/oddt.nf
-      --ligands /data/{{ ligandsSDF }}
-      --protein /data/{{ proteinPDB }}
+      --ligands '/data/{{ ligandsSDF }}'
+      --protein '/data/{{ proteinPDB }}'
       -with-trace
       -with-report
     variables:

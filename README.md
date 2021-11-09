@@ -20,14 +20,14 @@ Or, to build using the `latest` tag: -
 
 ## Prepare conda environments
 
-Alternatively these processes can be run in a conda environment.
-Use the [](environment.yaml) environment files to 
-create a conda environment named `im-vs-prep`. e.g.
+Alternatively these processes can be run in conda environments.
+Use the [](environment-im-prep.yaml) and [](environment-im-oddt.yaml) environment files to 
+create a conda environments named `im-vs-prep` and `im-vs-oddt`. e.g.
 ```
-conda env create -f environment.yaml
+conda env create -f environment-im-prep.yaml
 conda activate im-vs-prep
 ```
-This environment contains all the tools needed to run these processes.
+These environments contain the tools needed to run most of these processes.
 
 # Usage
 
@@ -145,7 +145,7 @@ more than 2 charge groups are allowed. Hydrogens are added as these are required
 For each input SMILES two output files are generated within the sharded directory system containing the enumerated
 molecules:
 1. A `.smi` file
-2. A `.sdf` file containing molecules with 3D coordinates
+2. A `.sdf.gz` file containing molecules with 3D coordinates
 Both files contain the same molecules, just in different format.
 
 ```
@@ -162,14 +162,14 @@ nextflow run enumerate.nf --inputs need-enum.smi -with-docker informaticsmatters
 
 We now need to assemble all the required 3D conformers into a single SD file that can be used for docking.
 ```
-./assemble_conformers.py -i 16-25-1000.smi -o 16-25-candidates.sdf -m single -d molecules/sha256
+./assemble_conformers.py -i 16-25-1000.smi -o results/16-25-candidates.sdf -m single
 ```
 Use the `im-vs-prep` conda environment to run this.
 
 Or run with Docker:
 ```
 docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-prep:$IMAGE_TAG\
-  /code/assemble_conformers.py -i 16-25-1000.smi -o 16-25-candidates.sdf -m single -d molecules/sha256
+  /code/assemble_conformers.py -i 16-25-1000.smi -o results/16-25-candidates.sdf -m single
 ```
 
 ## 7. Prepare PDB file for docking using OpenBabel
@@ -241,11 +241,12 @@ the active site definition. You can edit the `docking.prm` file if you need a di
 Now we can run the docking.
 ```
 nextflow run rdock-docking.nf\
-  --ligands 16-25-candidates.sdf\
+  --ligands results/16-25-candidates.sdf\
   --protein dhfr-receptor-ph7.mol2\
   --prmfile docking.prm\
   --asfile docking.as\
-  --num_dockings 5
+  --num_dockings 5\
+  --publishDir results
 ```
 We use `--num_dockings 5` to speed things up. A real run would typically use 25-50 dockings for each candidate.
 
@@ -272,12 +273,13 @@ docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-prep
 Now we can run the docking:
 ```
 nextflow run smina-docking.nf\
-      --ligands 16-25-candidates.sdf\
-      --protein dhfr-receptor-ph7.pdbqt\
-      --ligand dhfr-ligand.pdbqt\
-      --padding 4\
-      --exhaustiveness 8\
-      --scoring_function default
+  --ligands results/16-25-candidates.sdf\
+  --protein dhfr-receptor-ph7.pdbqt\
+  --ligand dhfr-ligand.pdbqt\
+  --padding 4\
+  --exhaustiveness 8\
+  --scoring_function default\
+  --publishDir results
 ```
 We only expose a few of the key smina parameters. For the `scoring_function` you could specify 
 ad4_scoring, dkoes_fast, dkoes_scoring, dkoes_scoring_old, vina or vinardo instead of default.
@@ -293,12 +295,14 @@ interactions the poses make with the receptor to help in prioritising the docked
 
 To run this on the rDock results:
 ```
-nextflow run oddt.nf --ligands results/results_rdock.sdf --protein data/dhfr-receptor.pdb
+nextflow run oddt.nf --ligands results/results_rdock.sdf --protein data/dhfr-receptor.pdb --publishDir results
 ```
 This generates the `results/results_oddt.sdf` output. This workflow can also be run on the
 smina poses.
 
-# Shape similarity screening using ultrafast shape recognition
+# Shape similarity screening using ultrafast shape recognition (USR)
+
+Note: a case study of using USR in finding 'fragment merges' is described [here](frag-merge.md).
 
 USR and its electroshape and USRCAT derivatives can be used for ligand based virtual screening. Typically you start
 with the conformation of a know active and want to find molecules from a database that have similar shape (and in the
@@ -321,33 +325,37 @@ Now generate the low energy conformers.
 ```
 nextflow run le_conformers.nf --inputs need-confs.smi -with-docker informaticsmatters/vs-prep:latest
 ```
-This process can take a long time. Run it first on a small number of molecules.
+This process can take a long time. Run it first on a small number of molecules to get an idea of its speed.
 
-In brief this process uses RDKit functionality described
+In brief, this process uses RDKit functionality described
 [here](http://rdkit.org/docs/GettingStartedInPython.html#working-with-3d-molecules) and does the following:
 - generates a number of conformers of each enumerated molecule. The number generated depends on the number
 of rotatable bonds (see the `le_conformers.py` script for details).
 - removes conformers that are similar to others generated for that molecule (the one with the lower energy is retained).
-- writes the conformers to a `digest_le_confs.sdf` file in the sharded file system.
+- writes the conformers to a `digest_le_confs.sdf.gz` file in the sharded file system.
 
 ## 2. Assembling the conformers
 
 Now we need to assemble the conformers:
 ```
-./assemble_conformers.py -i 16-25.smi -o 16-25-candidates.sdf -m low-energy -d molecules/sha256
+./assemble_conformers.py -i 16-25.smi -o results/16-25-le-conformers.sdf -m low-energy
 ```
 Use the `im-vs-prep` conda environment to run this.
 
 Or run with Docker:
 ```
 docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-prep:$IMAGE_TAG\
-  /code/assemble_conformers.py -i 16-25.smi -o 16-25-candidates.sdf -m low-energy -d molecules/sha256
+  /code/assemble_conformers.py -i 16-25.smi -o results/16-25-le-conformers.sdf -m low-energy
 ```
 Notice the `-m low-energy` parameter. Above we used `-m single`. This option determines whether to assemble the single
 conformer of the enumerated molecule or the multiple low energy conformers.
 
 ## 3. Run the shape screening
 
+Using the `im-vs-oddt` conda environment:
+```
+./usr.py -i $D/16-25-le-conformers.sdf -q notebooks/merged1.mol -o $D/results-merge1-usrcat.sdf -t 0.55 -m usrcat -g std_smi --interval 10000
+```
 
 
 

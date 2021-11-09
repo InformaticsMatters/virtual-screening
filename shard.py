@@ -164,7 +164,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                     num_cc, num_undef_cc = get_num_chiral_centers(mol)
                     num_sp3 = get_num_sp3_centres(mol)
                     
-                    # write the vendor specifc data files (hac shards)
+                    # write the vendor specific data files (hac shards)
                     if hac in freqs:
                         freqs[hac] = freqs[hac] + 1
                         outfile = files[hac]

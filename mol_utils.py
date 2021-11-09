@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from rdkit import Chem
 
 def updateChargeFlagInAtomBlock(mb):
     """
@@ -89,3 +90,40 @@ def updateChargeFlagInAtomBlock(mb):
             i+=1
     upmb = "\n".join(lines)
     return(upmb)
+
+
+def get_num_chiral_centers(mol):
+    chiral_centers = Chem.FindMolChiralCenters(mol, force=True, includeUnassigned=True)
+    undef_cc = 0
+    for cc in chiral_centers:
+        if cc[1] == '?':
+            undef_cc += 1
+    return len(chiral_centers), undef_cc
+
+
+def get_num_sp3_centres(mol):
+    return sum((x.GetHybridization() == Chem.HybridizationType.SP3) for x in mol.GetAtoms())
+
+def sdf_read_mol(input):
+    txt = sdf_read_block(input)
+    if txt == None:
+        return None
+    mol = Chem.MolFromMolBlock(txt)
+    print('NumProps:', mol.GetNumProps())
+    return (txt, mol)
+
+
+def sdf_record_gen(hnd):
+    """A generator for text records fom a SD file
+    """
+    mol_text_tmp = ""
+    while 1:
+        line = hnd.readline()
+        if not line:
+            return
+        line = line.decode("utf-8")
+        mol_text_tmp += line
+        if line.startswith("$$$$"):
+            mol_text = mol_text_tmp
+            mol_text_tmp = ""
+            yield mol_text
