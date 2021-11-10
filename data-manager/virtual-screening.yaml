@@ -565,6 +565,7 @@ jobs:
       obabel
       '/data/{{ inputFile }}'
       {{ options }}
+      {% if options is defined %}{{ options }}{% endif %}
       -O '{{ outputFile }}'
     variables:
       inputs:
@@ -689,7 +690,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      le_conformers_for_mol.py
+      /code/le_conformers_for_mol.py
         {% if inputMolfile is defined %}--input '{{ inputMolfile }}'{% endif %}
         {% if smiles is defined %}--smiles '{{ smiles }}'{% endif %}
         --output '{{ sdfout }}'
