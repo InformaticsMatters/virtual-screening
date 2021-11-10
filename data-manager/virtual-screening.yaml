@@ -720,7 +720,7 @@ jobs:
             title: SDF file
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{{ sdfout }}.sdf'
+            creates: '{{ sdfout }}'
             type: file
 
       options:

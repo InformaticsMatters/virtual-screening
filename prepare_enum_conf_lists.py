@@ -54,8 +54,8 @@ def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir):
                         continue
 
                     tgt_enum_smi = os.path.join(path, digest + '.smi')
-                    tgt_enum_sdf = os.path.join(path, digest + '.sdf')
-                    tgt_le_confs = os.path.join(path, digest + '_le_confs.sdf')
+                    tgt_enum_sdf = os.path.join(path, digest + '.sdf.gz')
+                    tgt_le_confs = os.path.join(path, digest + '_le_confs.sdf.gz')
 
                     if smi in dups:
                         duplicates += 1

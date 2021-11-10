@@ -62,7 +62,7 @@ def execute(input, output, data_dir, mode,
                 parts.extend(utils.get_path_from_digest(digest))
                 path = os.path.join(*parts)
                 if not os.path.isdir(path):
-                    utils.log_dm_event('WARNING, path', path, 'not found')
+                    utils.log('WARNING, path', path, 'not found')
                     errors += 1
                     continue
 
@@ -75,6 +75,10 @@ def execute(input, output, data_dir, mode,
                 total += 1
 
                 confs = os.path.join(path, digest + ext)
+                if not os.path.exists(confs):
+                    utils.log('WARNING, file', confs, 'not found')
+                    errors += 1
+                    continue
                 gz = gzip.open(confs, 'rb')
 
                 for txt in mol_utils.sdf_record_gen(gz):
