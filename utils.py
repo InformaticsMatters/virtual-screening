@@ -10,6 +10,10 @@ default_num_levels = 2
 _SBUF = io.StringIO()
 _INFO = logging.getLevelName(logging.INFO)
 
+# A value used to ensure cost lines are unique (regardless of timestamp)
+# It's incremented on entry to log_dm_cost()
+_DM_COST_SEQUENCE_NUMBER = 0
+
 def log(*args, **kwargs):
     """Log output to STDERR
     """
@@ -39,6 +43,11 @@ def log_dm_cost(cost, cumulative=True):
     with a '+' prefix, i.e. '+1' or '+0'. Non-cumulative (absolute) costs
     are written without a '+' prefix, i.e. '1' or '0'.
     """
+    global _DM_COST_SEQUENCE_NUMBER
+
+    # Ensure this cost message is unique
+    _DM_COST_SEQUENCE_NUMBER += 1
+
     # Cost is always expected to be a number that's not negative.
     assert isinstance(cost, numbers.Number)
     assert cost >= 0
@@ -47,9 +56,10 @@ def log_dm_cost(cost, cumulative=True):
     if cumulative:
         cost_str = '+' + cost_str
     msg_time = datetime.now(timezone.utc).replace(microsecond=0)
-    print('%s # %s -COST- %s' % (msg_time.isoformat(),
-                                 _INFO,
-                                 cost_str))
+    print('%s # %s -COST- %s %d' % (msg_time.isoformat(),
+                                    _INFO,
+                                    cost_str,
+                                    _DM_COST_SEQUENCE_NUMBER))
 
 def get_path_from_digest(digest, num_chars=default_num_chars, num_levels=default_num_levels):
     parts = []
