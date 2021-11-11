@@ -1,6 +1,7 @@
 import io
 from datetime import datetime, timezone
 import logging
+import numbers
 import sys, os
 
 default_num_chars = 2
@@ -28,6 +29,27 @@ def log_dm_event(*args):
                                   _INFO,
                                   _SBUF.getvalue().strip()))
 
+def log_dm_cost(cost, cumulative=True):
+    """Generate a Data Manager-compliant cost message.
+    The Data Manager watches stdout and interprets certain formats
+    as a 'cost', typically used for billing purposes.
+
+    The cost must be a non-negative number. It is assumed to be cumulative
+    unless cumulative is set to False. Cumulative values are written
+    with a '+' prefix, i.e. '+1' or '+0'. Non-cumulative (absolute) costs
+    are written without a '+' prefix, i.e. '1' or '0'.
+    """
+    # Cost is always expected to be a number that's not negative.
+    assert isinstance(cost, numbers.Number)
+    assert cost >= 0
+
+    cost_str = str(cost)
+    if cumulative:
+        cost_str = '+' + cost_str
+    msg_time = datetime.now(timezone.utc).replace(microsecond=0)
+    print('%s # %s -COST- %s' % (msg_time.isoformat(),
+                                 _INFO,
+                                 cost_str))
 
 def get_path_from_digest(digest, num_chars=default_num_chars, num_levels=default_num_levels):
     parts = []
