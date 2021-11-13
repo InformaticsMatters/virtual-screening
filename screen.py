@@ -153,7 +153,7 @@ def main():
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='screen')
-    parser.add_argument('-s', '--smiles', nargs='+', help="Query SMILES")
+    parser.add_argument('-s', '--smiles', nargs='+', required=True, help="Query SMILES")
     parser.add_argument('-i', '--input', required=True, help="SMILES file with targets")
     parser.add_argument('--delimiter', default='\t', help="Delimiter")
     parser.add_argument('-o', '--output', required=True, help="SMILES file with targets")

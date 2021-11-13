@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import gzip
 from rdkit import Chem
 
 def updateChargeFlagInAtomBlock(mb):
@@ -127,3 +128,29 @@ def sdf_record_gen(hnd):
             mol_text = mol_text_tmp
             mol_text_tmp = ""
             yield mol_text
+
+def rdk_read_single_mol(input):
+    # read the molecule. Can be SDF or Mol format
+    # if SDF then the first molecule is used.
+    if input.endswith('.mol'):
+        mol = Chem.MolFromMolFile(input)
+    elif input.endswith('.sdf'):
+        suppl = Chem.SDMolSupplier(input)
+        mol = next(suppl)
+    elif input.endswith('.sdf.gz'):
+        with gzip.open(input, 'rb') as gz:
+            suppl = Chem.ForwardSDMolSupplier(gz)
+            mol = next(suppl)
+    else:
+        raise ValueError('Unsupported file type. Must be .mol .sdf or .sdf.gz. Found ' + input)
+    return mol
+
+def rdk_mol_supplier(input):
+    if input.endswith('.sdf'):
+        suppl = Chem.ForwardSDMolSupplier(input)
+    elif input.endswith('.sdf.gz'):
+        gz = gzip.open(input, 'rb')
+        suppl = Chem.ForwardSDMolSupplier(gz)
+    else:
+        raise ValueError('Unsupported file type. Must be .mol .sdf or .sdf.gz. Found ' + input)
+    return suppl

@@ -16,65 +16,75 @@
 
 
 import argparse, os, gzip, time
+
 import utils, mol_utils
 
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 
-class SdfWriter():
+
+class SdfWriter:
 
     def __init__(self, outfile):
         self.writer = Chem.SDWriter(outfile)
 
-    def write(self, smi, mol, id, props):
+    def write(self, smi, mol, id, existing_props, new_props):
         if id is not None:
             mol.SetProp('_Name', id)
-        if props[0] is not None:
-            mol.SetIntProp('hac', props[0])
-        if props[1] is not None:
-            mol.SetIntProp('num_rot_bonds', props[1])
-        if props[2] is not None:
-            mol.SetIntProp('num_rings', props[2])
-        if props[3] is not None:
-            mol.SetIntProp('num_aro_rings', props[3])
-        if props[4] is not None:
-            mol.SetIntProp('num_cc', props[4])
-        if props[5] is not None:
-            mol.SetIntProp('num_undef_cc', props[5])
-        if props[6] is not None:
-            mol.SetIntProp('num_sp3', props[6])
+        if new_props[0] is not None:
+            mol.SetIntProp('hac', new_props[0])
+        if new_props[1] is not None:
+            mol.SetIntProp('num_rot_bonds', new_props[1])
+        if new_props[2] is not None:
+            mol.SetIntProp('num_rings', new_props[2])
+        if new_props[3] is not None:
+            mol.SetIntProp('num_aro_rings', new_props[3])
+        if new_props[4] is not None:
+            mol.SetIntProp('num_cc', new_props[4])
+        if new_props[5] is not None:
+            mol.SetIntProp('num_undef_cc', new_props[5])
+        if new_props[6] is not None:
+            mol.SetIntProp('num_sp3', new_props[6])
 
         self.writer.write(mol)
 
+    def write_header(self, values):
+        utils.log("WARNING: asked to write header for an SDF. No action will be taken.")
+
+
     def close(self):
         pass
+
 
 class SmilesWriter:
 
     def __init__(self, outfile, sep, extra_field_names):
         self.writer = open(outfile, 'w')
-        self.sep = sep
+        if sep is None:
+            self.sep = ' '
+        else:
+            self.sep = sep
         self.extra_field_names = extra_field_names
 
     def write_header(self, values):
         line = self.sep.join(values)
         self.writer.write(line + "\n")
 
-    def write(self, smi, mol, id, props):
+    def write(self, smi, mol, id, existing_props, new_props):
 
-        values = [smi, id]
-        if self.extra_field_names:
-            for name in self.extra_field_names:
-                if mol.HasProp(name):
-                    values.append(mol.GetProp(name))
-                else:
-                    values.append('')
-
-        for prop in props:
-            if prop is None:
-                values.append('')
+        values = [smi]
+        for prop in existing_props:
+            if prop is not None:
+                values.append(prop)
             else:
+                values.append('')
+
+        for prop in new_props:
+            if prop is not None:
                 values.append(str(prop))
+            else:
+                values.append('')
+
 
         line = self.sep.join(values)
         self.writer.write(line + "\n")
@@ -87,7 +97,7 @@ class SdfReader:
 
     def __init__(self, input, id_col, recs_to_read):
 
-        self.field_names = set()
+        self.field_names = []
         # read a number of records to determine the field names
         if recs_to_read:
             r = self.create_reader(input)
@@ -98,7 +108,8 @@ class SdfReader:
                     mol = next(r)
                     names = mol.GetPropNames()
                     for name in names:
-                        self.field_names.add(name)
+                        if name not in self.field_names:
+                            self.field_names.append(name)
 
         # now create the real reader
         self.reader = self.create_reader(input)
@@ -109,21 +120,29 @@ class SdfReader:
         if input.endswith('.gz'):
             reader = Chem.ForwardSDMolSupplier(gzip.open(input))
         else:
-            reader = Chem.SDMolSupplier(input)
+            reader = Chem.ForwardSDMolSupplier(input)
         return reader
 
     def read(self):
-        if self.reader.atEnd():
-            return None
-        else:
+        try:
+            props = []
             mol = next(self.reader)
             smi = Chem.MolToSmiles(mol)
             if self.id_col:
                 id = mol.GetProp(self.id_col)
             else:
                 id = None
-            t = (mol, smi, id)
+
+            for name in self.field_names:
+                if mol.HasProp(name):
+                    props.append(mol.GetProp(name))
+                else:
+                    props.append(None)
+            t = (mol, smi, id, props)
             return t
+
+        except StopIteration:
+            return None
 
     def get_extra_field_names(self):
         return self.field_names
@@ -132,29 +151,33 @@ class SdfReader:
         pass
 
 
-class SmilesReader():
+class SmilesReader:
 
-    def __init__(self, input, skip_lines, delimiter, id_col):
+    def __init__(self, input, read_header, delimiter, id_col):
         if input.endswith('.gz'):
             self.reader = gzip.open(input, 'rt')
         else:
             self.reader = open(input, 'rt')
         self.delimiter = delimiter
-        self.id_col = int(id_col)
+        if id_col is None:
+            self.id_col = None
+        else:
+            self.id_col = int(id_col)
         self.field_names = None
         # skip header lines
-        if skip_lines:
-            for i in range(skip_lines):
-                line = self.reader.readline()
-                if i == 0:
-                    tokens = self.tokenize(line)
-                    self.field_names = []
-                    for token in tokens:
-                        self.field_names.append(token.strip())
+        if read_header:
+            line = self.reader.readline()
+            tokens = self.tokenize(line)
+            self.field_names = []
+            for token in tokens:
+                self.field_names.append(token.strip())
 
     def tokenize(self, line):
         line = line.strip()
-        tokens = line.split(self.delimiter)
+        if self.delimiter is None:
+            tokens = line.split()
+        else:
+            tokens = line.split(self.delimiter)
         stripped = []
         for token in tokens:
             stripped.append(token.strip())
@@ -171,12 +194,20 @@ class SmilesReader():
                 id = None
 
             mol = Chem.MolFromSmiles(smi)
-            if mol:
-                for i, token in enumerate(tokens):
-                    if i != 0 and i != self.id_col and self.field_names:
-                        mol.SetProp(self.field_names[i], token)
+            props = []
 
-            t = (mol, smi, id)
+            for i, token in enumerate(tokens):
+                token = token.strip()
+                if i != 0:
+                    props.append(token)
+                    if mol:
+                        if self.field_names:
+                            mol.SetProp(self.field_names[i], token)
+                        else:
+                            mol.SetProp('field' + str(i), token)
+
+
+            t = (mol, smi, id, props)
             return t
         else:
             return None
@@ -195,7 +226,7 @@ class SmilesReader():
         self.reader.close()
 
 
-def process(input, outfile, delimiter, name_column=None, no_header=False, skip_lines=0, sdf_read_records=100, interval=0):
+def process(input, outfile, delimiter, id_column=None, read_header=False, write_header=False, sdf_read_records=100, interval=0):
 
     utils.expand_path(outfile)
     
@@ -204,24 +235,16 @@ def process(input, outfile, delimiter, name_column=None, no_header=False, skip_l
 
     # setup the reader
     if input.endswith('.sdf') or input.endswith('.sdf.gz'):
-        reader = SdfReader(input, name_column, sdf_read_records)
+        reader = SdfReader(input, id_column, sdf_read_records)
     else:
-        reader = SmilesReader(input, skip_lines, delimiter, name_column)
+        reader = SmilesReader(input, read_header, delimiter, id_column)
     extra_field_names = reader.get_extra_field_names()
 
     # setup the writer
-    if outfile.endswith('.smi') or outfile.endswith('txt'):
-        writer = SmilesWriter(outfile, "\t", extra_field_names)
-        if not no_header:
-            headers = ['smiles', 'id']
-            if extra_field_names:
-                headers.extend(extra_field_names)
-            headers.extend(['hac', 'num_rot_bonds', 'num_rings', 'num_aro_rings', 'num_cc', 'num_undef_cc', 'num_sp3'])
-            writer.write_header(headers)
-    elif outfile.endswith('.sdf'):
+    if outfile.endswith('.sdf') or outfile.endswith('sd'):
         writer = SdfWriter(outfile)
     else:
-        raise ValueError('Outfile must be .sdf .smi or .txt')
+        writer = SmilesWriter(outfile, delimiter, extra_field_names)
 
     # read the input records and write the output
     while True:
@@ -230,8 +253,19 @@ def process(input, outfile, delimiter, name_column=None, no_header=False, skip_l
         if not t:
             break
 
+        mol, smi, id, props = t
+        if count == 0 and write_header:
+            headers = ['smiles']
+            if extra_field_names:
+                headers.extend(extra_field_names)
+            else:
+                for i, prop in enumerate(props):
+                    headers.append('field' + str(i + 2))
+            headers.extend(['hac', 'num_rot_bonds', 'num_rings', 'num_aro_rings', 'num_cc', 'num_undef_cc', 'num_sp3'])
+            writer.write_header(headers)
+
         count += 1
-        mol, smi, id = t
+
 
         if interval and count % interval == 0:
             utils.log_dm_event("Processed {} records".format(count))
@@ -240,9 +274,6 @@ def process(input, outfile, delimiter, name_column=None, no_header=False, skip_l
             errors += 1
             utils.log_dm_event("Failed to process record", count)
             continue
-
-        if not id:
-            id = str(count)
 
         # calculate the molecular props
         try:
@@ -258,7 +289,7 @@ def process(input, outfile, delimiter, name_column=None, no_header=False, skip_l
             continue
 
         # write the output
-        writer.write(smi, mol, id, (hac, num_rot_bonds, num_rings, num_aro_rings, num_cc, num_undef_cc, num_sp3))
+        writer.write(smi, mol, id, props, (hac, num_rot_bonds, num_rings, num_aro_rings, num_cc, num_undef_cc, num_sp3))
 
     writer.close()
     reader.close()
@@ -276,19 +307,37 @@ def main():
     parser = argparse.ArgumentParser(description='Calc RDKit props')
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES or SDF")
     parser.add_argument('-o', '--outfile', required=True, help="Output file as SMILES or SDF")
-    parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter when using SMILES")
-    parser.add_argument('-n', '--name-column', help="Column for name field (zero based integer for .smi, text for SDF)")
-    parser.add_argument('--skip-lines', default=0, type=int, help="Skip this many lines e.g. use 1 for skipping a header line")
-    parser.add_argument('--no-header', action='store_true', help='Do not write header line when writing .smi or .txt')
+    # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
+    parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
+    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
+    parser.add_argument('--read-header', action='store_true', help="Read a header line with the field names when reading .smi or .txt")
+    parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
     parser.add_argument('--sdf-read-records', default=100, type=int, help="Read this many SDF records to determine field names")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     utils.log_dm_event("rdk_props.py: ", args)
-    
+
+    # special processing of delimiter to allow it to be set as a name
+
+    if args.delimiter:
+        if 'tab' == args.delimiter:
+            delimiter = '\t'
+        elif 'space' == args.delimiter:
+            delimiter = None
+        elif 'comma' == args.delimiter:
+            delimiter = ','
+        elif 'pipe' == args.delimiter:
+            delimiter = '|'
+        else:
+            delimiter = args.delimiter
+    else:
+        delimiter = None
+
     t0 = time.time()
-    count, errors = process(args.input, args.outfile, args.delimiter, name_column=args.name_column, interval=args.interval,
-                            skip_lines=args.skip_lines, no_header=args.no_header, sdf_read_records=args.sdf_read_records)
+    count, errors = process(args.input, args.outfile, delimiter, id_column=args.id_column,
+                            read_header=args.read_header, write_header=args.write_header,
+                            sdf_read_records=args.sdf_read_records, interval=args.interval,)
     t1 = time.time()
     # Duration? No less than 1 second?
     duration_s = int(t1 - t0)

@@ -74,7 +74,7 @@ def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens):
         conf.SetDoubleProp('Energy_Delta', energy_delta)
 
     to_keep = [energies_with_index[0]]
-    utils.log('  Added', to_keep[0])
+    #utils.log('  Added', to_keep[0])
     for i in range(1, len(energies_with_index)):
         to_test = energies_with_index[i]
         #utils.log('Checking', i, to_test)
@@ -100,7 +100,7 @@ def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens):
         idx = item[0]
         final_mol.AddConformer(molh.GetConformer(idx), assignId=True)
 
-    utils.log("Num conformers:", molh.GetNumConformers(), '->', final_mol.GetNumConformers())
+    #utils.log("Num conformers:", molh.GetNumConformers(), '->', final_mol.GetNumConformers())
     return final_mol
 
 
@@ -141,7 +141,7 @@ def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_th
                     error_count += 1
                     continue
 
-                utils.log('INFO, Processing file', smi_in)
+                #utils.log('INFO, Processing file', smi_in)
                 with gzip.open(sdf_out, 'wt') as gz:
                     with Chem.SDWriter(gz) as writer:
                         with open(smi_in) as enums:
