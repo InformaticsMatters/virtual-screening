@@ -969,7 +969,7 @@ jobs:
             annotation-properties:
               fields-descriptor:
                 origin: squonk2-job
-                description: Molecular shape similarity
+                description: Molecular property calculation
                 fields:
                   hac:
                     type: integer
@@ -1013,6 +1013,18 @@ jobs:
                       Number of SP3 hybridised carbons
                     required: true
                     active: true
+                  logp:
+                    type: number
+                    description: >-
+                      Crippen LogP
+                    required: true
+                    active: true
+                  tpsa:
+                    type: number
+                    description: >-
+                      Topological polar surface area
+                    required: true
+                    active: true
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-rdk-props/91'
               derived-from: inputFile
@@ -1025,7 +1037,6 @@ jobs:
             title: Output file name
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
-            default: usr-similarity.sdf
           readHeader:
             title: Input has header line (text formats only)
             type: boolean

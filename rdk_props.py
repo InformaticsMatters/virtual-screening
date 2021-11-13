@@ -20,7 +20,7 @@ import argparse, os, gzip, time
 import utils, mol_utils
 
 from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors
+from rdkit.Chem import rdMolDescriptors, Crippen
 
 
 class SdfWriter:
@@ -261,11 +261,11 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
             else:
                 for i, prop in enumerate(props):
                     headers.append('field' + str(i + 2))
-            headers.extend(['hac', 'num_rot_bonds', 'num_rings', 'num_aro_rings', 'num_cc', 'num_undef_cc', 'num_sp3'])
+            headers.extend(['hac', 'num_rot_bonds', 'num_rings', 'num_aro_rings', 'num_cc', 'num_undef_cc',
+                            'num_sp3', 'logp', 'tpsa'])
             writer.write_header(headers)
 
         count += 1
-
 
         if interval and count % interval == 0:
             utils.log_dm_event("Processed {} records".format(count))
@@ -283,13 +283,15 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
             num_aro_rings = rdMolDescriptors.CalcNumAromaticRings(mol)
             num_cc, num_undef_cc = mol_utils.get_num_chiral_centers(mol)
             num_sp3 = mol_utils.get_num_sp3_centres(mol)
+            logp = Crippen.MolLogP(mol)
+            tpsa = rdMolDescriptors.CalcTPSA(mol)
         except:
             errors += 1
             utils.log_dm_event('Failed to process record', count)
             continue
 
         # write the output
-        writer.write(smi, mol, id, props, (hac, num_rot_bonds, num_rings, num_aro_rings, num_cc, num_undef_cc, num_sp3))
+        writer.write(smi, mol, id, props, (hac, num_rot_bonds, num_rings, num_aro_rings, num_cc, num_undef_cc, num_sp3, logp, tpsa))
 
     writer.close()
     reader.close()
