@@ -1084,6 +1084,8 @@ jobs:
       /code/screen.py --input '/data/{{ inputFile }}'
       --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}
       --output '{{ outputFile }}'
+      {% if readHeader is defined %}--read-header{% endif %}
+      {% if writeHeader is defined %}--write-header{% endif %}
       --delimiter '{{ separator }}'
       --descriptor '{{ descriptor }}'
       --metric '{{ metric }}'
@@ -1129,6 +1131,13 @@ jobs:
             type: array
             items:
               type: string
+          readHeader:
+            title: Input has header line
+            type: boolean
+          writeHeader:
+            title: Output has header line
+            type: boolean
+            default: true
           separator:
             title: Separator for text formats
             type: string
