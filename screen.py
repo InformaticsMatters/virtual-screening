@@ -38,8 +38,9 @@ individual scores then use an index of 4. For two inputs the indices are:
 - 1 similarity to second molecule
 - 2 minimum of the individual scores
 - 3 maximum of the individual scores
-- 4 sum of the individual scores
-- 5 product of the individual scores
+- 4 arithmetic mean of the individual scores
+- 5 geometric mean of the individual scores
+- 6 product of the individual scores
 
 The descriptor and metric to use can be specified. See the descriptors and metrics properties for the permitted values.
 
@@ -66,18 +67,28 @@ metrics = {
     'sokal': DataStructs.SokalSimilarity,
     'tanimoto': DataStructs.TanimotoSimilarity,
     'tversky': lambda m1, m2: DataStructs.TverskySimilarity(m1, m2, 1, 0),
-    'inverse_tversky': lambda m1, m2: DataStructs.TverskySimilarity(m2, m1, 1, 0)
+    'tversky_inverse': lambda m1, m2: DataStructs.TverskySimilarity(m2, m1, 1, 0)
 }
 
-def multiply_list(myList) :
+
+def multiply_list(scores) :
     result = 1
-    for x in myList:
+    for x in scores:
         result = result * x
     return result
 
 
+def calc_geometric_mean(scores):
+    total = 1.0
+    for score in scores:
+        total = total * score
+    result = total ** (1.0/len(scores))
+    return result
+
+
 def execute(query_smis, inputfile, outputfile, descriptor, metric,
-            delimiter='\t', threshold=0.7, sim_idx=0, interval=None):
+            delimiter='\t', threshold=0.7, sim_idx=0,
+            read_header=False, write_header=False, interval=None):
 
     count = 0
     hits = 0
@@ -96,6 +107,13 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
 
     with open(outputfile, 'wt') as outf:
         with open(inputfile) as inf:
+            if read_header:
+                line = next(inf)
+                line = line.strip()
+                headers = line.split(delimiter)
+            else:
+                headers = None
+
             for line in inf:
                 count += 1
 
@@ -105,6 +123,20 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
                 line = line.strip()
                 tokens = line.split(delimiter)
                 smi = tokens[0]
+                if write_header and count == 1:
+                    if headers is None:
+                        # we need to generate generic field names
+                        headers = []
+                        for i, t in enumerate(tokens):
+                            if i == 0:
+                                headers.append('smiles')
+                            else:
+                                headers.append('field' + str(i + 1))
+                    for i in range(len(query_smis)):
+                        headers.append('score_' + str(i + 1))
+                    if len(query_smis) > 1:
+                        headers.extend(['score_min', 'score_max', 'score_amean', 'score_gmean', 'score_prod'])
+                    outf.write(delimiter.join(headers) + '\n')
                 try:
                     t_mol = Chem.MolFromSmiles(smi)
                     if not t_mol:
@@ -117,13 +149,15 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
                         sims.append(metric(q_fp, t_fp))
 
                     if len(sims) > 1:
-                        sum_sims = sum(sims)
                         min_sims = min(sims)
                         max_sims = max(sims)
+                        amean_sims = sum(sims) / len(query_smis)
+                        gmean_sims = calc_geometric_mean(sims)
                         prod_sims = multiply_list(sims)
                         sims.append(min_sims)
                         sims.append(max_sims)
-                        sims.append(sum_sims)
+                        sims.append(amean_sims)
+                        sims.append(gmean_sims)
                         sims.append(prod_sims)
 
                     sim = sims[sim_idx]
@@ -148,7 +182,8 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
 def main():
 
     # Example:
-    #   python3 screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1 ' --input molecules.smi
+    #   python3 screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input molecules.smi --delimiter tab\
+    #     -d morgan2 -m tanimoto
 
     ### command line args definitions #########################################
 
@@ -156,9 +191,11 @@ def main():
     parser.add_argument('-s', '--smiles', nargs='+', required=True, help="Query SMILES")
     parser.add_argument('-i', '--input', required=True, help="SMILES file with targets")
     parser.add_argument('--delimiter', default='\t', help="Delimiter")
-    parser.add_argument('-o', '--output', required=True, help="SMILES file with targets")
-    parser.add_argument('-d', '--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit', help='descriptor or fingerprint type (default rdkit)')
-    parser.add_argument('-m', '--metric', type=str.lower, choices=list(metrics.keys()), default='tanimoto', help='similarity metric (default tanimoto)')
+    parser.add_argument('-o', '--output', required=True, help="Output file as SMILES")
+    parser.add_argument('--read-header', action='store_true', help="Read a header line with the field names")
+    parser.add_argument('--write-header', action='store_true', help='Write a header line')
+    parser.add_argument('-d', '--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit', help='Descriptor or fingerprint type (default rdkit)')
+    parser.add_argument('-m', '--metric', type=str.lower, choices=list(metrics.keys()), default='tanimoto', help='Similarity metric (default tanimoto)')
     parser.add_argument("--threshold", type=float, default=0.7, help="Similarity threshold")
     parser.add_argument("--sim-index", type=int, default=0, help="Similarity score index")
     parser.add_argument("--interval", type=int, help="Reporting interval")
@@ -166,10 +203,13 @@ def main():
     args = parser.parse_args()
     utils.log_dm_event("screen: ", args)
 
+    delimiter = utils.read_delimiter(args.delimiter)
+
     start = time.time()
     input_count, hit_count, error_count = \
         execute(args.smiles, args.input, args.output, args.descriptor, args.metric,
-                threshold=args.threshold, sim_idx=args.sim_index, delimiter=args.delimiter, interval=args.interval
+                threshold=args.threshold, sim_idx=args.sim_index, delimiter=delimiter,
+                read_header=args.read_header, write_header=args.write_header, interval=args.interval
                 )
     end = time.time()
 

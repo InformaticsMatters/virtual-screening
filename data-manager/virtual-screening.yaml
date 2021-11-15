@@ -1054,12 +1054,125 @@ jobs:
             - pipe
           idColumn:
             title: Index (text) or name (SDF) to use for the ID field
-            type: string
+            type:
+            - integer
+            - string
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
           sdfReadRecords:
             title: Number of SDF records to read field names
             type: integer
             default: 100
+
+  similarity-screen:
+    name: Descriptor based similarity screening
+    description: >-
+      Filters molecules by molecular similarity using RDKit
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - similarity
+    - descriptors
+    - screen
+    doc-url: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/screen.py --input '/data/{{ inputFile }}'
+      --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}
+      --output '{{ outputFile }}'
+      --delimiter '{{ separator }}'
+      --descriptor '{{ descriptor }}'
+      --metric '{{ metric }}'
+      {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
+      {% if simIndex is defined %}--sim-index '{{ simIndex }}'{% endif %}
+      --interval 10000
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to screen
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - smiles
+        - separator
+        - descriptor
+        - metric
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          smiles:
+            title: Query SMILES
+            type: array
+            items:
+              type: string
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          descriptor:
+            title: Descriptor or fingerprint type
+            type: string
+            default: rdkit
+            enum:
+            - maccs
+            - morgan2
+            - morgan3
+            - rdkit
+          metric:
+            title: Similarity metric
+            type: string
+            default: tanimoto
+            enum:
+            - asymmetric
+            - braunblanquet
+            - cosine
+            - dice
+            - kulczynski
+            - mcconnaughey
+            - rogotgoldberg
+            - russel
+            - sokal
+            - tanimoto
+            - tversky
+            - tversky_inverse
+          threshold:
+            title: Similarity threshold (0 - 1)
+            type: number
+            minimum: 0
+            maximum: 1
+          simIndex:
+            title: Similarity score column index
+            type: integer
+            minimum: 0
 
   fragment-network-expand:
     name: Fragment network expansion

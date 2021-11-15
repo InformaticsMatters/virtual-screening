@@ -156,3 +156,20 @@ def UpdateChargeFlagInAtomBlock(mb):
     del lines[-1]    # remove empty element left because last character before $$$$ is \n
     upmb = "\n" + "\n".join(lines)
     return(upmb)
+
+
+def read_delimiter(input):
+    if input:
+        if 'tab' == input:
+            delimiter = '\t'
+        elif 'space' == input:
+            delimiter = None
+        elif 'comma' == input:
+            delimiter = ','
+        elif 'pipe' == input:
+            delimiter = '|'
+        else:
+            delimiter = input
+    else:
+        delimiter = None
+    return delimiter

@@ -302,7 +302,7 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
 def main():
 
     # Example usage:
-    #   ./rdk_props.py -i data/100000.smi -o out.sdf --interval 10000
+    #   ./rdk_props.py -i data/100000.smi --outfile out.sdf --delimiter tab --interval 10000
 
     ### command line args definitions #########################################
 
@@ -322,19 +322,7 @@ def main():
 
     # special processing of delimiter to allow it to be set as a name
 
-    if args.delimiter:
-        if 'tab' == args.delimiter:
-            delimiter = '\t'
-        elif 'space' == args.delimiter:
-            delimiter = None
-        elif 'comma' == args.delimiter:
-            delimiter = ','
-        elif 'pipe' == args.delimiter:
-            delimiter = '|'
-        else:
-            delimiter = args.delimiter
-    else:
-        delimiter = None
+    delimiter = utils.read_delimiter(args.delimiter)
 
     t0 = time.time()
     count, errors = process(args.input, args.outfile, delimiter, id_column=args.id_column,
