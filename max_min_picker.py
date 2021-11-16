@@ -128,6 +128,7 @@ def main():
     
     total, candidates, picked, dups = pick(args.input, args.seeds, args.output, args.count, args.threshold, interval=args.interval)
     utils.log_dm_event('Picked {} from {} molecules. {} duplicates'.format(picked, candidates, dups))
+    utils.log_dm_cost(candidates, cumulative=False)
     
     
 if __name__ == "__main__":
