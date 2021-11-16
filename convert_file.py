@@ -146,7 +146,7 @@ def main():
                         help="Input file")
     parser.add_argument('-if', '--input-format', required=True,
                         help="Input file format (mime-type)")
-    parser.add_argument('-o', '--output-file', required=True,
+    parser.add_argument('-o', '--output-file',
                         help="Output file")
     parser.add_argument('-of', '--output-format', required=True,
                         help="Output file format (mime-type")
@@ -161,15 +161,22 @@ def main():
         log_dm_event('File {} is not present'.format(args.input_file))
         sys.exit(1)
 
+    if args.output_file:
+        outfile = args.output_file
+    else:
+        # replace extension of input with .json
+        filename, file_extension = os.path.splitext(args.input_file)
+        outfile = filename + '.json'
+
     log_dm_event('Converting {} to format {} in file {}...'.
-                 format(args.input_file, args.output_format, args.output_file))
+                 format(args.input_file, args.output_format, outfile))
 
     converter = ConvertFile(args.interval)
 
     processed: bool = converter.convert(args.input_format,
                                         args.output_format,
                                         args.input_file,
-                                        args.output_file)
+                                        outfile)
 
     if processed:
         log_dm_event('Conversion successful. {} records processed, {} errors.'.format(converter.records, converter.errors))

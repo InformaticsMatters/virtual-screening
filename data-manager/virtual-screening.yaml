@@ -1241,6 +1241,60 @@ jobs:
             type: integer
             minimum: 0
 
+  sdf2json:
+    name: Convert SDF to JSON format
+    description: >-
+      Converts a SD file to Squonk JSON format
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - convert
+    - format
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/convert_file.py --input-file '/data/{{ inputFile }}'
+      --input-format chemical/x-mdl-sdfile
+      --output-file {{ outputFile }}
+      --output-format squonk/x-dataset-molecule-v2+json
+      --interval 10000
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - squonk/x-dataset-molecule-v2+json
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-rdk-props/91'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.json$"
+
   fragment-network-expand:
     name: Fragment network expansion
     description: >-
