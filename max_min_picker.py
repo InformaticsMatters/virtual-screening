@@ -103,7 +103,6 @@ def pick(input, seeds, output, count, threshold, interval=0):
     return inputs, len(fingerprints), len(picks), num_dups
 
 
-
 def main():
 
     # Example:
@@ -113,7 +112,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Prepare enumeration and conformer lists')
     parser.add_argument('-i', '--input', required=True, help="File with inputs")
-    parser.add_argument('-s', '--seeds', nargs='+', help="File(s) with molecules that have already been picked")
+    parser.add_argument('-s', '--seeds', nargs='*', help="File(s) with molecules that have already been picked")
     parser.add_argument('-o', '--output', required=True, help="Output file")
     parser.add_argument('-c', '--count', type=int, help="Number to pick")
     parser.add_argument('-t', '--threshold', type=float, help="Similarity threshold")
@@ -123,7 +122,7 @@ def main():
     utils.log("max_min_picker.py: ", args)
     
     if not args.count and not args.threshold:
-        utils.log('Must specify count or threshold or both')
+        utils.log_dm_event('Must specify count or threshold or both')
         exit(1)
     
     total, candidates, picked, dups = pick(args.input, args.seeds, args.output, args.count, args.threshold, interval=args.interval)
