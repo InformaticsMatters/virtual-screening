@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+
+# Copyright 2021 Informatics Matters Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Convert from one file type to another file based on the mime-type
 
     Supported conversions:
@@ -157,9 +172,7 @@ def main():
                                         args.output_file)
 
     if processed:
-        log_dm_event('Converter finished successfully')
-        log_dm_event('records processed={}'.format(converter.records))
-        log_dm_event('errors={}'.format(converter.errors))
+        log_dm_event('Conversion successful. {} records processed, {} errors.'.format(converter.records, converter.errors))
     else:
         log_dm_event('Converter failed')
         sys.exit(1)
