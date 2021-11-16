@@ -31,7 +31,7 @@ can, and usually should, be output. If conformers are generated using the above 
 group-by-field parameter should typically be std_smi.
 """
 
-import argparse, os
+import argparse, os, time
 import utils
 
 from oddt import toolkit
@@ -144,14 +144,18 @@ def main():
     args = parser.parse_args()
     utils.log_dm_event("usr.py: ", args)
 
+    start = time.time()
     input_count, output_count, error_count, mean_similarity = \
         execute(args.inputs, args.query, args.outfile, args.method, args.group_by_field,
                 args.threshold, interval=args.interval)
+    end = time.time()
+    duration_s = int(end - start)
+    if duration_s < 1:
+        duration_s = 1
 
-    tmpl = 'Processed {} conformers. Generated {} outputs. {} errors. Average similarity is {}'
-    utils.log_dm_event(tmpl.format(input_count, output_count, error_count, mean_similarity))
+    tmpl = 'Processed {} conformers. Generated {} outputs. {} errors. Average similarity is {}. Time (s): {}'
+    utils.log_dm_event(tmpl.format(input_count, output_count, error_count, mean_similarity, duration_s))
     
     
 if __name__ == "__main__":
     main()
-        

@@ -1113,6 +1113,64 @@ jobs:
             - squonk/x-smiles
             creates: '{{ outputFile }}'
             type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Descriptor based similarity screening
+                fields:
+                  # Note that the fields that are output are dependent on the number of queries that are specified.
+                  # If there is only a single query then only the score_1 field will be present.
+                  # If there are 2 queries then there will also be a score_2 field and score_min, score_max, score_amean,
+                  #   score_gmean and score_prod fields.
+                  # If there are 3 queries then there will also be a score_3 field etc.
+                  score_1:
+                    type: number
+                    description: >-
+                      Similarity to query 1
+                    required: true
+                    active: true
+                  score_2:
+                    type: number
+                    description: >-
+                      Similarity to query 2
+                    required: true
+                    active: true
+                  score_3:
+                    type: number
+                    description: >-
+                      Similarity to query 3
+                    required: true
+                    active: true
+                  score_min:
+                    type: number
+                    description: >-
+                      Minimum similarity
+                    required: true
+                    active: true
+                  score_max:
+                    type: number
+                    description: >-
+                      Maximum similarity
+                    required: true
+                    active: true
+                  score_amean:
+                    type: number
+                    description: >-
+                      Arithmetic mean of similarities
+                    required: true
+                    active: true
+                  score_gmean:
+                    type: number
+                    description: >-
+                      Geometric mean of similarities
+                    required: true
+                    active: true
+                  score_prod:
+                    type: number
+                    description: >-
+                      Product of similarities
+                    required: true
+                    active: true
       options:
         type: object
         required:

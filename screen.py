@@ -212,9 +212,12 @@ def main():
                 read_header=args.read_header, write_header=args.write_header, interval=args.interval
                 )
     end = time.time()
+    duration_s = int(end - start)
+    if duration_s < 1:
+        duration_s = 1
 
-    utils.log_dm_event('Inputs:', input_count,
-                       'Hits:', hit_count, 'Errors:', error_count, 'Time (s):', end - start)
+    utils.log_dm_event(input_count, 'inputs,', hit_count, 'hits,', error_count, 'errors.',
+                         'Time (s):', duration_s)
 
 
 if __name__ == "__main__":

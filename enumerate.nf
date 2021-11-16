@@ -1,4 +1,4 @@
-params.inputs = 'inputs.smi'
+params.inputs = 'need-enum.smi'
 params.data_dir = 'molecules/sha256'
 params.chunk_size = 1000
 params.digits = 6

@@ -1,4 +1,4 @@
-params.inputs = 'need-le-confs.smi'
+params.inputs = 'need-confs.smi'
 params.data_dir = 'molecules/sha256'
 params.removehs = true
 params.minimize_cycles = 500
@@ -41,4 +41,3 @@ process gen_conformers {
         --interval $params.interval
     """
 }
-
