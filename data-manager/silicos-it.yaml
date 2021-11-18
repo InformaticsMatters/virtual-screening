@@ -1,0 +1,111 @@
+---
+# Tools from Silicos-it
+# See http://silicos-it.be.s3-website-eu-west-1.amazonaws.com/
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: Silicos-it tools
+collection: silicos-it
+repository-url: https://github.com/InformaticsMatters/virtual-screening
+repository-tag: '1.0.0'
+
+jobs:
+  shape-it:
+    name: Shape alignment using shape-it
+    description: >-
+      Align a set of molecules to a reference molecule using Silicos-it's shape-it tool.
+      This does a shape alignment. See http://silicos-it.be.s3-website-eu-west-1.amazonaws.com/software/shape-it/1.0.1/shape-it.html
+    version: '1.0.0'
+    category: silicos-it
+    keywords:
+    - alignment
+    - similarity
+    - shape
+    - silicos-it
+    image:
+      name: 3dechem/silicos-it
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      shape-it -r '{{ refmol }}'
+      -d '{{ molecules }}'
+      -o '{{ outfilebase }}.sdf'
+      -s '{{ outfilebase }}.tab'
+      {% if cutoff is defined %}--cutoff {{ cutoff }}{% endif %}
+      --rankBy '{{ rankBy }}'
+      {% if best is defined %}--best {{ best }}{% endif %}
+      {% if noref is defined %}--noref{% endif %}
+    variables:
+      order:
+        inputs:
+        - refmol
+        - molecules
+        options:
+        - outfilebase
+        - cutoff
+        - rankBy
+        - best
+        - noref
+      inputs:
+        type: object
+        required:
+        - molecules
+        - refmol
+        properties:
+          refmol:
+            title: Molecule to align to
+            mime-types:
+            - chemical/x-mdl-molfile
+            - chemical/x-mdl-sdfile
+            type: file
+          molecules:
+            title: Molecules to align
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          alignments:
+            title: Aligned molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}.sdf'
+            type: file
+          scores:
+            title: Alignment scores
+            mime-types:
+              - text/csv
+            creates: '{{ outputFile }}.tab'
+            type: file
+      options:
+        type: object
+        required:
+          - outfilebase
+        properties:
+          outfilebase:
+            title: Output file base name (no extension)
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          cutoff:
+            title: Score cutoff
+            type: number
+            minimum: 0
+            maximum: 1
+          rankBy:
+            title: Rank scores by
+            type: string
+            enum:
+            - TANIMOTO
+            - TVERSKY_DB
+            - TVERSKY_REF
+          best:
+            title: Keep only this many best scores
+            type: integer
+            minimum: 1
+          noref:
+            title: Do not include reference mol in output
+            type: boolean
+
+
+
