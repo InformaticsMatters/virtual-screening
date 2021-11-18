@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse, time
+import traceback
 
 from rdkit import Chem
 from rdkit import DataStructs
@@ -22,18 +23,20 @@ from rdkit.Chem import AllChem
 from rdkit.Chem import MACCSkeys
 from rdkit.Chem.Fingerprints import FingerprintMols
 
-import utils
+import utils, rdkit_utils
 
 """
 Filter a file of SMILES using fingerprint based similarity.
-One or more query molecules can be specified as SMILES.
+One or more query molecules can be specified as SMILES, or the queries can be contained in a SD file or SMILES file. 
 Similarities for each query are calculated.
-When more than one query is specified the min similarity, max similarity, the sum of the similarities and the product
-of the similarities are also generated and added to the list of similarities.
+When more than one query is specified the min similarity, max similarity, the arithmetic mean of the similarities, the
+geometric mean of the similarities and the product of the similarities are also generated and added to the list of 
+similarities.
 The inputs are filtered using a threshold score and the index of the similarity score to use.
-For instance when there is only a single query molecule there is only a single score, so the index to use is 0.
-When there are two query molecules there are two scores plus the extra four. So if you want to filter by the sum of the
-individual scores then use an index of 4. For two inputs the indices are:
+For instance when specifying the query as SMILES and where there is only a single query molecule there is only a single 
+score, so the index to use is 0.
+When there are two query molecules specified as SMILES there are two scores plus the extra four. So if you want to 
+filter by the sum of the individual scores then use an index of 4. For two inputs the indices are:
 - 0 similarity to first molecule
 - 1 similarity to second molecule
 - 2 minimum of the individual scores
@@ -41,6 +44,14 @@ individual scores then use an index of 4. For two inputs the indices are:
 - 4 arithmetic mean of the individual scores
 - 5 geometric mean of the individual scores
 - 6 product of the individual scores
+
+When the queries are specified in a file it is assumed that there will be a relatively large number of query molecules
+so the individual scores are not output, nor is the product as that is almost always close to zero. In this case the 
+index to use to filter will be:
+- 0 minimum of the individual scores
+- 1 maximum of the individual scores
+- 2 arithmetic mean of the individual scores
+- 3 geometric mean of the individual scores
 
 The descriptor and metric to use can be specified. See the descriptors and metrics properties for the permitted values.
 
@@ -86,9 +97,12 @@ def calc_geometric_mean(scores):
     return result
 
 
-def execute(query_smis, inputfile, outputfile, descriptor, metric,
-            delimiter='\t', threshold=0.7, sim_idx=0,
-            read_header=False, write_header=False, interval=None):
+def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
+            delimiter='\t', threshold=0.7, sim_idx=0, read_header=False, write_header=False,
+            queries_read_header=False, queries_delimiter=None, interval=None):
+
+    if query_smis and query_file:
+        raise ValueError("Specify queries as SMILES or a file, not both")
 
     count = 0
     hits = 0
@@ -97,11 +111,30 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
     descriptor = descriptors[descriptor]
     metric = metrics[metric]
 
+    q_mols = []
+    if query_smis:
+        for smi in query_smis:
+            mol = Chem.MolFromSmiles(smi)
+            if not mol:
+                raise ValueError('Failed to read query smiles:', smi)
+            q_mols.append(mol)
+    elif query_file:
+        reader = rdkit_utils.create_reader(query_file, read_header=queries_read_header, delimiter=queries_delimiter)
+        q_count = 0
+        while True:
+            q_count += 1
+            t = reader.read()
+            # break if no more data to read
+            if not t:
+                break
+            mol, smi, id, props = t
+            if not mol:
+                raise ValueError('Failed to read query molecule:', q_count)
+            q_mols.append(mol)
+        utils.log_dm_event('Read', len(q_mols), 'query molecules')
+
     q_fps = []
-    for q_smi in query_smis:
-        q_mol = Chem.MolFromSmiles(q_smi)
-        if not q_mol:
-            raise ValueError('Failed to read query SMILES')
+    for q_mol in q_mols:
         q_fp = descriptor(q_mol)
         q_fps.append(q_fp)
 
@@ -132,10 +165,14 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
                                 headers.append('smiles')
                             else:
                                 headers.append('field' + str(i + 1))
-                    for i in range(len(query_smis)):
-                        headers.append('score_' + str(i + 1))
-                    if len(query_smis) > 1:
+                    if query_smis:
+                        for i in range(len(query_smis)):
+                            headers.append('score_' + str(i + 1))
+                    if query_smis and len(query_smis) > 1:
                         headers.extend(['score_min', 'score_max', 'score_amean', 'score_gmean', 'score_prod'])
+                    if query_file:
+                        headers.extend(['score_min', 'score_max', 'score_amean', 'score_gmean'])
+
                     outf.write(delimiter.join(headers) + '\n')
                 try:
                     t_mol = Chem.MolFromSmiles(smi)
@@ -151,14 +188,18 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
                     if len(sims) > 1:
                         min_sims = min(sims)
                         max_sims = max(sims)
-                        amean_sims = sum(sims) / len(query_smis)
+                        amean_sims = sum(sims) / len(q_mols)
                         gmean_sims = calc_geometric_mean(sims)
                         prod_sims = multiply_list(sims)
+                        if query_file:
+                            # clear the sims as we don't want to write individual scores when using a query file
+                            sims = []
                         sims.append(min_sims)
                         sims.append(max_sims)
                         sims.append(amean_sims)
                         sims.append(gmean_sims)
-                        sims.append(prod_sims)
+                        if query_smis:
+                            sims.append(prod_sims)
 
                     sim = sims[sim_idx]
                     if sim > threshold:
@@ -172,9 +213,9 @@ def execute(query_smis, inputfile, outputfile, descriptor, metric,
                 except Exception as e:
                     errors += 1
                     utils.log('Failed to process molecule', count, smi)
+                    traceback.print_exc()
 
     return count, hits, errors
-
 
 
 ### start main execution #########################################
@@ -188,14 +229,21 @@ def main():
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='screen')
-    parser.add_argument('-s', '--smiles', nargs='+', required=True, help="Query SMILES")
-    parser.add_argument('-i', '--input', required=True, help="SMILES file with targets")
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument('-s', '--smiles', nargs='+', help="Query SMILES")
+    inputs.add_argument('-q', '--queries', help="File with query molecules")
+    parser.add_argument('--queries-delimiter', help="Delimiter for queries file (text format)")
+    parser.add_argument('--queries-read-header', action='store_true',
+                        help="Does the queries file contain a header line (text format)")
+    parser.add_argument('-i', '--input', required=True, help="SMILES file with molecules to search")
     parser.add_argument('--delimiter', default='\t', help="Delimiter")
-    parser.add_argument('-o', '--output', required=True, help="Output file as SMILES")
     parser.add_argument('--read-header', action='store_true', help="Read a header line with the field names")
+    parser.add_argument('-o', '--output', required=True, help="Output file as SMILES")
     parser.add_argument('--write-header', action='store_true', help='Write a header line')
-    parser.add_argument('-d', '--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit', help='Descriptor or fingerprint type (default rdkit)')
-    parser.add_argument('-m', '--metric', type=str.lower, choices=list(metrics.keys()), default='tanimoto', help='Similarity metric (default tanimoto)')
+    parser.add_argument('-d', '--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit',
+                        help='Descriptor or fingerprint type (default rdkit)')
+    parser.add_argument('-m', '--metric', type=str.lower, choices=list(metrics.keys()), default='tanimoto',
+                        help='Similarity metric (default tanimoto)')
     parser.add_argument("--threshold", type=float, default=0.7, help="Similarity threshold")
     parser.add_argument("--sim-index", type=int, default=0, help="Similarity score index")
     parser.add_argument("--interval", type=int, help="Reporting interval")
@@ -204,12 +252,15 @@ def main():
     utils.log_dm_event("screen: ", args)
 
     delimiter = utils.read_delimiter(args.delimiter)
+    queries_delimiter = utils.read_delimiter(args.queries_delimiter)
 
     start = time.time()
     input_count, hit_count, error_count = \
-        execute(args.smiles, args.input, args.output, args.descriptor, args.metric,
+        execute(args.smiles, args.queries, args.input, args.output, args.descriptor, args.metric,
                 threshold=args.threshold, sim_idx=args.sim_index, delimiter=delimiter,
-                read_header=args.read_header, write_header=args.write_header, interval=args.interval
+                read_header=args.read_header, write_header=args.write_header,
+                queries_read_header=args.queries_read_header, queries_delimiter=queries_delimiter,
+                interval=args.interval
                 )
     end = time.time()
     duration_s = int(end - start)

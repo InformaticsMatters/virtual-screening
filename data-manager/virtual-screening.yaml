@@ -5,7 +5,7 @@ kind: DataManagerJobDefinition
 kind-version: '2021.1'
 
 # An arbitrary name (ignored by the DataManager)
-name: Virtual screening tools using RDkit, OpenBabel and other open source tools
+name: Virtual screening tools using RDKit, OpenBabel and other open source tools
 
 # The 'collection' for the jobs named in this definition.
 #
@@ -927,14 +927,14 @@ jobs:
     keywords:
     - rdkit
     - properties
-    doc-url: 'https://discourse.squonk.it/t/job-rdk-props/91'
+    doc-url: 'https://discourse.squonk.it/t/job-rdkit-props/91'
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/rdk_props.py --input '/data/{{ inputFile }}'
+      /code/rdkit_props.py --input '/data/{{ inputFile }}'
       --outfile '{{ outputFile }}'
       {% if readHeader %}--read-header{% endif %}
       {% if writeHeader %}--write-header{% endif %}
@@ -1026,7 +1026,7 @@ jobs:
                     required: true
                     active: true
               service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-rdk-props/91'
+                service_ref: 'https://discourse.squonk.it/t/job-rdkit-props/91'
               derived-from: inputFile
       options:
         type: object

@@ -24,12 +24,12 @@ It operates in 2 different modes, specified by the --mode argument:
 """
 
 import argparse, os, time, gzip
-import utils, mol_utils
+import utils, rdkit_utils
 from rdkit import Chem
 
 
 def execute(input, output, data_dir, mode,
-            exclude_base=False, exclude_tautomers=False, exclude_microstates=False, interval=0):
+            read_header=False, exclude_base=False, exclude_tautomers=False, exclude_microstates=False, interval=0):
 
     if mode == 'single':
         ext = '.sdf.gz'
@@ -39,6 +39,7 @@ def execute(input, output, data_dir, mode,
         raise ValueError("Must specify a valid mode. 'single' or 'low-energy'")
 
     inputs = 0
+    conformers = 0
     total = 0
     errors = 0
     duplicates = 0
@@ -46,13 +47,15 @@ def execute(input, output, data_dir, mode,
     dups = set()
 
     with open(input) as inf:
+        if read_header:
+            header_line = next(inf)
         utils.expand_path(output)
         with (gzip.open(output, 'wt') if output.endswith('.gz') else open(output, 'wt')) as outf:
             for line in inf:
                 inputs += 1
 
                 if interval and inputs % interval == 0:
-                    utils.log_dm_event("Processed {} records".format(inputs))
+                    utils.log_dm_event("Processed {} records, {} conformers".format(inputs, conformers))
 
                 tokens = line.strip().split('\t')
                 smi = tokens[0]
@@ -81,10 +84,11 @@ def execute(input, output, data_dir, mode,
                     continue
                 gz = gzip.open(confs, 'rb')
 
-                for txt in mol_utils.sdf_record_gen(gz):
+                for txt in rdkit_utils.sdf_record_gen(gz):
                     suppl = Chem.SDMolSupplier()
                     suppl.SetData(txt)
                     mol = next(suppl)
+                    conformers += 1
                     if not mol:
                         errors += 1
                         continue
@@ -112,6 +116,7 @@ def main():
     parser.add_argument('-d', '--data-dir', default='molecules/sha256', help="Directory with sharded data")
     parser.add_argument('-m', '--mode', required=True, choices=['single', 'low-energy'],
                         help='Single conformer or low energy conformer mode [single, low-energy]')
+    parser.add_argument('--read-header', action='store_true', help="Read a header line with the field names")
     parser.add_argument('--exclude-base', action='store_true', help='Exclude base molecules')
     parser.add_argument('--exclude-tautomers', action='store_true', help='Exclude tautomers')
     parser.add_argument('--exclude-microstates', action='store_true', help='Exclude microstates')
@@ -125,6 +130,7 @@ def main():
                                                 exclude_base=args.exclude_base,
                                                 exclude_tautomers=args.exclude_tautomers,
                                                 exclude_microstates=args.exclude_microstates,
+                                                read_header=args.read_header,
                                                 interval=args.interval)
     t1 = time.time()
 

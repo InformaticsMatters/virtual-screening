@@ -21,12 +21,12 @@ Writes the enumerated molecules as SMILES and a single 3D conformer as SDF.
 
 Note that RDKit does not write the charge information to the atom block (this is deprecated in favour of using
 'M   CHG' records), but some old software like rDock requires the charges to be present in the atom block. This
-script patches the atom blocks to add the charge information. See mol_utils.py for details.
+script patches the atom blocks to add the charge information. See rdkit_utils.py for details.
 
 
 """
 import os, sys, argparse, traceback, uuid, gzip
-import utils, mol_utils
+import utils, rdkit_utils
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -198,7 +198,7 @@ def execute(input, data_dir, delimiter='\t',
 
                             # write to SDF
                             sdf_block = Chem.SDWriter.GetText(m2)
-                            chg_block = mol_utils.updateChargeFlagInAtomBlock(sdf_block)
+                            chg_block = rdkit_utils.updateChargeFlagInAtomBlock(sdf_block)
                             gz.write(chg_block)
 
                             # write the SMILES last so that it's only written if the 3D generation is successful
