@@ -812,7 +812,7 @@ jobs:
             default: docking
 
   ultrafast-shape-recognition:
-    name: Molecular shape similarity
+    name: USR molecular shape similarity
     description: >-
       Filters molecules using 3D shape similarity and the USR, Electroshape or USRCAT algorithms
     version: '1.0.0'

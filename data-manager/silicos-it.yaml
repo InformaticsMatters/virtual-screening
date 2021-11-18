@@ -32,7 +32,7 @@ jobs:
       -o '{{ outfilebase }}.sdf'
       -s '{{ outfilebase }}.tab'
       {% if cutoff is defined %}--cutoff {{ cutoff }}{% endif %}
-      --rankBy '{{ rankBy }}'
+      {% if rankBy is defined %}--rankBy '{{ rankBy }}'{% endif %}
       {% if best is defined %}--best {{ best }}{% endif %}
       {% if noref is defined %}--noref{% endif %}
     variables:
