@@ -70,13 +70,13 @@ jobs:
             title: Aligned molecules
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{{ outputFile }}.sdf'
+            creates: '{{ outfilebase }}.sdf'
             type: file
           scores:
             title: Alignment scores
             mime-types:
               - text/csv
-            creates: '{{ outputFile }}.tab'
+            creates: '{{ outfilebase }}.tab'
             type: file
       options:
         type: object
