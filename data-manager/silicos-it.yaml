@@ -106,6 +106,3 @@ jobs:
           noref:
             title: Do not include reference mol in output
             type: boolean
-
-
-
