@@ -75,13 +75,13 @@ jobs:
           scores:
             title: Alignment scores
             mime-types:
-              - text/csv
+            - text/csv
             creates: '{{ outfilebase }}.tab'
             type: file
       options:
         type: object
         required:
-          - outfilebase
+        - outfilebase
         properties:
           outfilebase:
             title: Output file base name (no extension)
