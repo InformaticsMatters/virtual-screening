@@ -18,10 +18,10 @@ name: Virtual screening tools using RDKit, OpenBabel and other open source tools
 # to any "shard-molecules" Job identity in any other collection.
 # The collection must only container lower-case letters, numbers and a hyphen
 # and must begin with a letter.
-collection: im-rdkit-virtual-screening
+collection: im-virtual-screening
 
 # The repository where this definition (and the code for the Job) can be found.
-repository-url: https://github.com/InformaticsMatters/virtual-screening
+repository-url: https://github.com/InformaticsMatters/virtual-screening/virtual-screening.yaml
 # The repository tag.
 # All definitions are expected to reside in a repository that has been tagged.
 repository-tag: '1.0.3'
