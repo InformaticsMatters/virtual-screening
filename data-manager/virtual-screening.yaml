@@ -1103,7 +1103,7 @@ jobs:
         - outputFile
         - smiles
         - readHeader
-        - writeheader
+        - writeHeader
         - separator
         - descriptor
         - metric
