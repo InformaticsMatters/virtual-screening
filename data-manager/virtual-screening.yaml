@@ -1176,6 +1176,9 @@ jobs:
                       Product of similarities
                     required: true
                     active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+                derived-from: inputFile
       options:
         type: object
         required:
@@ -1235,7 +1238,6 @@ jobs:
             - sokal
             - tanimoto
             - tversky
-            - tversky_inverse
           threshold:
             title: Similarity threshold (0 - 1)
             type: number
