@@ -812,7 +812,7 @@ jobs:
             default: docking
 
   ultrafast-shape-recognition:
-    name: USR molecular shape similarity
+    name: USR shape similarity
     description: >-
       Filters molecules using 3D shape similarity and the USR, Electroshape or USRCAT algorithms
     version: '1.0.0'
@@ -1074,6 +1074,8 @@ jobs:
     - similarity
     - descriptors
     - screen
+    - fingerprint
+    - filter
     doc-url: 'https://discourse.squonk.it/t/job-similarity-screen/92'
     image:
       name: informaticsmatters/vs-prep
@@ -1091,6 +1093,9 @@ jobs:
       --metric '{{ metric }}'
       {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
       {% if simIndex is defined %}--sim-index '{{ simIndex }}'{% endif %}
+      {% if alpha is defined %}--alpha {{ alpha }}{% endif %}
+      {% if beta is defined %}--beta {{ beta }}{% endif %}
+      {% if nbits is defined %}--nbits {{ nbits }}{% endif %}
       --interval 10000
     variables:
       inputs:
@@ -1240,6 +1245,21 @@ jobs:
             title: Similarity score column index
             type: integer
             minimum: 0
+          alpha:
+            title: Tversky alpha param
+            type: number
+            default: 1
+            minimum: 0
+            maximum: 1
+          beta:
+            title: Tversky beta param
+            type: number
+            default: 0
+            minimum: 0
+            maximum: 1
+          nbits:
+            title: Number of bits for Morgan bit vector
+            type: integer
 
   sdf2json:
     name: Convert SDF to JSON format

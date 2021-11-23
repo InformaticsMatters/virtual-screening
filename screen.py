@@ -54,31 +54,37 @@ index to use to filter will be:
 - 3 geometric mean of the individual scores
 
 The descriptor and metric to use can be specified. See the descriptors and metrics properties for the permitted values.
+When using Morgan fingerprints you need to be careful about which metric you use. By default Morgan fingerprints use
+counts, but these can only be used with tanimoto, dice or tversky metrics. If using another metric you must generate
+Morgan bit vectors which you do by specifying the nbits parameter e.g. with a value of 1024. 
+See http://rdkit.org/docs/GettingStartedInPython.html#morgan-fingerprints-circular-fingerprints
+
+When using the tversky metric you can also specify the alpha and beta parameters. Default values are 1 and 0. These
+parameters are ignored when using other metrics.  
 
 The output is that same as the input with extra similarity scores appended to each line, with only lines passing the 
 threshold filter being written.
 """
 
 descriptors = {
-    'maccs':   lambda m: MACCSkeys.GenMACCSKeys(m),
-    'morgan2': lambda m: AllChem.GetMorganFingerprint(m, 2),
-    'morgan3': lambda m: AllChem.GetMorganFingerprint(m, 3),
-    'rdkit':   lambda m: FingerprintMols.FingerprintMol(m),
+    'maccs':   lambda m, nBits: MACCSkeys.GenMACCSKeys(m),
+    'morgan2': lambda m, nBits: AllChem.GetMorganFingerprintAsBitVect(m, 2, nBits=nBits) if nBits else AllChem.GetMorganFingerprint(m, 2),
+    'morgan3': lambda m, nBits: AllChem.GetMorganFingerprintAsBitVect(m, 3, nBits=nBits) if nBits else AllChem.GetMorganFingerprint(m, 3),
+    'rdkit':   lambda m, nBits: FingerprintMols.FingerprintMol(m),
 }
 
 metrics = {
-    'asymmetric': DataStructs.AsymmetricSimilarity,
-    'braunblanquet': DataStructs.BraunBlanquetSimilarity,
-    'cosine': DataStructs.CosineSimilarity,
-    'dice': DataStructs.DiceSimilarity,
-    'kulczynski': DataStructs.KulczynskiSimilarity,
-    'mcconnaughey': DataStructs.McConnaugheySimilarity,
-    'rogotgoldberg': DataStructs.RogotGoldbergSimilarity,
-    'russel': DataStructs.RusselSimilarity,
-    'sokal': DataStructs.SokalSimilarity,
-    'tanimoto': DataStructs.TanimotoSimilarity,
-    'tversky': lambda m1, m2: DataStructs.TverskySimilarity(m1, m2, 1, 0),
-    'tversky_inverse': lambda m1, m2: DataStructs.TverskySimilarity(m2, m1, 1, 0)
+    'asymmetric': lambda m1, m2, a, b: DataStructs.AsymmetricSimilarity(m1, m2),
+    'braunblanquet': lambda m1, m2, a, b: DataStructs.BraunBlanquetSimilarity(m1, m2),
+    'cosine': lambda m1, m2, a, b: DataStructs.CosineSimilarity(m1, m2),
+    'dice': lambda m1, m2, a, b: DataStructs.DiceSimilarity(m1, m2),
+    'kulczynski': lambda m1, m2, a, b: DataStructs.KulczynskiSimilarity(m1, m2),
+    'mcconnaughey': lambda m1, m2, a, b: DataStructs.McConnaugheySimilarity(m1, m2),
+    'rogotgoldberg': lambda m1, m2, a, b: DataStructs.RogotGoldbergSimilarity(m1, m2),
+    'russel': lambda m1, m2, a, b: DataStructs.RusselSimilarity(m1, m2),
+    'sokal': lambda m1, m2, a, b: DataStructs.SokalSimilarity(m1, m2),
+    'tanimoto': lambda m1, m2, a, b: DataStructs.TanimotoSimilarity(m1, m2),
+    'tversky': lambda m1, m2, a, b: DataStructs.TverskySimilarity(m2, m1, a, b)
 }
 
 
@@ -97,19 +103,47 @@ def calc_geometric_mean(scores):
     return result
 
 
+def validate_params(descriptor, metric, alpha, beta, nbits):
+    if descriptor == 'morgan2' or descriptor == 'morgan3':
+        if not (metric == 'tamimoto' or metric == 'dice' or metric == 'tversky'):
+            if not nbits:
+                utils.log_dm_event('When using', descriptor, 'descriptor and', metric, 'metric',
+                                   'the nbits parameter must be defined')
+                exit(1)
+            else:
+                if metric == 'tversky':
+                    utils.log_dm_event('Using {} bit vector and {} metric with alpha={}, beta={}'
+                                       .format(descriptor, metric, alpha, beta))
+                else:
+                    utils.log_dm_event('Using {} bit vector and {} metric'.format(descriptor, metric))
+        else:
+            if metric == 'tversky':
+                utils.log_dm_event('Using {} counts and {} metric with alpha={}, beta={}'
+                                   .format(descriptor, metric, alpha, beta))
+            else:
+                utils.log_dm_event('Using {} counts and {} metric'.format(descriptor, metric))
+    elif metric == 'tversky':
+        utils.log_dm_event('Using {} descriptor and {} metric with alpha={}, beta={}'
+                           .format(descriptor, metric, alpha, beta))
+    else:
+        utils.log_dm_event('Using {} descriptor and {} metric'.format(descriptor, metric))
+
+
 def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
             delimiter='\t', threshold=0.7, sim_idx=0, read_header=False, write_header=False,
-            queries_read_header=False, queries_delimiter=None, interval=None):
+            queries_read_header=False, queries_delimiter=None, alpha=1.0, beta=0.0, nbits=None, interval=None):
 
     if query_smis and query_file:
         raise ValueError("Specify queries as SMILES or a file, not both")
+
+    validate_params(descriptor, metric, alpha, beta, nbits)
 
     count = 0
     hits = 0
     errors = 0
 
-    descriptor = descriptors[descriptor]
-    metric = metrics[metric]
+    my_descriptor = descriptors[descriptor]
+    my_metric = metrics[metric]
 
     q_mols = []
     if query_smis:
@@ -135,7 +169,7 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
 
     q_fps = []
     for q_mol in q_mols:
-        q_fp = descriptor(q_mol)
+        q_fp = my_descriptor(q_mol, nbits)
         q_fps.append(q_fp)
 
     with open(outputfile, 'wt') as outf:
@@ -180,10 +214,10 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                         errors += 1
                         utils.log_dm_event('Failed to process molecule', count, smi)
                         continue
-                    t_fp = descriptor(t_mol)
+                    t_fp = my_descriptor(t_mol, nbits)
                     sims = []
                     for q_fp in q_fps:
-                        sims.append(metric(q_fp, t_fp))
+                        sims.append(my_metric(q_fp, t_fp, alpha, beta))
 
                     if len(sims) > 1:
                         min_sims = min(sims)
@@ -223,7 +257,7 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
 def main():
 
     # Example:
-    #   python3 screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input molecules.smi --delimiter tab\
+    #   python3 screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input data/10000.smi --delimiter tab -o foo.smi\
     #     -d morgan2 -m tanimoto
 
     ### command line args definitions #########################################
@@ -246,6 +280,9 @@ def main():
                         help='Similarity metric (default tanimoto)')
     parser.add_argument("--threshold", type=float, default=0.7, help="Similarity threshold")
     parser.add_argument("--sim-index", type=int, default=0, help="Similarity score index")
+    parser.add_argument("--alpha", type=float, default=1.0, help="Tversky alpha parameter")
+    parser.add_argument("--beta", type=float, default=0.0, help="Tversky beta parameter")
+    parser.add_argument("--nbits", type=int, default=None, help="Number of bits if using Morgan  as bit vector e.g. 1024")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
@@ -260,7 +297,7 @@ def main():
                 threshold=args.threshold, sim_idx=args.sim_index, delimiter=delimiter,
                 read_header=args.read_header, write_header=args.write_header,
                 queries_read_header=args.queries_read_header, queries_delimiter=queries_delimiter,
-                interval=args.interval
+                alpha=args.alpha, beta=args.beta, nbits=args.nbits, interval=args.interval
                 )
     end = time.time()
     duration_s = int(end - start)
