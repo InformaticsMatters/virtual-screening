@@ -1098,6 +1098,20 @@ jobs:
       {% if nbits is defined %}--nbits {{ nbits }}{% endif %}
       --interval 10000
     variables:
+      order:
+        options:
+        - outputFile
+        - smiles
+        - readHeader
+        - writeheader
+        - separator
+        - descriptor
+        - metric
+        - threshold
+        - simIndex
+        - alpha
+        - beta
+        - nbits
       inputs:
         type: object
         required:
@@ -1182,8 +1196,8 @@ jobs:
       options:
         type: object
         required:
-        - outputFile
         - smiles
+        - outputFile
         - separator
         - descriptor
         - metric
@@ -1205,7 +1219,7 @@ jobs:
             type: boolean
             default: true
           separator:
-            title: Separator for text formats
+            title: Separator for input file
             type: string
             default: tab
             enum:
@@ -1248,13 +1262,13 @@ jobs:
             type: integer
             minimum: 0
           alpha:
-            title: Tversky alpha param
+            title: Tversky alpha
             type: number
             default: 1
             minimum: 0
             maximum: 1
           beta:
-            title: Tversky beta param
+            title: Tversky beta
             type: number
             default: 0
             minimum: 0
