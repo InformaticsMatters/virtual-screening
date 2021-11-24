@@ -1324,7 +1324,7 @@ jobs:
         - headerQueries
         - separatorInputs
         - separatorQueries
-        - output-File
+        - outputFile
         - headerOutputs
         - descriptor
         - metric
