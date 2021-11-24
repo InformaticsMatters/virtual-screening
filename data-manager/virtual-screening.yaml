@@ -1303,7 +1303,7 @@ jobs:
     command: >-
       /code/screen.py --input '/data/{{ inputFile }}'
       --queries '/data/{{ queryFile }}'
-      --output '/data/{{ outputFile }}'
+      --output '/data/{{ outputFileName }}'
       {% if headerInputs is defined %}--read-header{% endif %}
       {% if headerQueries is defined %}--queries-read-header{% endif %}
       {% if headerOutputs is defined %}--write-header{% endif %}
@@ -1324,7 +1324,7 @@ jobs:
         - headerQueries
         - separatorInputs
         - separatorQueries
-        - outputFile
+        - outputFileName
         - headerOutputs
         - descriptor
         - metric
@@ -1358,7 +1358,7 @@ jobs:
             title: Output file name
             mime-types:
             - squonk/x-smiles
-            creates: '{{ outputFile }}'
+            creates: '{{ outputFileName }}'
             type: file
             annotation-properties:
               fields-descriptor:
@@ -1395,13 +1395,13 @@ jobs:
       options:
         type: object
         required:
-        - outputFile
+        - outputFileName
         - separatorInputs
         - separatorQueries
         - descriptor
         - metric
         properties:
-          outputFile:
+          outputFileName:
             title: Output file name
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
