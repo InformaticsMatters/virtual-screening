@@ -1301,14 +1301,14 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/screen.py --input '/data/{{ input-file }}'
-      --queries '/data/{{ query-file }}'
-      --output '/data/{{ output-file }}'
-      {% if header-inputs is defined %}--read-header{% endif %}
-      {% if header-queries is defined %}--queries-read-header{% endif %}
-      {% if header-outputs is defined %}--write-header{% endif %}
-      --delimiter '{{ separator-inputs }}'
-      --queries-delimiter '{{ separator-queries }}'
+      /code/screen.py --input '/data/{{ inputFile }}'
+      --queries '/data/{{ queryFile }}'
+      --output '/data/{{ outputFile }}'
+      {% if headerInputs is defined %}--read-header{% endif %}
+      {% if headerQueries is defined %}--queries-read-header{% endif %}
+      {% if headerOutputs is defined %}--write-header{% endif %}
+      --delimiter '{{ separatorInputs }}'
+      --queries-delimiter '{{ separatorQueries }}'
       --descriptor '{{ descriptor }}'
       --metric '{{ metric }}'
       {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
@@ -1320,12 +1320,12 @@ jobs:
     variables:
       order:
         options:
-        - header-inputs
-        - header-queries
-        - separator-inputs
-        - separator-queries
-        - output-file
-        - header-outputs
+        - headerInputs
+        - headerQueries
+        - separatorInputs
+        - separatorQueries
+        - output-File
+        - headerOutputs
         - descriptor
         - metric
         - threshold
@@ -1336,16 +1336,16 @@ jobs:
       inputs:
         type: object
         required:
-        - input-file
-        - queries-file
+        - inputFile
+        - queriesFile
         properties:
-          input-file:
+          inputFile:
             title: Molecules to screen
             mime-types:
             - squonk/x-smiles
             - text/csv
             type: file
-          query-file:
+          queryFile:
             title: Query molecules
             mime-types:
             - squonk/x-smiles
@@ -1354,7 +1354,7 @@ jobs:
       outputs:
         type: object
         properties:
-          output-file:
+          outputFile:
             title: Output file name
             mime-types:
             - squonk/x-smiles
@@ -1391,31 +1391,31 @@ jobs:
                     active: true
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-similarity-screen/92'
-                derived-from: input-file
+                derived-from: inputFile
       options:
         type: object
         required:
-        - output-file
-        - separator-inputs
-        - separator-queries
+        - outputFile
+        - separatorInputs
+        - separatorQueries
         - descriptor
         - metric
         properties:
-          output-file:
+          outputFile:
             title: Output file name
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
-          header-inputs:
+          headerInputs:
             title: Inputs file has header line
             type: boolean
-          header-queries:
+          headerQueries:
             title: Queries file has header line
             type: boolean
-          header-outputs:
+          headerOutputs:
             title: Output file has header line
             type: boolean
             default: true
-          separator-inputs:
+          separatorInputs:
             title: Separator for input file
             type: string
             default: tab
@@ -1424,7 +1424,7 @@ jobs:
             - comma
             - space
             - pipe
-          separator-queries:
+          separatorQueries:
             title: Separator for queries file
             type: string
             default: tab
