@@ -1063,10 +1063,12 @@ jobs:
             type: integer
             default: 100
 
-  similarity-screen:
-    name: Descriptor based similarity screening
+  similarity-screen-smiles:
+    name: Descriptor based similarity screening (SMILES input)
     description: >-
-      Filters molecules by molecular similarity using RDKit
+      Filters molecules by molecular similarity using RDKit.
+      A number of descriptors and metrics are available.
+      Query molecule(s) are specified as parameters in SMILES format.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -1220,6 +1222,210 @@ jobs:
             default: true
           separator:
             title: Separator for input file
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          descriptor:
+            title: Descriptor or fingerprint type
+            type: string
+            default: rdkit
+            enum:
+            - maccs
+            - morgan2
+            - morgan3
+            - rdkit
+          metric:
+            title: Similarity metric
+            type: string
+            default: tanimoto
+            enum:
+            - asymmetric
+            - braunblanquet
+            - cosine
+            - dice
+            - kulczynski
+            - mcconnaughey
+            - rogotgoldberg
+            - russel
+            - sokal
+            - tanimoto
+            - tversky
+          threshold:
+            title: Similarity threshold (0 - 1)
+            type: number
+            minimum: 0
+            maximum: 1
+          simIndex:
+            title: Similarity score column index
+            type: integer
+            minimum: 0
+          alpha:
+            title: Tversky alpha
+            type: number
+            default: 1
+            minimum: 0
+            maximum: 1
+          beta:
+            title: Tversky beta
+            type: number
+            default: 0
+            minimum: 0
+            maximum: 1
+          nbits:
+            title: Number of bits for Morgan bit vector
+            type: integer
+
+  similarity-screen-file:
+    name: Descriptor based similarity screening (file input)
+    description: >-
+      Filters molecules by molecular similarity using RDKit.
+      A number of descriptors and metrics are available.
+      Query molecule(s) are specified as parameters in SMILES format.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - similarity
+    - descriptors
+    - screen
+    - fingerprint
+    - filter
+    doc-url: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/screen.py --input '/data/{{ input-file }}'
+      --queries '/data/{{ query-file }}'
+      --output '/data/{{ output-file }}'
+      {% if header-inputs is defined %}--read-header{% endif %}
+      {% if header-queries is defined %}--queries-read-header{% endif %}
+      {% if header-outputs is defined %}--write-header{% endif %}
+      --delimiter '{{ separator-inputs }}'
+      --queries-delimiter '{{ separator-queries }}'
+      --descriptor '{{ descriptor }}'
+      --metric '{{ metric }}'
+      {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
+      {% if simIndex is defined %}--sim-index '{{ simIndex }}'{% endif %}
+      {% if alpha is defined %}--alpha {{ alpha }}{% endif %}
+      {% if beta is defined %}--beta {{ beta }}{% endif %}
+      {% if nbits is defined %}--nbits {{ nbits }}{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - header-inputs
+        - header-queries
+        - separator-inputs
+        - separator-queries
+        - output-file
+        - header-outputs
+        - descriptor
+        - metric
+        - threshold
+        - simIndex
+        - alpha
+        - beta
+        - nbits
+      inputs:
+        type: object
+        required:
+        - input-file
+        - queries-file
+        properties:
+          input-file:
+            title: Molecules to screen
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+          query-file:
+            title: Query molecules
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          output-file:
+            title: Output file name
+            mime-types:
+            - squonk/x-smiles
+            creates: '{{ output-file }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Descriptor based similarity screening
+                fields:
+                  score_min:
+                    type: number
+                    description: >-
+                      Minimum similarity
+                    required: true
+                    active: true
+                  score_max:
+                    type: number
+                    description: >-
+                      Maximum similarity
+                    required: true
+                    active: true
+                  score_amean:
+                    type: number
+                    description: >-
+                      Arithmetic mean of similarities
+                    required: true
+                    active: true
+                  score_gmean:
+                    type: number
+                    description: >-
+                      Geometric mean of similarities
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+                derived-from: input-file
+      options:
+        type: object
+        required:
+        - output-file
+        - separator-inputs
+        - separator-queries
+        - descriptor
+        - metric
+        properties:
+          output-file:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header-inputs:
+            title: Inputs file has header line
+            type: boolean
+          header-queries:
+            title: Queries file has header line
+            type: boolean
+          header-outputs:
+            title: Output file has header line
+            type: boolean
+            default: true
+          separator-inputs:
+            title: Separator for input file
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          separator-queries:
+            title: Separator for queries file
             type: string
             default: tab
             enum:
