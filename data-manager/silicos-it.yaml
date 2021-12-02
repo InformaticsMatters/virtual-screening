@@ -107,3 +107,54 @@ jobs:
           noref:
             title: Do not include reference mol in output
             type: boolean
+
+
+  align-it-generate:
+    name: Generate 3D phamacophores using align-it
+    description: >-
+      Generate 3D phamacophores for of a set of 3D molecules using Silicos-it's align-it tool.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - alignment
+    - similarity
+    - pharmacophore
+    - silicos-it
+    - filter
+    doc-url: 'https://discourse.squonk.it/t/job-align-it/94'
+    image:
+      name: 3dechem/silicos-it
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      align-it -d '{{ molecules }}' -p '{{ pharfile }}'
+    variables:
+      inputs:
+        type: object
+        required:
+        - molecules
+        properties:
+          molecules:
+            title: Molecules to create pharmacophores
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          pharmacophore_file:
+            title: Pharmacophore output file (.phar)
+            mime-types:
+            - squonk/align-it-phar
+            creates: '{{ pharfile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - pharfile
+        properties:
+          pharfile:
+            title: Output file for phamacophores
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\.phar$"
