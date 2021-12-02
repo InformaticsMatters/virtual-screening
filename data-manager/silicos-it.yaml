@@ -157,4 +157,4 @@ jobs:
           pharfile:
             title: Output file for phamacophores
             type: string
-            pattern: "^[A-Za-z0-9_/\\.\\-]+\.phar$"
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.phar$"
