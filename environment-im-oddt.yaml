@@ -4,4 +4,5 @@ channels:
 dependencies:
   - pip=21.1.1
   - rdkit=2021.03.5
-  - oddt=0.7 
+  - pip:
+    - git+https://github.com/oddt/oddt.git@master

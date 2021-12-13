@@ -108,7 +108,6 @@ jobs:
             title: Do not include reference mol in output
             type: boolean
 
-
   align-it-generate:
     name: Generate 3D phamacophores using align-it
     description: >-
@@ -136,7 +135,7 @@ jobs:
         - molecules
         properties:
           molecules:
-            title: Molecules to create pharmacophores
+            title: SDF file with input conformers
             mime-types:
             - chemical/x-mdl-sdfile
             type: file
@@ -158,3 +157,101 @@ jobs:
             title: Output file for phamacophores
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.phar$"
+
+  align-it-search:
+    name: Pharmacophore alignment with align-it
+    description: >-
+      Perform an alignment of pre-generated pharmacophores to a reference 3D molecule using Silicos-it's align-it tool.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+      - alignment
+      - similarity
+      - pharmacophore
+      - silicos-it
+      - filter
+    doc-url: 'https://discourse.squonk.it/t/job-align-it/94'
+    image:
+      name: 3dechem/silicos-it
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      align-it -r '{{ refmol }}'
+      -d '{{ molecules }}'
+      -o '{{ outfilebase }}.sdf'
+      -s '{{ outfilebase }}.tab'
+      {% if cutoff is defined %}--cutoff {{ cutoff }}{% endif %}
+      {% if rankBy is defined %}--rankBy '{{ rankBy }}'{% endif %}
+      {% if best is defined %}--best {{ best }}{% endif %}
+      {% if noref is defined %}--noref{% endif %}
+    variables:
+      order:
+        inputs:
+        - refmol
+        - pharmacophores
+        options:
+        - outfilebase
+        - cutoff
+        - rankBy
+        - best
+        - noref
+      inputs:
+        type: object
+        required:
+        - pharmacophores
+        - refmol
+        properties:
+          refmol:
+            title: Molecule to align to
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          pharmacophores:
+            title: File with pharmacophores
+            mime-types:
+            - squonk/align-it-phar
+            type: file
+      outputs:
+        type: object
+        properties:
+          alignments:
+            title: Aligned molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outfilebase }}.sdf'
+            type: file
+          scores:
+            title: Alignment scores
+            mime-types:
+            - text/tab-separated-values
+            creates: '{{ outfilebase }}.tab'
+            type: file
+      options:
+        type: object
+        required:
+        - outfilebase
+        properties:
+          outfilebase:
+            title: Output file base name (no extension)
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          cutoff:
+            title: Score cutoff
+            type: number
+            minimum: 0
+            maximum: 1
+          rankBy:
+            title: Rank scores by
+            type: string
+            enum:
+            - TANIMOTO
+            - TVERSKY_DB
+            - TVERSKY_REF
+          best:
+            title: Keep only this many best scores
+            type: integer
+            minimum: 1
+          noref:
+            title: Do not include reference mol in output
+            type: boolean

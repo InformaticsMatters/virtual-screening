@@ -83,7 +83,7 @@ docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000\
 ```
 
 This runs the container as your user ID rather than the default of `root` so that the created files
-have the correct ownnership.
+have the correct ownership.
 Update the `-u 1000:1000` bit with your actual user and group ID).
 You will need to create the `molecules` dir before running this so that it has the right ownership.
 

@@ -18,6 +18,8 @@ WORKDIR ${HOME}
 COPY *.py *.nf ./
 
 # conda install our requirements, including RDKit and ODDT
-RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 oddt=0.7 &&\
-  conda init bash
+RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 &&\
+  conda init bash &&\
+  pip install wheel &&\
+  pip install git+https://github.com/oddt/oddt.git@master
 

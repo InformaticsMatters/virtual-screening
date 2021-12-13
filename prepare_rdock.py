@@ -15,8 +15,6 @@
 # limitations under the License.
 
 
-# IMPORTANT: this currently has to run using Python2 as that's all the rdock container has.
-
 import argparse, os, subprocess, time, datetime
 from jinja2 import Template
 
@@ -50,7 +48,7 @@ END_SECTION
 
 ''')
 
-# these 2 methods are duplicated from utils.py because of the pytnon2 issue
+# these 2 methods are duplicated from utils.py because of the python2 issue
 def log(msg):
     msg_time = datetime.datetime.utcnow().replace(microsecond=0)
     print('%s # INFO -EVENT- %s' % (msg_time, msg))

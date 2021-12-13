@@ -21,11 +21,11 @@ import utils, le_conformers
 from rdkit import Chem
 
 
-def execute(mol, outfile, rms_threshold=0.35, minimize_cycles=500, remove_hydrogens=False):
+def execute(mol, outfile, rms_threshold=0.35, minimize_cycles=500, remove_hydrogens=False, num_conformers=None):
 
     utils.log('Executing ...')
 
-    molconfs = le_conformers.gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens)
+    molconfs = le_conformers.gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens, num_conformers=num_conformers)
     with Chem.SDWriter(outfile) as writer:
         for idx in range(molconfs.GetNumConformers()):
             molconfs.SetDoubleProp('Energy', molconfs.GetConformer(idx).GetDoubleProp('Energy'))
@@ -51,6 +51,8 @@ def main():
     parser.add_argument('-i', '--input', help="Input file as molfile")
     parser.add_argument('-s', '--smiles', help="Input file as SMILES string")
     parser.add_argument('-o', '--output', required=True, help="Output file as SD file")
+    parser.add_argument('-n', '--num-conformers', type=int,
+                        help="Number of conformers to generate. If not specified the Inhibox rules are used")
     parser.add_argument('-m', '--minimize-cycles', type=int, default=500, help="Number of MMFF minimisation cycles")
     parser.add_argument('-t', '--rms-threshold', type=float, default=1.0, help="RMS threshold for excluding conformers")
     parser.add_argument('--remove-hydrogens', action='store_true', help='Remove hydrogens from the output')
@@ -72,7 +74,7 @@ def main():
         raise ValueError('Bad input molecule')
 
     start = time.time()
-    count = execute(mol, args.output, minimize_cycles=args.minimize_cycles,
+    count = execute(mol, args.output, minimize_cycles=args.minimize_cycles, num_conformers=args.num_conformers,
                     remove_hydrogens=args.remove_hydrogens, rms_threshold=args.rms_threshold)
     end = time.time()
 

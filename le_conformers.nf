@@ -1,43 +1,29 @@
+#!/usr/bin/env nextflow
+
+nextflow.enable.dsl=2
+
 params.inputs = 'need-confs.smi'
 params.data_dir = 'molecules/sha256'
-params.removehs = true
-params.minimize_cycles = 500
-params.rms_threshold = 1.0
-params.chunk_size = 100
-params.digits = 6
-params.interval = 10
 
-inputsfile = file(params.inputs)
-outputsdir = file(params.data_dir)
+inputs_smi = file(params.inputs)
+data_dir = file(params.data_dir)
 
-process splitter {
+// includes
+include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { gen_conformers } from './nf-processes/rdkit/gen_conformers.nf'
 
-    container 'informaticsmatters/vs-prep:latest'
+// workflow definitions
+workflow generate_conformers {
 
-    input:
-    file inputs from inputsfile
+    take:
+    inputs_smi
+    data_dir
 
-    output:
-    file 'x*.smi' into chunks
-
-    """
-    split -l $params.chunk_size -d -a $params.digits --additional-suffix .smi $inputs
-    """
+    main:
+    split_txt(inputs_smi)
+    gen_conformers(split_txt.out.flatten(), data_dir)
 }
 
-process gen_conformers {
-
-    container 'informaticsmatters/vs-prep:latest'
-
-    input:
-    file chunks from chunks.flatten()
-    file data from outputsdir
-
-    """
-    /code/le_conformers.py -i $chunks --data-dir $data\
-        ${params.removehs ? '--remove-hydrogens' : ''}\
-        --rms-threshold $params.rms_threshold\
-        --minimize-cycles $params.minimize_cycles\
-        --interval $params.interval
-    """
+workflow {
+    generate_conformers(inputs_smi, data_dir)
 }

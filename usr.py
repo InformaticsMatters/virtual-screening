@@ -40,6 +40,8 @@ from oddt import shape
 
 def execute(inputs_sdf, queries_file, outfile_sdf, method, group_by_field, threshold, interval=None):
 
+    utils.expand_path(outfile_sdf)
+
     output_count = 0
     error_count = 0
     sum_similarity = 0.0

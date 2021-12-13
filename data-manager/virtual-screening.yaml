@@ -1406,7 +1406,7 @@ jobs:
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
           headerInputs:
-            title: Inputs file has header line
+            title: Input file has header line
             type: boolean
           headerQueries:
             title: Queries file has header line
@@ -1809,8 +1809,9 @@ jobs:
       --prmfile '/data/{{ prmFile }}'
       --asfile '/data/{{ asFile }}'
       --num_dockings {{ numDockings }}
-      -with-trace
-      -with-report
+      {% if resultsDir %}--publish_dir {{ resultsDir }}{% endif %}
+      -with-trace {% if resultsDir %}{{ publish_dir }}/trace.txt{% endif %}
+      -with-report {% if resultsDir %}{{ publish_dir }}/report.html{% endif %}
     variables:
       order:
         options:
@@ -1864,13 +1865,13 @@ jobs:
             type: file
           trace_file:
             title: Nextflow trace file
-            creates: trace.txt
+            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: report.html
+            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}report.html'
             mime-types:
             - text/html
             type: file
@@ -1883,6 +1884,10 @@ jobs:
             title: Number of dockings
             type: integer
             default: 50
+          resultsDir:
+            title: Dir for results
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+[A-Za-z0-9_\\.\\-]*$"
 
   run-smina:
     name: Run smina docking
@@ -1909,14 +1914,14 @@ jobs:
       --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
       --scoring_function '{{ scoringFunction }}'
-      --publishDir '{{ outputDir }}'
-      --output_filename '{{ outputFile }}'
-      -with-trace '{{ outputDir }}/trace.txt'
-      -with-report '{{ outputDir }}/report.html'
+      --publish_dir '{{ resultsDir }}'
+      --outputfile '{{ outputFile }}'
+      -with-trace '{{ resultsDir }}/trace.txt'
+      -with-report '{{ resultsDir }}/report.html'
     variables:
       order:
         options:
-        - outputDir
+        - resultsDir
         - outputFile
         - boxPadding
         - exhaustiveness
@@ -1948,7 +1953,6 @@ jobs:
             - chemical/x-pdb
             - chemical/x-pdbqt
             type: file
-
       outputs:
         type: object
         properties:
@@ -1956,7 +1960,7 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{{ outputDir }}/{{ outputFile }}'
+            creates: '{{ resultsDir }}/{{ outputFile }}'
             type: file
             annotation-properties:
               fields-descriptor:
@@ -1974,13 +1978,13 @@ jobs:
               derived-from: ligands
           trace_file:
             title: Nextflow trace file
-            creates: '{{ outputDir }}/trace.txt'
+            creates: '{{ resultsDir }}/trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: '{{ outputDir }}/report.html'
+            creates: '{{ resultsDir }}/report.html'
             mime-types:
             - text/html
             type: file
@@ -1990,10 +1994,10 @@ jobs:
         - boxPadding
         - exhaustiveness
         - scoringFunction
-        - outputDir
+        - resultsDir
         - outputFile
         properties:
-          outputDir:
+          resultsDir:
             title: Directory for results
             type: string
             default: ./

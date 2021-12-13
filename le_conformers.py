@@ -49,9 +49,13 @@ def determine_num_confs(mol):
         return 300
 
 
-def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens):
+def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens, num_conformers=None):
 
-    num_confs = determine_num_confs(mol)
+    if num_conformers:
+        num_confs = num_conformers
+    else:
+        num_confs = determine_num_confs(mol)
+
     molh = Chem.AddHs(mol)
 
     cids = AllChem.EmbedMultipleConfs(molh, numConfs=num_confs)
@@ -197,6 +201,8 @@ def main():
     parser = argparse.ArgumentParser(description='Enumerate conformers')
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES")
     parser.add_argument('--data-dir', default='molecules/sha256', help="Data directory")
+    parser.add_argument('-n', '--num-conformers', type=int,
+                        help="Number of conformers to generate. If not specified the Inhibox rules are used")
     parser.add_argument('-m', '--minimize-cycles', type=int, default=500, help="Number of MMFF minimisation cycles")
     parser.add_argument('-t', '--rms-threshold', type=float, default=1.0, help="RMS threshold for excluding conformers")
     parser.add_argument('--remove-hydrogens', action='store_true', help='Remove hydrogens from the output')
@@ -208,6 +214,7 @@ def main():
     start = time.time()
     input_count, enumerated_count, conformer_count, error_count = \
         execute(args.input, args.data_dir,
+                num_conformers=args.num_conformers,
                 minimize_cycles=args.minimize_cycles,
                 remove_hydrogens=args.remove_hydrogens,
                 rms_threshold=args.rms_threshold,

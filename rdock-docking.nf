@@ -1,128 +1,66 @@
 #!/usr/bin/env nextflow
 
-params.chunk = 100
+/*
+Run rDock docking on a set of candidate ligands provided in a SD file.
+
+Example:
+nextflow run rdock-docking.nf --ligands data/candidates.sdf --protein data/dhfr-receptor-ph7.mol2 --num_dockings 5\
+    --chunk_size 10 --publish_dir ./test
+*/
+
+nextflow.enable.dsl=2
+
+params.chunk_size = 100
 params.scratch = false
 
-// docking params
+// docking inputs
 params.ligands = 'ligands.sdf'
 params.protein = 'receptor.mol2'
 params.prmfile = 'docking.prm'
 params.asfile = 'docking.as'
-params.num_dockings = 25
-params.publishDir = './'
+
+params.publish_dir = './'
 
 
 // files
-ligands = file(params.ligands)
-protein = file(params.protein)
+ligands_sdf = file(params.ligands)
+protein_mol2 = file(params.protein)
 prmfile = file(params.prmfile)
 asfile = file(params.asfile)
 
 
-process sdsplit {
+// includes
+include { split_sdf } from './nf-processes/file/split_sdf.nf'
+include { concatenate_files as collect_results } from './nf-processes/file/concatenate_files.nf' addParams(
+    outputfile: 'results_rdock.sdf',
+    glob: 'rdock_*.sdf')
+include { concatenate_files as collect_failed } from './nf-processes/file/concatenate_files.nf' addParams(
+    outputfile: 'failed_rdock.sdf',
+    glob: 'failed_*.sdf',
+    optional: true)
+include { rdock_docking as rdock } from './nf-processes/rdock/rdock_docking.nf'
 
-    container 'informaticsmatters/vs-rdock:latest'
 
-    input:
-    file ligands
+// workflows
+workflow rdock_docking {
 
-    output:
-    file 'ligands_part*.sd' into ligand_parts
+    take:
+    ligands_sdf
+    protein_mol2
+    docking_prm
+    docking_as
 
-    """
-    sdsplit -${params.chunk} -oligands_part_ $ligands
+    main:
+    split_sdf(ligands_sdf)
+    rdock(split_sdf.out.flatten(), protein_mol2, docking_prm, docking_as)
+    collect_results(rdock.out[0].collect())
+    collect_failed(rdock.out[1].collect())
 
-    for f in ligands_part_*.sd; do
-      n=\${f:13:-3}
-      if [ \${#n} == 1 ]; then
-        mv \$f ligands_part_000\${n}.sd
-      elif [ \${#n} == 2 ]; then
-        mv \$f ligands_part_00\${n}.sd
-      elif [ \${#n} == 3 ]; then
-        mv \$f ligands_part_0\${n}.sd
-      fi
-    done
-    """
+    emit:
+    collect_results.out
+    collect_failed.out
 }
 
-process rdock {
-
-    container 'informaticsmatters/vs-rdock:latest'
-    errorStrategy 'ignore'
-    maxRetries 3
-    scratch params.scratch
-
-    input:
-    file part from ligand_parts.flatten()
-    file protein
-    file 'docking.prm' from prmfile
-    file 'docking.as' from asfile
-
-    output:
-    file 'rdock_part_*.sd' optional true into docked_parts
-    file 'failed_part_*.sd' optional true into failed_parts
-
-    """
-    # split into single molecules
-    sdsplit -1 -omol $part
-
-    # rename so that sorting is correct
-    for f in mol*.sd; do
-      n=\${f:3:-3}
-      if [ \${#n} == 1 ]; then
-        mv \$f mol00\${n}.sd
-      elif [ \${#n} == 2 ]; then
-        mv \$f mol0\${n}.sd
-      fi
-    done
-
-    # do the docking
-    for f in mol*.sd; do
-      echo "Docking \$f"
-      rbdock -r docking.prm -p dock.prm -n $params.num_dockings -i \$f -o docked_\${f::-3} > rdock_out_\${f::-3}.log
-      if [ \$? != 0 ]; then
-        cat \$f >> ${part.name.replace('ligands', 'failed')}
-      fi
-    done
-
-    # combine the results
-    cat docked_mol*.sd > ${part.name.replace('ligands', 'rdock')}
-    """
+workflow {
+    rdock_docking(ligands_sdf, protein_mol2, prmfile, asfile)
 }
-
-
-process collect_and_report {
-
-    container 'informaticsmatters/vs-rdock:latest'
-    publishDir params.publishDir, mode: 'move'
-
-    input:
-    file part from docked_parts.collect()
-
-    output:
-    file 'results_rdock.sdf'
-    
-    """
-    rm -f results_rdock.sdf
-    ls rdock_*.sd | xargs cat >> results_rdock.sdf
-    """
-}
-
-
-process collect_failures {
-
-    container 'informaticsmatters/vs-rdock:latest'
-    publishDir params.publishDir, mode: 'move'
-
-    input:
-    file failed from failed_parts.collect()
-
-    output:
-    file 'failed_rdock.sdf' optional true
-
-    """
-    rm -f failed_rdock.sdf
-    ls failed_*.sd | xargs cat >> failed_rdock.sdf
-    """
-}
-

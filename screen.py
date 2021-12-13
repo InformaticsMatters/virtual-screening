@@ -138,6 +138,8 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
 
     validate_params(descriptor, metric, alpha, beta, nbits)
 
+    utils.expand_path(outputfile)
+
     count = 0
     hits = 0
     errors = 0

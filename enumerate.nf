@@ -1,47 +1,32 @@
+#!/usr/bin/env nextflow
+
+nextflow.enable.dsl=2
+
+
 params.inputs = 'need-enum.smi'
 params.data_dir = 'molecules/sha256'
-params.chunk_size = 1000
-params.digits = 6
-params.num_charges = 2
-params.try_embedding = true
-params.add_hydrogens = true
-params.max_tautomers = 25
-params.interval = 1000
+params.chunk_size = 10000
 
-inputsfile = file(params.inputs)
-outputsdir = file(params.data_dir)
+// files
+inputs_smi = file(params.inputs) // smiles with molecules to enumerate
+data_dir = file(params.data_dir) // sharded data dir
 
-process splitter {
+// includes
+include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { enumerate } from './nf-processes/rdkit/enumerate.nf'
 
-    container 'informaticsmatters/vs-prep:latest'
+// workflow definitions
+workflow enumerate_sharded {
 
-    input:
-    file inputs from inputsfile
+    take:
+    inputs_smi
+    data_dir
 
-    output:
-    file 'x*.smi' into chunks
-
-    """
-    split -l $params.chunk_size -d -a $params.digits --additional-suffix .smi $inputs
-    """
+    main:
+    split_txt(inputs_smi)
+    enumerate(split_txt.out.flatten(), data_dir)
 }
 
-process enumerate {
-
-    container 'informaticsmatters/vs-prep:latest'
-
-    input:
-    file chunks from chunks.flatten()
-    file data from outputsdir
-
-
-    """
-    /code/enumerate.py -i $chunks --data-dir $data --interval $params.interval\
-      --enumerate-tautomers --enumerate-chirals --enumerate-charges\
-      ${params.num_charges ? '--num-charges ' + params.num_charges : ''}\
-      ${params.try_embedding ? '--try-embedding' : ''}\
-      ${params.add_hydrogens ? '--add-hydrogens' : ''}\
-      --max-tautomers $params.max_tautomers
-    """
+workflow {
+    enumerate_sharded(inputs_smi, data_dir)
 }
-
