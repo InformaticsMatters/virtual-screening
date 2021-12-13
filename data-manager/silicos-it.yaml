@@ -165,11 +165,11 @@ jobs:
     version: '1.0.0'
     category: virtual screening
     keywords:
-      - alignment
-      - similarity
-      - pharmacophore
-      - silicos-it
-      - filter
+    - alignment
+    - similarity
+    - pharmacophore
+    - silicos-it
+    - filter
     doc-url: 'https://discourse.squonk.it/t/job-align-it/94'
     image:
       name: 3dechem/silicos-it
