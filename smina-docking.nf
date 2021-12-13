@@ -16,8 +16,8 @@ params.scratch = false
 params.ligands = 'ligands.sdf'
 params.ligand = 'ligand.pdbqt'
 params.protein = 'receptor.pdbqt'
-params.outputfile = 'results_smina.sdf'
-
+params.output_basename = 'results_smina'
+params.publish_dir = './'
 
 // files
 ligands = file(params.ligands)
@@ -39,6 +39,7 @@ include { convert_format as format_ligand } from './nf-processes/obabel/convert_
 include { split_sdf } from './nf-processes/file/split_sdf.nf'
 include { smina_docking as smina } from './nf-processes/smina/smina_docking.nf'
 include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
+    outputfile: params.output_basename + '.sdf',
     glob: 'smina_*.sdf')
 
 

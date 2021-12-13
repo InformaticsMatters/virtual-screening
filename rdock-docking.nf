@@ -18,9 +18,8 @@ params.ligands = 'ligands.sdf'
 params.protein = 'receptor.mol2'
 params.prmfile = 'docking.prm'
 params.asfile = 'docking.as'
-
+params.output_basename = 'results_rdock'
 params.publish_dir = './'
-
 
 // files
 ligands_sdf = file(params.ligands)
@@ -31,14 +30,14 @@ asfile = file(params.asfile)
 
 // includes
 include { split_sdf } from './nf-processes/file/split_sdf.nf'
+include { rdock_docking as rdock } from './nf-processes/rdock/rdock_docking.nf'
 include { concatenate_files as collect_results } from './nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: 'results_rdock.sdf',
+    outputfile: params.output_basename + '.sdf',
     glob: 'rdock_*.sdf')
 include { concatenate_files as collect_failed } from './nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: 'failed_rdock.sdf',
+    outputfile: params.output_basename + '_failed.sdf',
     glob: 'failed_*.sdf',
     optional: true)
-include { rdock_docking as rdock } from './nf-processes/rdock/rdock_docking.nf'
 
 
 // workflows

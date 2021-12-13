@@ -1803,12 +1803,15 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run -c /code/nextflow.config /code/rdock-docking.nf
+      nextflow run -c /code/nextflow.config 
+      {% if resultsDir %}-log {{ resultsDir }}/.nextflow.log{% endif %}
+      /code/rdock-docking.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinMOL2 }}'
       --prmfile '/data/{{ prmFile }}'
       --asfile '/data/{{ asFile }}'
       --num_dockings {{ numDockings }}
+      --output_basename {{ outputFile }}
       {% if resultsDir %}--publish_dir {{ resultsDir }}{% endif %}
       -with-trace {% if resultsDir %}{{ resultsDir }}/trace.txt{% endif %}
       -with-report {% if resultsDir %}{{ resultsDir }}/report.html{% endif %}
@@ -1856,13 +1859,13 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results.sdf'
+            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
             type: file
-          dockedTXT:
-            title: Pose report file
+          log_file:
+            title: Nextflow log file
+            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}.nextflow.log'
             mime-types:
-            - text/csv
-            creates: 'results.txt'
+            - text/plain
             type: file
           trace_file:
             title: Nextflow trace file
@@ -1880,15 +1883,21 @@ jobs:
         type: object
         required:
         - numDockings
+        - outputFile
         properties:
-          numDockings:
-            title: Number of dockings
-            type: integer
-            default: 50
+          outputFile:
+            title: Base filename for results (no extension)
+            type: string
+            default: results_rdock
+            pattern: "^[A-Za-z0-9_\\.\\-]+$"
           resultsDir:
             title: Dir for results
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]*[A-Za-z0-9_\\.\\-]+$"
+          numDockings:
+            title: Number of dockings
+            type: integer
+            default: 50
 
   run-smina:
     name: Run smina docking
@@ -1908,7 +1917,9 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run -c /code/nextflow.config /code/smina-docking.nf
+      nextflow run -c /code/nextflow.config 
+      {% if resultsDir %}-log {{ resultsDir }}/.nextflow.log{% endif %}
+      /code/smina-docking.nf
       --ligands '/data/{{ ligands }}'
       --protein '/data/{{ protein }}'
       --ligand '/data/{{ ligand }}'
@@ -1916,9 +1927,10 @@ jobs:
       --exhaustiveness {{ exhaustiveness }}
       --scoring_function '{{ scoringFunction }}'
       --publish_dir '{{ resultsDir }}'
-      --outputfile '{{ outputFile }}'
-      -with-trace '{{ resultsDir }}/trace.txt'
-      -with-report '{{ resultsDir }}/report.html'
+      --output_basename '{{ outputFile }}'
+      {% if resultsDir %}--publish_dir {{ resultsDir }}{% endif %}
+      -with-trace {% if resultsDir %}{{ resultsDir }}/trace.txt{% endif %}
+      -with-report {% if resultsDir %}{{ resultsDir }}/report.html{% endif %}
     variables:
       order:
         options:
@@ -1961,7 +1973,7 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{{ resultsDir }}/{{ outputFile }}'
+            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
             type: file
             annotation-properties:
               fields-descriptor:
@@ -1977,6 +1989,12 @@ jobs:
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-run-smina/78'
               derived-from: ligands
+          log_file:
+            title: Nextflow log file
+            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}.nextflow.log'
+            mime-types:
+            - text/plain
+            type: file
           trace_file:
             title: Nextflow trace file
             creates: '{{ resultsDir }}/trace.txt'
@@ -2001,11 +2019,12 @@ jobs:
           resultsDir:
             title: Directory for results
             type: string
-            default: ./
+            pattern: "^[A-Za-z0-9_/\\.\\-]*[A-Za-z0-9_\\.\\-]+$"
           outputFile:
-            title: Filename for results
+            title: Base filename for results (no extension)
             type: string
-            default: results_smina.sdf
+            default: results_smina
+            pattern: "^[A-Za-z0-9_\\.\\-]+$"
           boxPadding:
             title: Box definition padding
             type: number
