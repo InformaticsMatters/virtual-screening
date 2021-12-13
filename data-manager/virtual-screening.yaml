@@ -1803,8 +1803,9 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run -c /code/nextflow.config 
+      nextflow run
       {% if resultsDir %}-log {{ resultsDir }}/.nextflow.log{% endif %}
+      -c /code/nextflow.config
       /code/rdock-docking.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinMOL2 }}'
@@ -1818,12 +1819,13 @@ jobs:
     variables:
       order:
         options:
+        - resultsDir
+        - outputFile
         - ligandsSDF
         - proteinMOL2
         - prmFile
         - asFile
         - numDockings
-        - resultsDir
       inputs:
         type: object
         required:
@@ -1917,8 +1919,9 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run -c /code/nextflow.config 
+      nextflow run 
       {% if resultsDir %}-log {{ resultsDir }}/.nextflow.log{% endif %}
+      -c /code/nextflow.config 
       /code/smina-docking.nf
       --ligands '/data/{{ ligands }}'
       --protein '/data/{{ protein }}'
