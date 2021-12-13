@@ -1635,7 +1635,7 @@ jobs:
             type: integer
             default: 1
           racMax:
-            title: Ring atom count increasehttps://discourse.squonk.it/t/job-run-rdock/74
+            title: Ring atom count increase
             type: integer
             default: 1
           hops:
@@ -1810,8 +1810,8 @@ jobs:
       --asfile '/data/{{ asFile }}'
       --num_dockings {{ numDockings }}
       {% if resultsDir %}--publish_dir {{ resultsDir }}{% endif %}
-      -with-trace {% if resultsDir %}{{ publish_dir }}/trace.txt{% endif %}
-      -with-report {% if resultsDir %}{{ publish_dir }}/report.html{% endif %}
+      -with-trace {% if resultsDir %}{{ resultsDir }}/trace.txt{% endif %}
+      -with-report {% if resultsDir %}{{ resultsDir }}/report.html{% endif %}
     variables:
       order:
         options:
@@ -1888,7 +1888,7 @@ jobs:
           resultsDir:
             title: Dir for results
             type: string
-            pattern: "^[A-Za-z0-9_/\\.\\-]+[A-Za-z0-9_\\.\\-]*$"
+            pattern: "^[A-Za-z0-9_/\\.\\-]*[A-Za-z0-9_\\.\\-]+$"
 
   run-smina:
     name: Run smina docking
