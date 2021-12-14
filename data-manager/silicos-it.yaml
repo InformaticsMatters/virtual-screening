@@ -28,14 +28,15 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      shape-it -r '{{ refmol }}'
-      -d '{{ molecules }}'
-      -o '{{ outfilebase }}.sdf'
-      -s '{{ outfilebase }}.tab'
-      {% if cutoff is defined %}--cutoff {{ cutoff }}{% endif %}
-      {% if rankBy is defined %}--rankBy '{{ rankBy }}'{% endif %}
-      {% if best is defined %}--best {{ best }}{% endif %}
-      {% if noref is defined %}--noref{% endif %}
+      shape-it --reference '{{ refmol }}'
+      --dbase '{{ molecules }}'
+      --out '{{ outfilebase }}.sdf'
+      --scores '{{ outfilebase }}.tab'
+      {% if cutoff is defined%}--cutoff {{ cutoff }}{% endif %}
+      {% if rankBy is defined%}--rankBy '{{ rankBy }}'{% endif %}
+      {% if best is defined%}--best {{ best }}{% endif %}
+      {% if noref %}--noRef{% endif %}
+      {% if scoreOnly %}--scoreOnly{% endif %}
     variables:
       order:
         inputs:
@@ -83,6 +84,10 @@ jobs:
         type: object
         required:
         - outfilebase
+        - cuttoff
+        - rankBy
+        - noref
+        - scoreOnly
         properties:
           outfilebase:
             title: Output file base name (no extension)
@@ -96,6 +101,7 @@ jobs:
           rankBy:
             title: Rank scores by
             type: string
+            default: TANIMOTO
             enum:
             - TANIMOTO
             - TVERSKY_DB
@@ -107,6 +113,11 @@ jobs:
           noref:
             title: Do not include reference mol in output
             type: boolean
+            default: false
+          scoreOnly:
+            title: Inputs don't need aligning
+            type: boolean
+            default: false
 
   align-it-search:
     name: Pharmacophore alignment with align-it
