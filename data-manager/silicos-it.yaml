@@ -48,6 +48,8 @@ jobs:
         - rankBy
         - best
         - noref
+        - scoreOnly
+        - addIterations
       inputs:
         type: object
         required:
@@ -118,6 +120,10 @@ jobs:
             title: Inputs don't need aligning
             type: boolean
             default: false
+          addIterations:
+            title: Additional siulated annealing steps
+            type: integer
+            minimum: 1
 
   align-it-search:
     name: Pharmacophore alignment with align-it
