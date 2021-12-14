@@ -127,14 +127,13 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      align-it -r '{{ refmol }}'
-      -d '{{ inputs }}'
-      -o '{{ outfilebase }}.sdf'
-      -s '{{ outfilebase }}.tab'
-      {% if cutoff is defined %}--cutoff {{ cutoff }}{% endif %}
+      align-it --reference '{{ refmol }}'
+      --dbase '{{ inputs }}'
+      --out '{{ outfilebase }}.sdf'
+      --scores '{{ outfilebase }}.tab'
+      {% if cutoff is defined %}--cutOff {{ cutoff }}{% endif %}
       {% if rankBy is defined %}--rankBy '{{ rankBy }}'{% endif %}
       {% if best is defined %}--best {{ best }}{% endif %}
-      {% if noref is defined %}--noref{% endif %}
       {% if funcGroups %}--funcGroup {{ funcGroups }}{% endif %}
       {% if epsilon %}--epsilon {{ epsilon }}{% endif %}
       {% if merge %}--merge{% endif %}
@@ -152,7 +151,6 @@ jobs:
         - cutoff
         - rankBy
         - best
-        - noref
         - funcGroups
         - epsilon
         - merge
@@ -207,6 +205,7 @@ jobs:
           outfilebase:
             title: Output file base name (no extension)
             type: string
+            default: alignit_results.sdf
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
           cutoff:
             title: Score cutoff
@@ -216,6 +215,7 @@ jobs:
           rankBy:
             title: Rank scores by
             type: string
+            default: TANIMOTO
             enum:
             - TANIMOTO
             - TVERSKY_DB
@@ -224,14 +224,11 @@ jobs:
             title: Keep only this many best scores
             type: integer
             minimum: 1
-          noref:
-            title: Do not include reference mol in output
-            type: boolean
           funcGroups:
             title: Phrmacophore types
             type: string
             default: AROM,HDON,HACC,LIPO,CHARGE
-            pattern: "^[A-Z,]$"
+            pattern: "^[A-Z,]*$"
           epsilon:
             title: Tolerance (epsilon)
             type: number
