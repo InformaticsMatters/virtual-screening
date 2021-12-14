@@ -251,7 +251,7 @@ jobs:
             type: boolean
             default: false
           scoreOnly:
-            title: Score but don't align
+            title: Inputs don't need aligning
             type: boolean
             default: false
           withExclusion:
