@@ -121,7 +121,7 @@ jobs:
             type: boolean
             default: false
           addIterations:
-            title: Additional siulated annealing steps
+            title: Additional simulated annealing steps
             type: integer
             minimum: 1
 
