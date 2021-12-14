@@ -108,56 +108,6 @@ jobs:
             title: Do not include reference mol in output
             type: boolean
 
-  align-it-generate:
-    name: Generate 3D phamacophores using align-it
-    description: >-
-      Generate 3D phamacophores for of a set of 3D molecules using Silicos-it's align-it tool.
-    version: '1.0.0'
-    category: virtual screening
-    keywords:
-    - alignment
-    - similarity
-    - pharmacophore
-    - silicos-it
-    - filter
-    doc-url: 'https://discourse.squonk.it/t/job-align-it/94'
-    image:
-      name: 3dechem/silicos-it
-      tag: 'latest'
-      project-directory: /data
-      working-directory: /data
-    command: >-
-      align-it -d '{{ molecules }}' -p '{{ pharfile }}'
-    variables:
-      inputs:
-        type: object
-        required:
-        - molecules
-        properties:
-          molecules:
-            title: SDF file with input conformers
-            mime-types:
-            - chemical/x-mdl-sdfile
-            type: file
-      outputs:
-        type: object
-        properties:
-          pharmacophore_file:
-            title: Pharmacophore output file (.phar)
-            mime-types:
-            - squonk/align-it-phar
-            creates: '{{ pharfile }}'
-            type: file
-      options:
-        type: object
-        required:
-        - pharfile
-        properties:
-          pharfile:
-            title: Output file for phamacophores
-            type: string
-            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.phar$"
-
   align-it-search:
     name: Pharmacophore alignment with align-it
     description: >-
@@ -178,13 +128,20 @@ jobs:
       working-directory: /data
     command: >-
       align-it -r '{{ refmol }}'
-      -d '{{ molecules }}'
+      -d '{{ inputs }}'
       -o '{{ outfilebase }}.sdf'
       -s '{{ outfilebase }}.tab'
       {% if cutoff is defined %}--cutoff {{ cutoff }}{% endif %}
       {% if rankBy is defined %}--rankBy '{{ rankBy }}'{% endif %}
       {% if best is defined %}--best {{ best }}{% endif %}
       {% if noref is defined %}--noref{% endif %}
+      {% if funcGroups %}--funcGroup {{ funcGroups }}{% endif %}
+      {% if epsilon %}--epsilon {{ epsilon }}{% endif %}
+      {% if merge %}--merge{% endif %}
+      {% if noNormal %}--noNormal{% endif %}
+      {% if noHybrid %}--noHybrid{% endif %}
+      {% if scoreOnly %}--scoreOnly{% endif %}
+      {% if withExclusion %}--withExclusion{% endif %}
     variables:
       order:
         inputs:
@@ -196,6 +153,13 @@ jobs:
         - rankBy
         - best
         - noref
+        - funcGroups
+        - epsilon
+        - merge
+        - noNormal
+        - noHybrid
+        - scoreOnly
+        - withExclusion
       inputs:
         type: object
         required:
@@ -203,14 +167,16 @@ jobs:
         - refmol
         properties:
           refmol:
-            title: Molecule to align to
+            title: Molecule pr pharmacophore to align to
             mime-types:
             - chemical/x-mdl-sdfile
-            type: file
-          pharmacophores:
-            title: File with pharmacophores
-            mime-types:
+            - chemical/x-mdl-molfile
             - squonk/align-it-phar
+            type: file
+          inputs:
+            title: File with molecules to search
+            mime-types:
+            - chemical/x-mdl-sdfile
             type: file
       outputs:
         type: object
@@ -231,6 +197,12 @@ jobs:
         type: object
         required:
         - outfilebase
+        - pharfile
+        - merge
+        - noNormal
+        - noHybrid
+        - scoreOnly
+        - withExclusion
         properties:
           outfilebase:
             title: Output file base name (no extension)
@@ -255,3 +227,34 @@ jobs:
           noref:
             title: Do not include reference mol in output
             type: boolean
+          funcGroups:
+            title: Phrmacophore types
+            type: string
+            default: AROM,HDON,HACC,LIPO,CHARGE
+            pattern: "^[A-Z,]$"
+          epsilon:
+            title: Tolerance (epsilon)
+            type: number
+            default: 0.5
+            minimum: 0
+            maximum: 1
+          merge:
+            title: Merge points
+            type: boolean
+            default: false
+          noNormal:
+            title: Do not use normal information
+            type: boolean
+            default: false
+          noHybrid:
+            title: Do not calculate hybrid points
+            type: boolean
+            default: false
+          scoreOnly:
+            title: Score but don't align
+            type: boolean
+            default: false
+          withExclusion:
+            title: Use exlusion spheres during optimisation
+            type: boolean
+            default: false
