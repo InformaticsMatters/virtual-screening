@@ -1920,7 +1920,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow
-      {% if resultsDir %}-log {{ resultsDir }}/.nextflow.log{% endif %}
+      {% if resultsDir is defined %}-log {{ resultsDir }}/.nextflow.log{% endif %}
       run -c /code/nextflow.config
       /code/smina-docking.nf
       --ligands '/data/{{ ligands }}'
@@ -1929,11 +1929,10 @@ jobs:
       --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
       --scoring_function '{{ scoringFunction }}'
-      --publish_dir '{{ resultsDir }}'
+      {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
       --output_basename '{{ outputFile }}'
-      {% if resultsDir %}--publish_dir {{ resultsDir }}{% endif %}
-      -with-trace {% if resultsDir %}{{ resultsDir }}/trace.txt{% endif %}
-      -with-report {% if resultsDir %}{{ resultsDir }}/report.html{% endif %}
+      -with-trace {% if resultsDir is defined %}{{ resultsDir }}/trace.txt{% endif %}
+      -with-report {% if resultsDir is defined %}{{ resultsDir }}/report.html{% endif %}
     variables:
       order:
         options:
@@ -1976,7 +1975,7 @@ jobs:
             title: Docked poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
             type: file
             annotation-properties:
               fields-descriptor:
@@ -2016,7 +2015,6 @@ jobs:
         - boxPadding
         - exhaustiveness
         - scoringFunction
-        - resultsDir
         - outputFile
         properties:
           resultsDir:
