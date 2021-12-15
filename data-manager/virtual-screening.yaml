@@ -1804,7 +1804,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow
-      {{ DM_INSTANCE_DIRECTORY }}/.nextflow.log
+      -log {{ DM_INSTANCE_DIRECTORY }}/.nextflow.log
       run -c /code/nextflow.config
       /code/rdock-docking.nf
       --ligands '/data/{{ ligandsSDF }}'
