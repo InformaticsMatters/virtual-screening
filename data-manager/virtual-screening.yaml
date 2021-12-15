@@ -1865,7 +1865,7 @@ jobs:
             type: file
           log_file:
             title: Nextflow log file
-            creates: '{% if resultsDir %}{{ resultsDir }}/{% endif %}.nextflow.log'
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}.nextflow.log'
             mime-types:
             - text/plain
             type: file
@@ -1999,13 +1999,13 @@ jobs:
             type: file
           trace_file:
             title: Nextflow trace file
-            creates: '{{ resultsDir is defined }}/trace.txt'
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: '{{ resultsDir is defined }}/report.html'
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}report.html'
             mime-types:
             - text/html
             type: file
