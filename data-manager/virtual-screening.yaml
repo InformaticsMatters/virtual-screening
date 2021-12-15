@@ -1804,7 +1804,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow
-      {% if resultsDir is defined %}-log {{ resultsDir }}/.nextflow.log{% endif %}
+      {{ DM_INSTANCE_DIRECTORY }}/.nextflow.log
       run -c /code/nextflow.config
       /code/rdock-docking.nf
       --ligands '/data/{{ ligandsSDF }}'
@@ -1814,8 +1814,8 @@ jobs:
       --num_dockings {{ numDockings }}
       --output_basename {{ outputFile }}
       {% if resultsDir is defined %}--publish_dir {{ resultsDir }}{% endif %}
-      -with-trace {% if resultsDir is defined %}{{ resultsDir }}/trace.txt{% endif %}
-      -with-report {% if resultsDir is defined %}{{ resultsDir }}/report.html{% endif %}
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
       order:
         options:
@@ -1881,6 +1881,10 @@ jobs:
             mime-types:
             - text/html
             type: file
+          nextflow_reports:
+            title: Nextflow reports and logs
+            creates: '{{ DM_INSTANCE_DIRECTORY }}'
+            type: directory
       options:
         type: object
         required:
