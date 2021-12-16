@@ -1676,7 +1676,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/enumerate.nf
+      run -c /code/nextflow.config 
+      /code/enumerate.nf
       --inputs '/data/{{ inputFile }}'
       --data_dir '/data/{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -1748,7 +1749,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/le_conformers.nf
+      run -c /code/nextflow.config
+      /code/le_conformers.nf
       --inputs '/data/{{ inputFile }}'
       --data_dir '/data/{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -2077,7 +2079,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/oddt.nf
+      run -c /code/nextflow.config
+      /code/oddt.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinPDB }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
