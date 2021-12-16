@@ -1881,10 +1881,6 @@ jobs:
             mime-types:
             - text/html
             type: file
-          nextflow_reports:
-            title: Nextflow reports and logs
-            creates: '{{ DM_INSTANCE_DIRECTORY }}'
-            type: directory
       options:
         type: object
         required:
@@ -1924,7 +1920,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow
-      {% if resultsDir is defined %}-log {{ resultsDir }}/.nextflow.log{% endif %}
+      {{ DM_INSTANCE_DIRECTORY }}/.nextflow.log
       run -c /code/nextflow.config
       /code/smina-docking.nf
       --ligands '/data/{{ ligands }}'
@@ -1935,8 +1931,8 @@ jobs:
       --scoring_function '{{ scoringFunction }}'
       {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
       --output_basename '{{ outputFile }}'
-      -with-trace {% if resultsDir is defined %}{{ resultsDir }}/trace.txt{% endif %}
-      -with-report {% if resultsDir is defined %}{{ resultsDir }}/report.html{% endif %}
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
       order:
         options:
@@ -1997,19 +1993,19 @@ jobs:
               derived-from: ligands
           log_file:
             title: Nextflow log file
-            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}.nextflow.log'
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/.nextflow.log'
             mime-types:
             - text/plain
             type: file
           trace_file:
             title: Nextflow trace file
-            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}trace.txt'
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}report.html'
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
             mime-types:
             - text/html
             type: file
