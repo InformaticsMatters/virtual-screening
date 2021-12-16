@@ -2082,6 +2082,8 @@ jobs:
       run /code/oddt-interactions.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinPDB }}'
+      {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
+      --output_filename '{{ outputFile }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
       -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
@@ -2108,7 +2110,7 @@ jobs:
             title: Scored poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: 'results_oddt.sdf'
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
             type: file
           log_file:
             title: Nextflow log file
@@ -2128,4 +2130,17 @@ jobs:
             mime-types:
             - text/html
             type: file
-      # there are no options for this job
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          resultsDir:
+            title: Directory for results
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]*[A-Za-z0-9_\\.\\-]+$"
+          outputFile:
+            title: Filename for results
+            type: string
+            default: oddt_interactions.sdf
+            pattern: "^[A-Za-z0-9_\\.\\-]+\\.sdf$"

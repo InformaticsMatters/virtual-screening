@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED=1
 ENV HOME=/code
 WORKDIR ${HOME}
 
-COPY *.py *.nf ./
+COPY *.py ./
 
 # conda install our requirements, including RDKit and ODDT
 RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 &&\
