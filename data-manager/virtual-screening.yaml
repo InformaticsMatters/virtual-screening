@@ -1675,11 +1675,12 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run /code/enumerate.nf
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run /code/enumerate.nf
       --inputs '/data/{{ inputFile }}'
       --data_dir '/data/{{ dataDir }}'
-      -with-trace
-      -with-report
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
       inputs:
         type: object
@@ -1705,16 +1706,22 @@ jobs:
             - chemical/x-csv
             creates: '{{ dataDir }}/sha256/*/*/*.smi'
             # additional *.smi files might have already been generated
-            type: filesenumeration
+            type: files
+          log_file:
+            title: Nextflow log file
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
+            mime-types:
+            - text/plain
+            type: file
           trace_file:
             title: Nextflow trace file
-            creates: trace.txt
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: report.html
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
             mime-types:
             - text/html
             type: file
@@ -1740,11 +1747,12 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run /code/le_conformers.nf
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run /code/le_conformers.nf
       --inputs '/data/{{ inputFile }}'
       --data_dir '/data/{{ dataDir }}'
-      -with-trace
-      -with-report
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
       inputs:
         type: object
@@ -1771,18 +1779,25 @@ jobs:
             creates: '{{ dataDir }}/sha256/*/*/*_le_confs.sdf'
             # additional *.sdf files might have already been generated
             type: files
+          log_file:
+            title: Nextflow log file
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
+            mime-types:
+            - text/plain
+            type: file
           trace_file:
-            title: Nextflow trace tile
-            creates: trace.txt
+            title: Nextflow trace file
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: report.html
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
             mime-types:
             - text/html
             type: file
+
       # there are no options for this job
 
   run-rdock:
@@ -1803,8 +1818,7 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow
-      -log {{ DM_INSTANCE_DIRECTORY }}/.nextflow.log
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run -c /code/nextflow.config
       /code/rdock-docking.nf
       --ligands '/data/{{ ligandsSDF }}'
@@ -1865,7 +1879,7 @@ jobs:
             type: file
           log_file:
             title: Nextflow log file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/.nextflow.log'
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
             mime-types:
             - text/plain
             type: file
@@ -1919,8 +1933,7 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow
-      {{ DM_INSTANCE_DIRECTORY }}/.nextflow.log
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run -c /code/nextflow.config
       /code/smina-docking.nf
       --ligands '/data/{{ ligands }}'
@@ -1993,7 +2006,7 @@ jobs:
               derived-from: ligands
           log_file:
             title: Nextflow log file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/.nextflow.log'
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
             mime-types:
             - text/plain
             type: file
@@ -2063,11 +2076,12 @@ jobs:
       working-directory: /data
       type: nextflow
     command: >-
-      nextflow run /code/oddt.nf
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run /code/oddt.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinPDB }}'
-      -with-trace
-      -with-report
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
       inputs:
         type: object
@@ -2094,15 +2108,21 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: 'results_oddt.sdf'
             type: file
+          log_file:
+            title: Nextflow log file
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
+            mime-types:
+            - text/plain
+            type: file
           trace_file:
             title: Nextflow trace file
-            creates: trace.txt
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
             mime-types:
             - text/plain
             type: file
           report_file:
             title: Nextflow report file
-            creates: report.html
+            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
             mime-types:
             - text/html
             type: file
