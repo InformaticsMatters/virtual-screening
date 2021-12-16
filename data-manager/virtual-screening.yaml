@@ -2079,7 +2079,7 @@ jobs:
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       -c /code/nextflow.config
-      run /code/oddt.nf
+      run /code/oddt-interactions.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinPDB }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
