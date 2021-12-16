@@ -1676,8 +1676,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run -c /code/nextflow.config 
-      /code/enumerate.nf
+      -c /code/nextflow.config
+      run /code/enumerate.nf
       --inputs '/data/{{ inputFile }}'
       --data_dir '/data/{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -1749,8 +1749,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run -c /code/nextflow.config
-      /code/le_conformers.nf
+      -c /code/nextflow.config
+      run /code/le_conformers.nf
       --inputs '/data/{{ inputFile }}'
       --data_dir '/data/{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -1799,7 +1799,6 @@ jobs:
             mime-types:
             - text/html
             type: file
-
       # there are no options for this job
 
   run-rdock:
@@ -1821,8 +1820,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run -c /code/nextflow.config
-      /code/rdock-docking.nf
+      -c /code/nextflow.config
+      run /code/rdock-docking.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinMOL2 }}'
       --prmfile '/data/{{ prmFile }}'
@@ -1936,8 +1935,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run -c /code/nextflow.config
-      /code/smina-docking.nf
+      -c /code/nextflow.config
+      run /code/smina-docking.nf
       --ligands '/data/{{ ligands }}'
       --protein '/data/{{ protein }}'
       --ligand '/data/{{ ligand }}'
@@ -2079,8 +2078,8 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run -c /code/nextflow.config
-      /code/oddt.nf
+      -c /code/nextflow.config
+      run /code/oddt.nf
       --ligands '/data/{{ ligandsSDF }}'
       --protein '/data/{{ proteinPDB }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
