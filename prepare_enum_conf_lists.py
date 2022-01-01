@@ -20,7 +20,7 @@ import utils
 from utils import get_path_from_digest
 
 
-def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir):
+def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir, interval=0):
 
     total = 0
     existing_enum = 0
@@ -41,6 +41,10 @@ def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir):
 
                 for line in inf:
                     total += 1
+
+                    if interval and total % interval == 0:
+                        utils.log_dm_event("Processed {} records".format(total))
+
                     tokens = line.strip().split('\t')
                     smi = tokens[0]
                     uid = tokens[1]
@@ -81,7 +85,7 @@ def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir):
 def main():
 
     # Example:
-    #   python3 prepare_enum_conf_lists.py -i foo.smi --outfile-enum need-enum.smi --outfile-le-confs need-confs.smi
+    #   python3 prepare_enum_conf_lists.py -i foo.smi --outfile-enum need-enum.smi --outfile-confs need-confs.smi
 
     ### command line args definitions #########################################
 
@@ -91,12 +95,13 @@ def main():
     parser.add_argument('--outfile-confs', default='need-confs.smi',
                         help="Output file for molecules needing low energy 3D conformer generation")
     parser.add_argument('-d', '--data-dir', default='molecules/sha256', help="Directory with sharded data")
+    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     utils.log("prepare_enum_conf_lists.py: ", args)
 
     total, existing_enum, existing_confs, count_enum, count_confs, duplicates, errors = \
-        prepare_lists(args.input, args.outfile_enum, args.outfile_confs, args.data_dir)
+        prepare_lists(args.input, args.outfile_enum, args.outfile_confs, args.data_dir, interval=args.interval)
 
     tmpl = 'Processed {} records. {} duplicates, {} errors.\
  {} already enumerated, {} already have low energy conformers,\

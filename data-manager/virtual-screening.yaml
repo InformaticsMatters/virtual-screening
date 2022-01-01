@@ -378,6 +378,7 @@ jobs:
       --data-dir '/data/{{ dataDir }}'
       --outfile-enum '{{ outputFileEnum }}'
       --outfile-conf '{{ outputFileConf }}'
+      --interval 10000
     variables:
       inputs:
         type: object
@@ -1705,7 +1706,7 @@ jobs:
             title: Enumerated molecules
             mime-types:
             - chemical/x-csv
-            creates: '{{ dataDir }}/sha256/*/*/*.smi'
+            creates: '{{ dataDir }}/*/*/*.smi'
             # additional *.smi files might have already been generated
             type: files
           log_file:
@@ -2110,7 +2111,7 @@ jobs:
             title: Scored poses
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}'
             type: file
           log_file:
             title: Nextflow log file

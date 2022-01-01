@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2020 Informatics Matters Ltd.
+# Copyright 2021 Informatics Matters Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

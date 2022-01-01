@@ -43,7 +43,7 @@ def execute(mol, outfile, rms_threshold=0.35, minimize_cycles=500, remove_hydrog
 def main():
 
     # Example:
-    #   python3 le_conformers_for_mol.py -i bar.mol -o conformers.sdf
+    #  ./le_conformers_for_mol.py -i bar.mol -o conformers.sdf
 
     ### command line args definitions #########################################
 

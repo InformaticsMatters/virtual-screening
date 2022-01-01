@@ -195,7 +195,10 @@ def shard(inputs, source, version, output_dir, delimiter,
 def main():
 
     # Example usage:
-    #   ./shard.py -i data/100000.smi -s chemspace -v feb2021 -o testdir -n 1 --interval 10000
+    #   ./shard.py -i data/100000.smi -s chemspace -v feb2021 -n 1 --interval 10000
+    #
+    # ./shard.py -i /data/data/molport/molport-2021-12/fixed/iis_smiles-00*.gz -s molport -v dec_2021 -n 2 \
+    #   --interval 100000 -e molport-dec-2021-errors.smi --skip-lines 1
 
     ### command line args definitions #########################################
 
@@ -203,7 +206,7 @@ def main():
     parser.add_argument('-i', '--input', nargs='+', help="Input file(s) as SMILES")
     parser.add_argument('-s', '--source', required=True, help="Molecule source e.g. chemspace")
     parser.add_argument('-v', '--version', required=True, help="Source version e.g. jan_2021")
-    parser.add_argument('-o', '--outdir', required=True, help="Dir for the molecules output")
+    parser.add_argument('-o', '--outdir', default='molecules', help="Dir for the molecules output")
     parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter")
     parser.add_argument('-n', '--name-column', type=int, help="Column for name field (zero based)")
     parser.add_argument('--skip-lines', default=0, type=int, help="Skip this many lines e.g. use 1 for skipping a header line")

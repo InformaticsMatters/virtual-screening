@@ -108,7 +108,8 @@ def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens, num_co
     return final_mol
 
 
-def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_threshold=1.0, interval=None):
+def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_threshold=1.0,
+            num_conformers=None, interval=None):
 
     utils.log_dm_event('Executing ...')
 
@@ -170,7 +171,8 @@ def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_th
                                 if code != 'B':
                                     molh.SetProp('parent_uuid', uid)
 
-                                mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, remove_hydrogens)
+                                mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, remove_hydrogens,
+                                                                num_conformers=num_conformers)
                                 for idx in range(mol_with_confs.GetNumConformers()):
                                     mol_with_confs.SetDoubleProp('Energy', mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'))
                                     mol_with_confs.SetDoubleProp('Energy_Delta', mol_with_confs.GetConformer(idx).GetDoubleProp('Energy_Delta'))
