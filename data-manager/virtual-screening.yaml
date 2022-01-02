@@ -919,6 +919,117 @@ jobs:
             type: string
             default: std_smi
 
+  open3dalign:
+    name: 3D alignment using Open3DAlign
+    description: >-
+      Aligns conformers to a target molecule, with optional filtering
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - open3Dalign
+    - rdkit
+    - similarity
+    - shape
+    - filter
+    doc-url: https://discourse.squonk.it/t/open3dalign/99
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/open3dalign.py --inputs '/data/{{ inputFile }}'
+      --query '{{ queryFile }}'
+      --outfile '{{ outputFile }}'
+      {% if crippen is defined %}--crippen{% endif %}
+      {% if removehs is defined %}--remove-hydrogens{% endif %}
+      {% if threshold is defined %}--threshold {{ threshold }}{% endif %}
+      --interval 10000
+    variables:
+      order:
+        inputs:
+        - queryFile
+        - inputFile
+        options:
+        - outputFile
+        - crippen
+        - removehs
+        - threshold
+      inputs:
+        type: object
+        required:
+        - queryFile
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to screen
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          queryFile:
+            title: Query molecule
+            mime-types:
+            - chemical/x-mdl-molfile
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Open3DAlign alignment
+                fields:
+                  o3da_score:
+                    type: number
+                    description: >-
+                      Alignment score
+                    required: true
+                    active: true
+                  o3da_score_rel:
+                    type: number
+                    description: >-
+                      Relative alignment score
+                    required: true
+                    active: true
+                  o3da_align:
+                    type: number
+                    description: >-
+                      Align
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/open3dalign/99'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: o3dalign.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          crippen:
+            title: Use Crippen contributions
+            type: boolean
+            default: False
+          removehs:
+            title: Remove Hs from outputs
+            type: boolean
+            default: True
+          threshold:
+            title: Filter threshold
+            type: number
+            minimum: 0
+
   rdkit-molprops:
     name: Molecular property calculations
     description: >-
