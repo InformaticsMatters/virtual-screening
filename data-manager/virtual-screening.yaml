@@ -1020,11 +1020,11 @@ jobs:
           crippen:
             title: Use Crippen contributions
             type: boolean
-            default: False
+            default: false
           removehs:
             title: Remove Hs from outputs
             type: boolean
-            default: True
+            default: true
           threshold:
             title: Filter threshold
             type: number
