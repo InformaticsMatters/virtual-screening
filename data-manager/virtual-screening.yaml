@@ -1029,6 +1029,7 @@ jobs:
             title: Filter threshold
             type: number
             minimum: 0
+            maximum: 1
 
   rdkit-molprops:
     name: Molecular property calculations

@@ -18,7 +18,7 @@
 3D alignment using Open3DAlign
 """
 
-import argparse, os
+import argparse, os, sys
 import utils
 from rdkit import Chem
 from rdkit.Chem import rdMolAlign
@@ -104,11 +104,24 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
 
         # iterate through the conformers and calculate the alignment
         for conf in suppl:
+            input_count += 1
+            if not conf:
+                error_count += 1
+                continue
+
             conf = Chem.AddHs(conf, addCoords=True)
-            align, score = process_mol(q_mol, conf, use_crippen)
+            try:
+                align, score = process_mol(q_mol, conf, use_crippen)
+            except KeyboardInterrupt:
+                utils.log('Interrupted')
+                sys.exit(0)
+            except ValueError:
+                utils.log("Failed to align molecule", input_count)
+                error_count += 1
+                continue
+
             sum_score += score
             rel_score = score / score_perf
-            input_count += 1
 
             if not threshold or threshold < rel_score:
                 conf.SetDoubleProp('o3da_score', score)
@@ -129,17 +142,12 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
 
     mean_score = sum_score / input_count
     return input_count, output_count, error_count, mean_score, score_perf
-                    
-
-def write_best_mol(writer, mols):
-    mols.sort(key=lambda t: t[0])
-    writer.write(mols[0][1])
 
 
 def main():
 
     # Example:
-    #   python3 open3dalign.py -i database.sdf -q query.mol -o results.sdf
+    #   ./open3dalign.py -i database.sdf -q query.mol -o results.sdf
 
     ### command line args definitions #########################################
 
@@ -148,7 +156,7 @@ def main():
     parser.add_argument('-q', '--query', required=True, help="File with the 3D query molecules (SDF or MOL)")
     parser.add_argument('-o', '--outfile', default='o3da-similarity.sdf', help="Output SD file for results")
     parser.add_argument('-c', '--crippen', action='store_true', help='Include Crippen (lipophilicity) considerations')
-    parser.add_argument('-t', '--threshold', type=float, help="Score threshold (0 - 1)")
+    parser.add_argument('-t', '--threshold', type=float, help="Score threshold for o3da_score_rel (0 - 1)")
     parser.add_argument('-r', '--remove-hydrogens', action='store_true', help='Remove hydrogens from the outputs')
     # parser.add_argument('-g', '--group-by-field', help="Field name to group records by and report only the best")
     parser.add_argument("--interval", type=int, help="Reporting interval")
@@ -157,7 +165,7 @@ def main():
     utils.log_dm_event("open3dalign.py: ", args)
 
     input_count, output_count, error_count, mean_score, score_perf = \
-        execute(args.inputs, args.query, args.outfile, args.group_by_field,
+        execute(args.inputs, args.query, args.outfile,
                 use_crippen=args.crippen, threshold=args.threshold, remove_hydrogens=args.remove_hydrogens,
                 interval=args.interval)
 
