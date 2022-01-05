@@ -85,6 +85,8 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
     error_count = 0
     sum_score = 0.0
 
+    utils.expand_path(outfile_sdf)
+
     q_mol = rdkit_utils.rdk_read_single_mol(query_file)
     q_mol = Chem.AddHs(q_mol, addCoords=True)
 

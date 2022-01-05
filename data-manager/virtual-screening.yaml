@@ -294,6 +294,7 @@ jobs:
     - rdkit
     - ligand preparation
     - diverse subset
+    - maxminpicker
     - filter
     doc-url: https://discourse.squonk.it/t/job-max-min-picker/69
     image:
@@ -520,7 +521,7 @@ jobs:
                     required: true
                     active: true
               service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
+                service_ref: 'https://discourse.squonk.it/t/job-assemble-conformers/73'
       options:
         type: object
         required:
@@ -1595,6 +1596,78 @@ jobs:
           nbits:
             title: Number of bits for Morgan bit vector
             type: integer
+
+  filter-sdf:
+    name: Filter the contents of a SDF
+    description: >-
+      Filters molecules in a SD file.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdock
+    - sdfilter
+    - sdsort
+    - filter
+    doc-url: 'https://discourse.squonk.it/t/job-filter-sdf/105'
+    image:
+      name: informaticsmatters/vs-rdock
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      sdsort -n -s -f'{{ sortField }}' -id'{{ groupByField }}' {% if sortDescending }}-r{% endif %} '/data/{{ inputFile }}' |
+      sdfilter -f'$_COUNT == 1' -s'{{ groupByField }}' |
+      sdsort -n -f'{{ sortField }}' {% if sortDescending }}-r{% endif %} > {{ outputFile }}
+    variables:
+      order:
+        options:
+        - outputFile
+        - sortField
+        - groupByField
+        - sortDescending
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to filter
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - sortField
+        - groupByField
+        - sortDescending
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          sortField:
+            title: Sort field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          groupByField:
+            title: Group by field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          sortDescending:
+            title: Sort descending
+            type: boolean
+            default: false
 
   sdf2json:
     name: Convert SDF to JSON format
