@@ -1615,9 +1615,10 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      sdsort -n -s -f'{{ sortField }}' -id'{{ groupByField }}' {% if sortDescending }}-r{% endif %} '/data/{{ inputFile }}' |
-      sdfilter -f'$_COUNT == 1' -s'{{ groupByField }}' |
-      sdsort -n -f'{{ sortField }}' {% if sortDescending }}-r{% endif %} > {{ outputFile }}
+      DIR="$(dirname "{{ outputFile }}")" && mkdir -p $DIR &&
+      sdsort -n -s -f'{{ sortField }}' {% if groupByField is defined %}-id'{{ groupByField }}'{% endif %} {% if sortDescending }}-r{% endif %} '/data/{{ inputFile }}' |
+      sdfilter -f'$_COUNT == 1' {% if groupByField is defined %}-s'{{ groupByField }}'{% endif %} |
+      sdsort -n -f'{{ sortField }}' {% if sortDescending %}-r{% endif %} > {{ outputFile }}
     variables:
       order:
         options:
@@ -1649,13 +1650,12 @@ jobs:
         required:
         - outputFile
         - sortField
-        - groupByField
         - sortDescending
         properties:
           outputFile:
             title: Output file name
             type: string
-            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+            pattern: "^[A-Za-z0-9_/\\.\\-]\\.sdf+$"
           sortField:
             title: Sort field
             type: string
