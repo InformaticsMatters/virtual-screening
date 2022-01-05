@@ -1616,7 +1616,7 @@ jobs:
       working-directory: /data
     command: >-
       DIR="$(dirname "{{ outputFile }}")" && mkdir -p $DIR &&
-      sdsort -n -s -f'{{ sortField }}' {% if groupByField is defined %}-id'{{ groupByField }}'{% endif %} {% if sortDescending }}-r{% endif %} '/data/{{ inputFile }}' |
+      sdsort -n -s -f'{{ sortField }}' {% if groupByField is defined %}-id'{{ groupByField }}'{% endif %} {% if sortDescending %}}-r{% endif %} '/data/{{ inputFile }}' |
       sdfilter -f'$_COUNT == 1' {% if groupByField is defined %}-s'{{ groupByField }}'{% endif %} |
       sdsort -n -f'{{ sortField }}' {% if sortDescending %}-r{% endif %} > {{ outputFile }}
     variables:
