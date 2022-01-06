@@ -1618,7 +1618,7 @@ jobs:
       /code/rdock_filter_sdf.sh '/data/{{ inputFile }}' '/data/{{ outputFile }}'
         {{ sortField }}
         {% if sortDescending %}true{% else %}false{% endif %}
-        {% if groupByField is defined %}groupByField{% endif %}
+        {% if groupByField is defined %}{{ groupByField }}{% endif %}
     variables:
       order:
         options:
@@ -1655,7 +1655,7 @@ jobs:
           outputFile:
             title: Output file name
             type: string
-            pattern: "^[A-Za-z0-9_/\\.\\-]\\.sdf+$"
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
           sortField:
             title: Sort field
             type: string
