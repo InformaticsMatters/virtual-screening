@@ -1725,7 +1725,7 @@ jobs:
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
           cycles:
-            title: Sort field
+            title: Number of cycles
             type: integer
             minimum: 1
             default: 200
