@@ -155,7 +155,7 @@ def main():
     if args.mcs_maximize_bonds:
         mcs_params['maximizeBonds'] = args.mcs_maximize_bonds
     if args.mcs_match_valences:
-        mcs_params['maximizeValences'] = args.mcs_maximize_valences
+        mcs_params['matchValences'] = args.mcs_match_valences
     if args.mcs_ring_matches_ring_only:
         mcs_params['ringMatchesRingOnly'] = args.mcs_ring_matches_ring_only
     if args.mcs_complete_rings_only:
