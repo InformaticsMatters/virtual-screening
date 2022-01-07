@@ -1758,14 +1758,14 @@ jobs:
       /code/align_mol.py -i '/data/{{ inputFile }}' -q '{{ queryMolecule }}' -o '/data/{{ outputFile }}'
       {% if alignAtoms is defined %}--align-atoms{{ alignAtoms }}{% endif %}
       {% if keepAll %}--keep-all{% endif %}
-      {% if mcsMaximizeBonds is defined %}--mcs-maximize-bonds{{ mcsMaximizeBonds }}{% endif %}
-      {% if mcsMatchValences is defined %}--mcs-match-valences{{ mcsMatchValences }}{% endif %}
-      {% if mcsRingMatchesRingOnly is defined %}--mcs-ring-matches-ring-only{{ mcsRingMatchesRingOnly }}{% endif %}
-      {% if mcsCompleteRingsOnly is defined %}--mcs-complete-rings-only{{ mcsCompleteRingsOnly }}{% endif %}
-      {% if mcsMatchChiralTag is defined %}--mcs-match-chiral-tag{{ mcsMatchChiralTag }}{% endif %}
-      {% if mcsAtomCompare is defined %}--mcs-atom-compare{{ mcsAtomCompare }}{% endif %}
-      {% if mcsBondCompare is defined %}--mcs-bond-compare{{ mcsBondCompare }}{% endif %}
-      {% if mcsRingCompare is defined %}--mcs-ring-compare{{ mcsRingCompare }}{% endif %}
+      {% if mcsMaximizeBonds is defined %}--mcs-maximize-bonds {{ mcsMaximizeBonds }}{% endif %}
+      {% if mcsMatchValences is defined %}--mcs-match-valences {{ mcsMatchValences }}{% endif %}
+      {% if mcsRingMatchesRingOnly is defined %}--mcs-ring-matches-ring-only {{ mcsRingMatchesRingOnly }}{% endif %}
+      {% if mcsCompleteRingsOnly is defined %}--mcs-complete-rings-only {{ mcsCompleteRingsOnly }}{% endif %}
+      {% if mcsMatchChiralTag is defined %}--mcs-match-chiral-tag {{ mcsMatchChiralTag }}{% endif %}
+      {% if mcsAtomCompare is defined %}--mcs-atom-compare {{ mcsAtomCompare }}{% endif %}
+      {% if mcsBondCompare is defined %}--mcs-bond-compare {{ mcsBondCompare }}{% endif %}
+      {% if mcsRingCompare is defined %}--mcs-ring-compare {{ mcsRingCompare }}{% endif %}
       --interval 1000
     variables:
       order:
@@ -1815,7 +1815,7 @@ jobs:
           outputFile:
             title: Output file name
             type: string
-            default: minimized.sdf
+            default: aligned.sdf
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
           alignAtoms:
             title: Template atoms to align
@@ -1865,7 +1865,7 @@ jobs:
           mcsRingCompare:
             title: 'MCS: ring compare method'
             type: string
-            default: CompareOrder
+            default: IgnoreRingFusion
             enum:
             - IgnoreRingFusion
             - PermissiveRingFusion
