@@ -3,7 +3,7 @@
 set -e
 
 if [[ $# -lt 4 || $# -gt 5 ]]; then
-  echo "Usage: filter_sdf.sh infile.sdf outfile.sdf sort_field sort_descending [group_by_field]"
+  echo "Usage: rdock_filter_sdf.sh infile.sdf outfile.sdf sort_field sort_descending [group_by_field]"
   exit 1
 fi
 
@@ -26,3 +26,7 @@ mkdir -p $DIR
 sdsort -n -s -f"$SORT_FIELD" -id"$GROUP_BY_FIELD" $SORT_FLAG "$INFILE" |
   sdfilter -f'$_COUNT == 1' -s"$GROUP_BY_FIELD" |
   sdsort -n -f"$SORT_FIELD" $SORT_FLAG > "$OUTFILE"
+
+IN_COUNT=$(fgrep -c '$$$$' $INFILE)
+OUT_COUNT=$(fgrep -c '$$$$' $OUTFILE)
+echo "Filtered $IN_COUNT records down to $OUT_COUNT"
