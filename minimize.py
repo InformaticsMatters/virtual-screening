@@ -23,7 +23,7 @@ from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolAlign
 
 
-def minimise(input, output, cycles=200, calc_rmsd=False, interval=0):
+def minimise(input, output, cycles=200, interval=0):
 
     count = 0
     errors = 0
@@ -62,13 +62,17 @@ def minimise(input, output, cycles=200, calc_rmsd=False, interval=0):
                     utils.log("Failed to minimize", count, Chem.MolToSmiles(mol))
                     errors += 1
 
+                if interval and count % interval == 0:
+                    utils.log_dm_event("Processed {} records, {} errors".format(count, errors))
+
+
     return count, errors, non_converged
 
 
 def main():
 
     # Example:
-    #   python3 minimize.py -i input.sdf -o output.sdf
+    #   ./minimize.py -i input.sdf -o output.sdf
 
     ### command line args definitions #########################################
 

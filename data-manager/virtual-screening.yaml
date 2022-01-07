@@ -1669,6 +1669,67 @@ jobs:
             type: boolean
             default: false
 
+  minimize-mmff94:
+    name: Energy minimize molecules
+    description: >-
+      Energy minimize molecules using RDKit and the MMFF94 force field
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - energy
+    - minimize
+    - minimise
+    - mmff94
+    doc-url: 'https://discourse.squonk.it/t/job-minimize-mmff94/106'
+    image:
+      name: informaticsmatters/vs-rdock
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/minimize.py -i '/data/{{ inputFile }}' -o '/data/{{ outputFile }}'
+      -c {{ cycles }} --interval 1000
+    variables:
+      order:
+        options:
+        - outputFile
+        - cycles
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to minimize
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - cycles
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          cycles:
+            title: Sort field
+            type: integer
+            minimum: 1
+            default: 200
+
   sdf2json:
     name: Convert SDF to JSON format
     description: >-
