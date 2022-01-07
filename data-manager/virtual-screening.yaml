@@ -1683,7 +1683,7 @@ jobs:
     - mmff94
     doc-url: 'https://discourse.squonk.it/t/job-minimize-mmff94/106'
     image:
-      name: informaticsmatters/vs-rdock
+      name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
@@ -1723,6 +1723,7 @@ jobs:
           outputFile:
             title: Output file name
             type: string
+            default: minimized.sdf
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
           cycles:
             title: Number of cycles
