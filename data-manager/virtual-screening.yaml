@@ -1681,6 +1681,7 @@ jobs:
     - minimize
     - minimise
     - mmff94
+    - 3d
     doc-url: 'https://discourse.squonk.it/t/job-minimize-mmff94/106'
     image:
       name: informaticsmatters/vs-prep
@@ -1689,12 +1690,13 @@ jobs:
       working-directory: /data
     command: >-
       /code/minimize.py -i '/data/{{ inputFile }}' -o '/data/{{ outputFile }}'
-      -c {{ cycles }} --interval 1000
+      -c {{ cycles }} -r {{ removehs }} --interval 1000
     variables:
       order:
         options:
         - outputFile
         - cycles
+        - removehs
       inputs:
         type: object
         required:
@@ -1719,6 +1721,7 @@ jobs:
         required:
         - outputFile
         - cycles
+        - removehs
         properties:
           outputFile:
             title: Output file name
@@ -1730,6 +1733,143 @@ jobs:
             type: integer
             minimum: 1
             default: 200
+          removehs:
+            title: Remove Hs from outputs
+            type: boolean
+            default: true
+
+  align-molecules:
+    name: Align molecules
+    description: >-
+      Align molecules to a template molecule using MCS to determine matching atoms
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - 3d
+    - alignment
+    doc-url: 'https://discourse.squonk.it/t/job-align-molecules/107'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/align_mol.py -i '/data/{{ inputFile }}' -q '{{ queryMolecule }}' -o '/data/{{ outputFile }}'
+      {% if alignAtoms is defined %}--align-atoms{{ alignAtoms }}{% endif %}
+      {% if keepAll %}--keep-all{% endif %}
+      {% if mcsMaximizeBonds is defined %}--mcs-maximize-bonds{{ mcsMaximizeBonds }}{% endif %}
+      {% if mcsMatchValences is defined %}--mcs-match-valences{{ mcsMatchValences }}{% endif %}
+      {% if mcsRingMatchesRingOnly is defined %}--mcs-ring-matches-ring-only{{ mcsRingMatchesRingOnly }}{% endif %}
+      {% if mcsCompleteRingsOnly is defined %}--mcs-complete-rings-only{{ mcsCompleteRingsOnly }}{% endif %}
+      {% if mcsMatchChiralTag is defined %}--mcs-match-chiral-tag{{ mcsMatchChiralTag }}{% endif %}
+      {% if mcsAtomCompare is defined %}--mcs-atom-compare{{ mcsAtomCompare }}{% endif %}
+      {% if mcsBondCompare is defined %}--mcs-bond-compare{{ mcsBondCompare }}{% endif %}
+      {% if mcsRingCompare is defined %}--mcs-ring-compare{{ mcsRingCompare }}{% endif %}
+      --interval 1000
+    variables:
+      order:
+        options:
+        - outputFile
+        - alignAtoms
+        - keepAll
+        - mcsMaximizeBonds
+        - mcsMatchValences
+        - mcsRingMatchesRingOnly
+        - mcsCompleteRingsOnly
+        - mcsMatchChiralTag
+        - mcsAtomCompare
+        - mcsBondCompare
+        - mcsRingCompare
+      inputs:
+        type: object
+        required:
+        - queryMolecule
+        - inputFile
+        properties:
+          queryMolecule:
+            title: Query molecule
+            mime-types:
+            - chemical/x-mdl-molfile
+            - chemical/x-mdl-sdfile
+            type: file
+          inputFile:
+            title: Molecules to align
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: minimized.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          alignAtoms:
+            title: Template atoms to align
+            type: string
+            pattern: "^[0-9,]+$"
+          keepAll:
+            title: Keep all alignments
+            type: boolean
+            default: false
+          mcsMaximizeBonds:
+            title: 'MCS: maximize bonds'
+            type: boolean
+            default: true
+          mcsMatchValences:
+            title: 'MCS: match valences'
+            type: boolean
+            default: false
+          mcsRingMatchesRingOnly:
+            title: 'MCS: ring atom only matches ring atom'
+            type: boolean
+            default: false
+          mcsCompleteRingsOnly:
+            title: 'MCS: match complete rings'
+            type: boolean
+            default: false
+          mcsMatchChiralTag:
+            title: 'MCS: match chiral tag'
+            type: boolean
+            default: false
+          mcsAtomCompare:
+            title: 'MCS: atom compare method'
+            type: string
+            default: CompareElements
+            enum:
+            - CompareAny
+            - CompareAnyHeavyAtom
+            - CompareElements
+            - CompareIsotopes
+          mcsBondCompare:
+            title: 'MCS: bond compare method'
+            type: string
+            default: CompareOrder
+            enum:
+            - CompareAny
+            - CompareOrder
+            - CompareOrderExact
+          mcsRingCompare:
+            title: 'MCS: ring compare method'
+            type: string
+            default: CompareOrder
+            enum:
+            - IgnoreRingFusion
+            - PermissiveRingFusion
+            - StrictRingFusion
 
   sdf2json:
     name: Convert SDF to JSON format

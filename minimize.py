@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-import argparse, time
+import sys, argparse, time
 import utils
 
 from rdkit import Chem
@@ -23,7 +23,7 @@ from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolAlign
 
 
-def minimise(input, output, cycles=200, interval=0):
+def minimise(input, output, cycles=200, remove_hydrogens=False, interval=0):
 
     count = 0
     errors = 0
@@ -49,7 +49,8 @@ def minimise(input, output, cycles=200, interval=0):
                         utils.log_dm_event("Force field could not be set up for molecule", count)
                         errors += 1
 
-                    molz = Chem.RemoveHs(molh)
+                    if remove_hydrogens:
+                        molz = Chem.RemoveHs(molh)
 
                     rmsd = rdMolAlign.AlignMol(molz, mol)
                     molz.SetDoubleProp('RMSD', rmsd)
@@ -61,10 +62,12 @@ def minimise(input, output, cycles=200, interval=0):
                 except RuntimeError:
                     utils.log("Failed to minimize", count, Chem.MolToSmiles(mol))
                     errors += 1
+                except KeyboardInterrupt:
+                    utils.log('Interrupted')
+                    sys.exit(0)
 
                 if interval and count % interval == 0:
                     utils.log_dm_event("Processed {} records, {} errors".format(count, errors))
-
 
     return count, errors, non_converged
 
@@ -80,12 +83,13 @@ def main():
     parser.add_argument('-i', '--input', required=True, help="File with inputs")
     parser.add_argument('-o', '--output', required=True, help="Output file")
     parser.add_argument('-c', '--cycles', type=int, default=200, help="Number of minimization cycles")
+    parser.add_argument('-r', '--remove-hydrogens', action='store_true', help='Remove hydrogens from the outputs')
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     utils.log("minimize.py: ", args)
 
-    count, errors, non_converged = minimise(args.input, args.output, args.cycles,
+    count, errors, non_converged = minimise(args.input, args.output, args.cycles, remove_hs=args.remove_hydrogens,
                                             interval=args.interval)
     utils.log_dm_event('Processed {} molecules. {} did not converge. {} errors'.format(count, non_converged, errors))
     # utils.log_dm_cost(candidates, cumulative=False)

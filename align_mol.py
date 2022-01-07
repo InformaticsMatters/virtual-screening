@@ -23,7 +23,7 @@ from rdkit.Chem import rdFMCS
 import utils
 
 
-def align(query_mol, inputs_sdf, outputs_sdf, query_atoms=None, keep_all=False, mcs_params={}):
+def align(query_mol, inputs_sdf, outputs_sdf, query_atoms=None, keep_all=False, mcs_params={}, interval=None):
     count = 0
     errors = 0
     if query_mol.endswith('.mol'):
@@ -68,6 +68,9 @@ def align(query_mol, inputs_sdf, outputs_sdf, query_atoms=None, keep_all=False, 
                     errors += 1
                     utils.log_dm_event("Error processing molecule", count)
                     traceback.print_exc()
+
+                if interval and count % interval == 0:
+                    utils.log_dm_event("Processed {} records, {} errors".format(count, errors))
 
     return count, errors
 
@@ -137,6 +140,7 @@ def main():
     parser.add_argument('--mcs-atom-compare', help="bondCompare param for MCS")
     parser.add_argument('--mcs-bond-compare', help="atomCompare param for MCS")
     parser.add_argument('--mcs-ring-compare', help="ringCompare param for MCS")
+    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     utils.log_dm_event("align_mol: ", args)
@@ -167,7 +171,7 @@ def main():
 
     start = time.time()
     count, errors = align(args.query, args.input, args.output,
-                          query_atoms=query_atoms, keep_all=args.keep_all, mcs_params=mcs_params)
+                          query_atoms=query_atoms, keep_all=args.keep_all, mcs_params=mcs_params, interval=args.interval)
     end = time.time()
 
     utils.log_dm_event('Processed', count, 'molecules.', errors, 'errors. Time (s):', end - start)
