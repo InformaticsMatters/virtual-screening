@@ -355,18 +355,30 @@ jobs:
             minimum: 0
             maximum: 1
     tests:
-      simple_execution:
+      # AN optional block of tests for this JOb
+      simple-execution:
+        # Inputs.
+        # Files are expected to live in the project's 'data' directory.
         inputs:
-          inputFile: data/100000.smi
+          inputFile: 100000.smi
+        # Non-file-based command options
         options:
           outputFile: diverse.smi
           count: 100
+        # Test execution checks.
+        # Every test must declare an exitCode.
+        # Test can optionally list outputs,
+        # expected to be found in the test project directory.
+        # Output files must be declared with a name and whether they
+        # are expected to exist. They can also optionally declare
+        # a line-count. If the exit code is incorrect the outputs
+        # are not inspected.
         checks:
-          exitcode: 0
+          exitCode: 0
           outputs:
           - name: diverse.smi
             exists: true
-            linecount: 100
+            lineCount: 100
 
   prep-enum-conf-lists:
     name: Prepare enumeration and conformer lists
