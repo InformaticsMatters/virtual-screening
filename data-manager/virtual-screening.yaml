@@ -355,7 +355,7 @@ jobs:
             minimum: 0
             maximum: 1
     tests:
-      # AN optional block of tests for this JOb
+      # An optional block of tests for this Job
       simple-execution:
         # Inputs.
         # Files are expected to live in the project's 'data' directory.
@@ -367,8 +367,9 @@ jobs:
           count: 100
         # Test execution checks.
         # Every test must declare an exitCode.
-        # Test can optionally list outputs,
-        # expected to be found in the test project directory.
+        # Tests can optionally list outputs.
+        # These are expected to be found in the test project directory
+        # when the test is complete.
         # Output files must be declared with a name and whether they
         # are expected to exist. They can also optionally declare
         # a line-count. If the exit code is incorrect the outputs
