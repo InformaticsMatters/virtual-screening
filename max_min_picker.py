@@ -57,8 +57,6 @@ def pick(input, seeds, output, count, threshold, interval=0):
                 tokens = line.strip().split('\t')
                 
                 smi = tokens[0]
-                uid = tokens[1]
-                digest = tokens[2]
                 if smi in duplicates:
                     num_dups += 1
                     continue
@@ -75,7 +73,7 @@ def pick(input, seeds, output, count, threshold, interval=0):
                 if smi in seed_molecules:
                     first_picks.append(fp)
 
-                data.append((smi, uid, digest))
+                data.append(tokens)
                 
             t1 = time.time()
             utils.log_dm_event('Fingerprinting took {} seconds'.format((t1-t0)))
@@ -97,7 +95,7 @@ def pick(input, seeds, output, count, threshold, interval=0):
             utils.log_dm_event('Writing data ....')
             for pick in picks:
                 d = data[pick]
-                outf.write('{}\t{}\t{}\n'.format(d[0], d[1], d[2]))
+                outf.write('\t'.join(d) + '\n')
             utils.log_dm_event('Finished')
                 
     return inputs, len(fingerprints), len(picks), num_dups
@@ -106,7 +104,7 @@ def pick(input, seeds, output, count, threshold, interval=0):
 def main():
 
     # Example:
-    #   python3 max_min_picker.py -i foo.smi -o bar.smi -c 1000
+    #   ./max_min_picker.py -i data/mols.smi -o diverse.smi -c 100
 
     ### command line args definitions #########################################
 
