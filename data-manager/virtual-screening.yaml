@@ -354,6 +354,19 @@ jobs:
             type: number
             minimum: 0
             maximum: 1
+    tests:
+      simple_execution:
+        inputs:
+          inputFile: data/100000.smi
+        options:
+          outputFile: diverse.smi
+          count: 100
+        checks:
+          exitcode: 0
+          outputs:
+          - name: diverse.smi
+            exists: true
+            linecount: 100
 
   prep-enum-conf-lists:
     name: Prepare enumeration and conformer lists
