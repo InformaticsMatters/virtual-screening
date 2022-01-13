@@ -357,7 +357,7 @@ jobs:
     tests:
       simple_execution:
         inputs:
-          inputFile: data/100000.smi
+          inputFile: data/mols.smi
         options:
           outputFile: diverse.smi
           count: 100
