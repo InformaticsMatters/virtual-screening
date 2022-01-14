@@ -1,5 +1,8 @@
+---
 # An environment for Job Tester execution (JOTE)
-name: jote
+#
+#   conda env create -f environment-im-jote.yaml
+name: im-jote
 channels:
   - conda-forge
 dependencies:
