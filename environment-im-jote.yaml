@@ -1,0 +1,7 @@
+# An environment for Job Tester execution (JOTE)
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip:
+    - im-jote==1.0.0
