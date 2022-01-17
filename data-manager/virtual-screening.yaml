@@ -361,7 +361,7 @@ jobs:
         # Files are expected to live in the project's 'data' directory
         # but can be in sub-directories (i.e. 'foo/mols.smi').
         inputs:
-          inputFile: mols.smi
+          inputFile: data/mols.smi
         # Non-file-based command options
         options:
           outputFile: diverse.smi
@@ -709,7 +709,7 @@ jobs:
     tests:
       simple-execution:
         inputs:
-          inputFile: dhfr-receptor.pdb
+          inputFile: data/dhfr-receptor.pdb
         options:
           outfileBasename: pdb2pqr-results
           ph: 7
@@ -807,7 +807,7 @@ jobs:
     tests:
       simple-execution-molfile:
         inputs:
-          inputMolfile: dhfr-ligand.mol
+          inputMolfile: data/dhfr-ligand.mol
         options:
           sdfout: conformer-results.sdf
           minimizeCycles: 100
