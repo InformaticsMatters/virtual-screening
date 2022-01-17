@@ -357,6 +357,11 @@ jobs:
     tests:
       # An optional block of tests for this Job
       simple-execution:
+        # If you define 'ignore:' the test is recognised but ignored
+        # (not executed). Setting 'ignore' allows you to skip tests
+        # that me be broken. The value is unimportant, i.e. you cannot
+        # set 'ignore: no', the test will still be ignored.
+        #ignore:
         # Inputs.
         # Files are expected to live in the project's 'data' directory
         # but can be in sub-directories (i.e. 'foo/mols.smi').
