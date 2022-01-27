@@ -1169,7 +1169,6 @@ jobs:
           idColumn:
             title: Index (text) or name (SDF) to use for the ID field
             type:
-            - integer
             - string
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
           sdfReadRecords:
