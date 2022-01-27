@@ -39,5 +39,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r build-requirements.txt
     - name: Lint
-      run: |
-        yamllint data-manager
+      run: yamllint
+    - name: Jote
+      run: jote --dry-run
