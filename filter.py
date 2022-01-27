@@ -135,7 +135,7 @@ def filter(input_dirs, output_file, min_hac=None, max_hac=None,
 def main():
 
     # Example:
-    #   python3 -m filter -i chemspace_feb2021 -o foo.smi --min-hac 16 --max-hac 24 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0
+    #   ./filter.py -i molecules/chemspace_feb_2021 -o foo.smi --min-hac 16 --max-hac 24 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0
 
     ### command line args definitions #########################################
 
