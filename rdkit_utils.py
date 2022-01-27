@@ -212,7 +212,7 @@ class SmilesReader:
 
 
 def create_reader(input, type=None, id_column=None, sdf_read_records=100, read_header=False, delimiter='\t'):
-    if type is not None:
+    if type is None:
         if input.endswith('.sdf') or input.endswith('.sdf.gz') or input.endswith('.sd') or input.endswith('.sd.gz'):
             type = 'sdf'
         else:
