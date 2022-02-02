@@ -74,7 +74,7 @@ jobs:
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
     command: >-
-      /code/shard.py -i{% for file in inputFiles %} '/data/{{ file }}'{% endfor %}
+      /code/shard.py -i{% for file in inputFiles %} '{{ file }}'{% endfor %}
       -s '{{ supplierName }}'
       -v '{{ supplierVersion }}' -o '{{ outputDir }}' -n {{ codeFieldIndex }}
       --errors-file '{{ supplierName }}_{{ supplierVersion }}_errors.smi'
@@ -163,7 +163,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/filter.py -i{% for dir in inputDir %} '/data/{{ dir }}'{% endfor %}
+      /code/filter.py -i{% for dir in inputDir %} '{{ dir }}'{% endfor %}
       -o '{{ outputFile }}'
       --min-hac {{ minHac }}
       --max-hac {{ maxHac }}
@@ -303,7 +303,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/max_min_picker.py --input '/data/{{ inputFile }}'
+      /code/max_min_picker.py --input '{{ inputFile }}'
       {% if seeds is defined %}--seeds{% for file in seeds %} '{{ file }}'{% endfor %}{% endif %}
       --output '{{ outputFile }}'
       --count {{ count }}
@@ -354,6 +354,40 @@ jobs:
             type: number
             minimum: 0
             maximum: 1
+    tests:
+      # An optional block of tests for this Job
+      simple-execution:
+        # If you define 'ignore:' the test is recognised but ignored
+        # (not executed). Setting 'ignore' allows you to skip tests
+        # that me be broken. The value is unimportant, i.e. you cannot
+        # set 'ignore: no', the test will still be ignored.
+        #ignore:
+        # Inputs.
+        # Files are expected to live in the project's 'data' directory
+        # but can be in sub-directories (i.e. 'foo/mols.smi').
+        inputs:
+          inputFile: data/mols.smi
+        # Non-file-based command options
+        options:
+          outputFile: diverse.smi
+          count: 100
+        # Test execution checks.
+        # Every test must declare an exitCode.
+        #
+        # Tests can optionally list outputs, these are files
+        # expected to be found in the test project directory when the test
+        # has completed successfully. The checks applied to the output
+        # can be one or more of 'exists' (i.e. the file must exist)
+        # 'lineCount' (for files where a line count makes sense).
+        #
+        # If the exit code is not correct the outputs are not checked.
+        checks:
+          exitCode: 0
+          outputs:
+          - name: diverse.smi
+            checks:
+            - exists: true
+            - lineCount: 100
 
   prep-enum-conf-lists:
     name: Prepare enumeration and conformer lists
@@ -375,8 +409,8 @@ jobs:
       working-directory: /data
     command: >-
       /code/prepare_enum_conf_lists.py
-      --input '/data/{{ inputFile }}'
-      --data-dir '/data/{{ dataDir }}'
+      --input '{{ inputFile }}'
+      --data-dir '{{ dataDir }}'
       --outfile-enum '{{ outputFileEnum }}'
       --outfile-conf '{{ outputFileConf }}'
       --interval 10000
@@ -442,8 +476,8 @@ jobs:
       working-directory: /data
     command: >-
       /code/assemble_conformers.py
-      --input '/data/{{ inputFile }}'
-      --data-dir '/data/{{ dataDir }}'
+      --input '{{ inputFile }}'
+      --data-dir '{{ dataDir }}'
       --mode {{ mode }}
       --output '{{ outputFile }}'
       {% if excludeBase is defined %}-exclude-base{% endif %}
@@ -565,7 +599,7 @@ jobs:
       working-directory: /data
     command: >-
       obabel
-      '/data/{{ inputFile }}'
+      '{{ inputFile }}'
       {{ options }}
       {% if options is defined %}{{ options }}{% endif %}
       -O '{{ outputFile }}'
@@ -629,7 +663,7 @@ jobs:
       pdb2pqr30 --with-ph {{ ph }}
       --titration-state-method propka
       --pdb-output '{{ outfileBasename }}.pdb'
-      '/data/{{ inputFile }}'
+      '{{ inputFile }}'
       '{{ outfileBasename }}.pqr'
     variables:
       inputs:
@@ -676,6 +710,26 @@ jobs:
           outfileBasename:
             title: Base filename for output (do not include the extension)
             type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr-receptor.pdb
+        options:
+          outfileBasename: pdb2pqr-results
+          ph: 7
+        checks:
+          exitCode: 0
+          outputs:
+          - name: pdb2pqr-results.pqr
+            checks:
+            - exists: true
+          - name: pdb2pqr-results.pdb
+            checks:
+            - exists: true
+          - name: pdb2pqr-results.log
+            checks:
+            - exists: true
 
   conformers-for-mol:
     name: Generate 3D conformers of a molecule
@@ -694,8 +748,9 @@ jobs:
     command: >-
       /code/le_conformers_for_mol.py
         {% if inputMolfile is defined %}--input '{{ inputMolfile }}'{% endif %}
-        {% if smiles is defined %}--smiles '{{ smiles }}'{% endif %}
         --output '{{ sdfout }}'
+        {% if smiles is defined %}--smiles '{{ smiles }}'{% endif %}
+        {% if numConfs is defined %}--num-conformers '{{ numConfs }}'{% endif %}
         --minimize-cycles {{ minimizeCycles }}
         --rms-threshold {{ rmsThreshold }}
         {% if removeHydrogens is defined %}--remove-hydrogens{% endif %}
@@ -704,6 +759,7 @@ jobs:
         options:
         - smiles
         - sdfout
+        - numConfs
         - minimizeCycles
         - rmsThreshold
         - removeHydrogens
@@ -724,7 +780,6 @@ jobs:
             - chemical/x-mdl-sdfile
             creates: '{{ sdfout }}'
             type: file
-
       options:
         type: object
         required:
@@ -740,6 +795,10 @@ jobs:
             title: Filename for output
             type: string
             default: conformers.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          numConfs:
+            title: Number of conformers (leave blank for the default)
+            type: integer
           minimizeCycles:
             title: Number of minimization cycles
             type: integer
@@ -750,6 +809,21 @@ jobs:
           removeHydrogens:
             type: boolean
             default: true
+    tests:
+      simple-execution-molfile:
+        inputs:
+          inputMolfile: data/dhfr-ligand.mol
+        options:
+          sdfout: conformer-results.sdf
+          minimizeCycles: 100
+          rmsThreshold: 1.0
+          removeHydrogens: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: conformer-results.sdf
+            checks:
+            - exists: true
 
   prepare-rdock:
     name: rDock prepare
@@ -768,8 +842,8 @@ jobs:
       working-directory: /data
     command: >-
       /code/prepare_rdock.py
-      --receptor '/data/{{ receptorFile }}'
-      --ligand '/data/{{ ligandFile }}'
+      --receptor '{{ receptorFile }}'
+      --ligand '{{ ligandFile }}'
       --output '{{ outputBaseName }}'
     variables:
       inputs:
@@ -834,7 +908,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/usr.py --inputs '/data/{{ inputFile }}'
+      /code/usr.py --inputs '{{ inputFile }}'
       --query '{{ queryFile }}'
       --outfile '{{ outputFile }}'
       --method {{ method }}
@@ -939,7 +1013,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/open3dalign.py --inputs '/data/{{ inputFile }}'
+      /code/open3dalign.py --inputs '{{ inputFile }}'
       --query '{{ queryFile }}'
       --outfile '{{ outputFile }}'
       {% if crippen is defined %}--crippen{% endif %}
@@ -1048,11 +1122,11 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/rdkit_props.py --input '/data/{{ inputFile }}'
+      /code/rdkit_props.py --input '{{ inputFile }}'
       --outfile '{{ outputFile }}'
       {% if readHeader %}--read-header{% endif %}
       {% if writeHeader %}--write-header{% endif %}
-      --delimiter '{{ separator }}'
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
       {% if sdfReadRecords is defined %}--sdf-read-records '{{ sdfReadRecords }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
       --interval 10000
@@ -1175,6 +1249,18 @@ jobs:
             title: Number of SDF records to read field names
             type: integer
             default: 100
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/100000.smi
+        options:
+          outputFile: results.sdf
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
 
   similarity-screen-smiles:
     name: Descriptor based similarity screening (SMILES input)
@@ -1198,7 +1284,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/screen.py --input '/data/{{ inputFile }}'
+      /code/screen.py --input '{{ inputFile }}'
       --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}
       --output '{{ outputFile }}'
       {% if readHeader is defined %}--read-header{% endif %}
@@ -1414,9 +1500,9 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/screen.py --input '/data/{{ inputFile }}'
-      --queries '/data/{{ queryFile }}'
-      --output '/data/{{ outputFileName }}'
+      /code/screen.py --input '{{ inputFile }}'
+      --queries '{{ queryFile }}'
+      --output '{{ outputFileName }}'
       {% if headerInputs is defined %}--read-header{% endif %}
       {% if headerQueries is defined %}--queries-read-header{% endif %}
       {% if headerOutputs is defined %}--write-header{% endif %}
@@ -1614,7 +1700,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/rdock_filter_sdf.sh '/data/{{ inputFile }}' '/data/{{ outputFile }}'
+      /code/rdock_filter_sdf.sh '{{ inputFile }}' '{{ outputFile }}'
         {{ sortField }}
         {% if sortDescending %}true{% else %}false{% endif %}
         {% if groupByField is defined %}{{ groupByField }}{% endif %}
@@ -1688,7 +1774,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/minimize.py -i '/data/{{ inputFile }}' -o '/data/{{ outputFile }}'
+      /code/minimize.py -i '{{ inputFile }}' -o '{{ outputFile }}'
       -c {{ cycles }} -r {{ removehs }} --interval 1000
     variables:
       order:
@@ -1754,7 +1840,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/align_mol.py -i '/data/{{ inputFile }}' -q '{{ queryMolecule }}' -o '/data/{{ outputFile }}'
+      /code/align_mol.py -i '{{ inputFile }}' -q '{{ queryMolecule }}' -o '{{ outputFile }}'
       {% if alignAtoms is defined %}--align-atoms{{ alignAtoms }}{% endif %}
       {% if keepAll %}--keep-all{% endif %}
       {% if mcsMaximizeBonds is defined %}--mcs-maximize-bonds {{ mcsMaximizeBonds }}{% endif %}
@@ -1885,7 +1971,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/convert_file.py --input-file '/data/{{ inputFile }}'
+      /code/convert_file.py --input-file '{{ inputFile }}'
       --input-format chemical/x-mdl-sdfile
       --output-file {{ outputFile }}
       --output-format squonk/x-dataset-molecule-v2+json
@@ -2065,8 +2151,8 @@ jobs:
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       -c /code/nextflow.config
       run /code/enumerate.nf
-      --inputs '/data/{{ inputFile }}'
-      --data_dir '/data/{{ dataDir }}'
+      --inputs '{{ inputFile }}'
+      --data_dir '{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
       -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
@@ -2138,8 +2224,8 @@ jobs:
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       -c /code/nextflow.config
       run /code/le_conformers.nf
-      --inputs '/data/{{ inputFile }}'
-      --data_dir '/data/{{ dataDir }}'
+      --inputs '{{ inputFile }}'
+      --data_dir '{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
       -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
@@ -2209,10 +2295,10 @@ jobs:
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       -c /code/nextflow.config
       run /code/rdock-docking.nf
-      --ligands '/data/{{ ligandsSDF }}'
-      --protein '/data/{{ proteinMOL2 }}'
-      --prmfile '/data/{{ prmFile }}'
-      --asfile '/data/{{ asFile }}'
+      --ligands '{{ ligandsSDF }}'
+      --protein '{{ proteinMOL2 }}'
+      --prmfile '{{ prmFile }}'
+      --asfile '{{ asFile }}'
       --num_dockings {{ numDockings }}
       --output_basename {{ outputFile }}
       {% if resultsDir is defined %}--publish_dir {{ resultsDir }}{% endif %}
@@ -2324,9 +2410,9 @@ jobs:
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       -c /code/nextflow.config
       run /code/smina-docking.nf
-      --ligands '/data/{{ ligands }}'
-      --protein '/data/{{ protein }}'
-      --ligand '/data/{{ ligand }}'
+      --ligands '{{ ligands }}'
+      --protein '{{ protein }}'
+      --ligand '{{ ligand }}'
       --padding {{ boxPadding }}
       --exhaustiveness {{ exhaustiveness }}
       --scoring_function '{{ scoringFunction }}'
@@ -2467,8 +2553,8 @@ jobs:
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       -c /code/nextflow.config
       run /code/oddt-interactions.nf
-      --ligands '/data/{{ ligandsSDF }}'
-      --protein '/data/{{ proteinPDB }}'
+      --ligands '{{ ligandsSDF }}'
+      --protein '{{ proteinPDB }}'
       {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
       --output_filename '{{ outputFile }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
