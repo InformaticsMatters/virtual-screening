@@ -41,4 +41,4 @@ jobs:
     - name: Jote
       run: |
         jote --manifest manifest-virtual-screening.yaml --dry-run
-        jote --manifest manifest-silicos-it.yaml --dry-run
+        jote --manifest manifest-silicos-it.yaml --allow-no-tests --dry-run
