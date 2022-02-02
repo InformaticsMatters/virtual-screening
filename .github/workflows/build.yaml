@@ -39,4 +39,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r build-requirements.txt
     - name: Jote
-      run: jote --dry-run
+      run: |
+        jote --manifest manifest-virtual-screening.yaml --dry-run
+        jote --manifest manifest-silicos-it.yaml --dry-run
