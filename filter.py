@@ -172,6 +172,7 @@ def main():
         min_sp3=args.min_sp3, max_sp3=args.max_sp3)
 
     utils.log_dm_event('Matched {} out of {} records. {} duplicates'.format(count, total, num_dups))
+    utils.log_dm_cost(count)
     
 
 if __name__ == "__main__":

@@ -1775,13 +1775,12 @@ jobs:
       working-directory: /data
     command: >-
       /code/minimize.py -i '{{ inputFile }}' -o '{{ outputFile }}'
-      -c {{ cycles }} -r {{ removehs }} --interval 1000
+      -c {{ cycles }} --interval 1000
     variables:
       order:
         options:
         - outputFile
         - cycles
-        - removehs
       inputs:
         type: object
         required:
@@ -1806,7 +1805,6 @@ jobs:
         required:
         - outputFile
         - cycles
-        - removehs
         properties:
           outputFile:
             title: Output file name
@@ -1818,10 +1816,19 @@ jobs:
             type: integer
             minimum: 1
             default: 200
-          removehs:
-            title: Remove Hs from outputs
-            type: boolean
-            default: true
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/mols.sdf
+        options:
+          outputFile: results.sdf
+          cycles: 100
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
 
   align-molecules:
     name: Align molecules

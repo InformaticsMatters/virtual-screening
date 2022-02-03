@@ -308,6 +308,7 @@ def main():
 
     utils.log_dm_event(input_count, 'inputs,', hit_count, 'hits,', error_count, 'errors.',
                          'Time (s):', duration_s)
+    utils.log_dm_cost(input_count)
 
 
 if __name__ == "__main__":

@@ -175,6 +175,7 @@ def main():
     end = time.time()
 
     utils.log_dm_event('Processed', count, 'molecules.', errors, 'errors. Time (s):', end - start)
+    utils.log_dm_cost(count)
 
 
 if __name__ == "__main__":

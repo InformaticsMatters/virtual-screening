@@ -188,6 +188,9 @@ def main():
                     hops=args.hops, standardize=not args.no_standardize,
                     report_hits=args.report_hits)
 
+    utils.log_dm_event('Search found {} molecules.'.format(count))
+    utils.log_dm_cost(count)
+
 
 if __name__ == "__main__":
     main()

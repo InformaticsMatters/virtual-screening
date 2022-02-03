@@ -70,6 +70,8 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
 
         if interval and count % interval == 0:
             utils.log_dm_event("Processed {} records".format(count))
+        if count % 10000 == 0:
+            utils.log_dm_cost(count)
 
         if not mol:
             errors += 1
@@ -139,6 +141,7 @@ def main():
         duration_s = 1
 
     utils.log_dm_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
+    utils.log_dm_cost(count)
     
 
 if __name__ == "__main__":

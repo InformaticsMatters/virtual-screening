@@ -138,6 +138,8 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
 
             if interval and input_count % interval == 0:
                 utils.log_dm_event("Processed {} molecules, {} outputs".format(input_count, output_count))
+            if input_count % 10000 == 0:
+                utils.log_dm_cost(output_count)
 
     finally:
         writer.close()
@@ -175,6 +177,7 @@ def main():
     tmpl2 = 'Perfect score: {} Average score: {}'
     utils.log_dm_event(tmpl1.format(input_count, output_count, error_count))
     utils.log_dm_event(tmpl2.format(score_perf, mean_score))
+    utils.log_dm_cost(output_count)
     
     
 if __name__ == "__main__":
