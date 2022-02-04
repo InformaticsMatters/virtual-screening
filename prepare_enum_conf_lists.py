@@ -109,6 +109,7 @@ def main():
 
     utils.log_dm_event(tmpl.format(
         total, duplicates, errors, existing_enum, existing_confs, count_enum, count_confs))
+    utils.log_dm_cost(total)
     
     
 if __name__ == "__main__":

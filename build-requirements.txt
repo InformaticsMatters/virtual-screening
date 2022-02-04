@@ -1,1 +1,1 @@
-yamllint
+im-jote

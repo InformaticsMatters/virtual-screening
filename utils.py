@@ -33,15 +33,18 @@ def log_dm_event(*args):
                                   _INFO,
                                   _SBUF.getvalue().strip()))
 
-def log_dm_cost(cost, cumulative=True):
+def log_dm_cost(cost, incremental=False):
     """Generate a Data Manager-compliant cost message.
     The Data Manager watches stdout and interprets certain formats
-    as a 'cost', typically used for billing purposes.
+    as a 'cost' lines, and they're typically used for billing purposes.
 
-    The cost must be a non-negative number. It is assumed to be cumulative
-    unless cumulative is set to False. Cumulative values are written
-    with a '+' prefix, i.e. '+1' or '+0'. Non-cumulative (absolute) costs
-    are written without a '+' prefix, i.e. '1' or '0'.
+    The cost must be a non-negative number.
+
+    The cost interpreted as a total cost if incremental is False.
+    If costs are to be added to existing costs set incremental to False.
+    Total cost values are written without a '+' prefix.
+    When incremental, the cost values are written
+    with a '+' prefix, i.e. '+1' or '+0'.
     """
     global _DM_COST_SEQUENCE_NUMBER
 
@@ -53,7 +56,7 @@ def log_dm_cost(cost, cumulative=True):
     assert cost >= 0
 
     cost_str = str(cost)
-    if cumulative:
+    if incremental:
         cost_str = '+' + cost_str
     msg_time = datetime.now(timezone.utc).replace(microsecond=0)
     print('%s # %s -COST- %s %d' % (msg_time.isoformat(),

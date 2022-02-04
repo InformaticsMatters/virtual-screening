@@ -23,10 +23,11 @@ from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolAlign
 
 
-def minimise(input, output, cycles=200, remove_hydrogens=False, interval=0):
+def minimise(input, output, cycles=200, interval=0):
 
     count = 0
     errors = 0
+    success = 0
     non_converged = 0
 
     utils.expand_path(output)
@@ -40,6 +41,7 @@ def minimise(input, output, cycles=200, remove_hydrogens=False, interval=0):
                     errors += 1
                     continue
                 try:
+                    mol = Chem.RemoveHs(mol)
                     molh = Chem.AddHs(mol, addCoords=True)
                     res = AllChem.MMFFOptimizeMoleculeConfs(molh, maxIters=cycles)
                     converged, energy = res[0]
@@ -49,27 +51,26 @@ def minimise(input, output, cycles=200, remove_hydrogens=False, interval=0):
                         utils.log_dm_event("Force field could not be set up for molecule", count)
                         errors += 1
 
-                    if remove_hydrogens:
-                        molz = Chem.RemoveHs(molh)
+                    probe_mol = Chem.RemoveHs(molh)
 
-                    rmsd = rdMolAlign.AlignMol(molz, mol)
-                    molz.SetDoubleProp('RMSD', rmsd)
-                    molz.SetIntProp('CONVERGED', converged)
-                    molz.SetDoubleProp('ENERGY', energy)
+                    rmsd = rdMolAlign.AlignMol(probe_mol, mol)
+                    probe_mol.SetDoubleProp('RMSD', rmsd)
+                    probe_mol.SetIntProp('CONVERGED', converged)
+                    probe_mol.SetDoubleProp('ENERGY', energy)
 
-                    writer.write(molz)
+                    writer.write(probe_mol)
+                    success += 1
 
-                except RuntimeError:
-                    utils.log("Failed to minimize", count, Chem.MolToSmiles(mol))
+                except RuntimeError as e:
+                    utils.log("Failed to minimize", count, Chem.MolToSmiles(mol), e)
                     errors += 1
-                except KeyboardInterrupt:
-                    utils.log('Interrupted')
-                    sys.exit(0)
 
                 if interval and count % interval == 0:
                     utils.log_dm_event("Processed {} records, {} errors".format(count, errors))
+                if success % 10000 == 0:
+                    utils.log_dm_cost(success)
 
-    return count, errors, non_converged
+    return count, success, errors, non_converged
 
 
 def main():
@@ -83,16 +84,14 @@ def main():
     parser.add_argument('-i', '--input', required=True, help="File with inputs")
     parser.add_argument('-o', '--output', required=True, help="Output file")
     parser.add_argument('-c', '--cycles', type=int, default=200, help="Number of minimization cycles")
-    parser.add_argument('-r', '--remove-hydrogens', action='store_true', help='Remove hydrogens from the outputs')
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     utils.log("minimize.py: ", args)
 
-    count, errors, non_converged = minimise(args.input, args.output, args.cycles, remove_hs=args.remove_hydrogens,
-                                            interval=args.interval)
+    count, success, errors, non_converged = minimise(args.input, args.output, args.cycles, interval=args.interval)
     utils.log_dm_event('Processed {} molecules. {} did not converge. {} errors'.format(count, non_converged, errors))
-    # utils.log_dm_cost(candidates, cumulative=False)
+    utils.log_dm_cost(success)
     
     
 if __name__ == "__main__":

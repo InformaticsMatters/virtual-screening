@@ -84,6 +84,8 @@ def shard(inputs, source, version, output_dir, delimiter,
                     
                     if interval and count % interval == 0:
                         utils.log_dm_event("Processed {} records".format(count))
+                    if count % 50000 == 0:
+                        utils.log_dm_cost(count)
                     
                     # read the line
                     line = line.strip()
@@ -226,7 +228,7 @@ def main():
         duration_s = 1
 
     utils.log_dm_event('Processed {} records in {} seconds. {} duplicates, {} errors.'.format(count, duration_s, duplicates, errors))
-    
+    utils.log_dm_cost(count)
 
 if __name__ == "__main__":
     main()

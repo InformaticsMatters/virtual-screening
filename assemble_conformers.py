@@ -56,6 +56,8 @@ def execute(input, output, data_dir, mode,
 
                 if interval and inputs % interval == 0:
                     utils.log_dm_event("Processed {} records, {} conformers".format(inputs, conformers))
+                if inputs % 10000 == 0:
+                    utils.log_dm_cost(inputs)
 
                 tokens = line.strip().split('\t')
                 smi = tokens[0]
@@ -137,6 +139,7 @@ def main():
     utils.log_dm_event(
         'Processed {} inputs with {} unique mols in {}s. {} errors, {} duplicates'.format(inputs, total, (t1 - t0),
                                                                                           errors, duplicates))
+    utils.log_dm_cost(inputs)
 
 
 if __name__ == "__main__":

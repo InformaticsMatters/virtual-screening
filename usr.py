@@ -88,6 +88,8 @@ def execute(inputs_sdf, queries_file, outfile_sdf, method, group_by_field, thres
 
             if interval and input_count % interval == 0:
                 utils.log_dm_event("Processed {} molecules, {} hits. {} outputs".format(input_count, hit_count, output_count))
+            if input_count % 10000 == 0:
+                utils.log_dm_cost(input_count)
 
             if similarity > threshold:
                 hit_count += 1
@@ -157,6 +159,7 @@ def main():
 
     tmpl = 'Processed {} conformers. Generated {} outputs. {} errors. Average similarity is {}. Time (s): {}'
     utils.log_dm_event(tmpl.format(input_count, output_count, error_count, mean_similarity, duration_s))
+    utils.log_dm_cost(input_count)
     
     
 if __name__ == "__main__":
