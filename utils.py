@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+import sys
 
 default_num_chars = 2
 default_num_levels = 2
