@@ -24,10 +24,13 @@ Use the fragment network to find expansions of a molecule
 """
 
 import os, argparse, time
+
+import utils
+from dm_job_utilities.dm_log import DmLog
+from standardize_molecule import standardize_to_noniso_smiles
+
 from rdkit import RDLogger
 from neo4j import GraphDatabase
-import utils
-from standardize_molecule import standardize_to_noniso_smiles
 
 
 RDLogger.logger().setLevel(RDLogger.ERROR)
@@ -120,7 +123,7 @@ def main():
     parser.add_argument('--password', help='Neo4j password')
 
     args = parser.parse_args()
-    utils.log_dm_event("Expand Args: ", args)
+    DmLog.emit_event("Expand Args: ", args)
 
     if args.server:
         neo4j_server = args.server
@@ -151,8 +154,8 @@ def main():
                     hops=args.hops, standardize=not args.no_standardize,
                     report_hits=args.report_hits)
 
-    utils.log_dm_event('Search found {} molecules.'.format(count))
-    utils.log_dm_cost(count)
+    DmLog.emit_event('Search found {} molecules.'.format(count))
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":

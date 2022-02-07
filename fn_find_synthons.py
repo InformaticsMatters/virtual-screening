@@ -24,10 +24,13 @@ Use the fragment network to find synthons of particular molecule
 """
 
 import os, argparse, time
+
+import utils
+from dm_job_utilities.dm_log import DmLog
+from standardize_molecule import standardize_to_noniso_smiles
+
 from rdkit import RDLogger
 from neo4j import GraphDatabase
-import utils
-from standardize_molecule import standardize_to_noniso_smiles
 
 
 RDLogger.logger().setLevel(RDLogger.ERROR)
@@ -72,7 +75,7 @@ def run_query(tx, smiles):
             synthons.add(tokens[1])
             synthons.add(tokens[4])
 
-    utils.log_dm_event("Search Found", len(synthons), "synthons in", (t1 - t0), 'secs')
+    DmLog.emit_event("Search Found", len(synthons), "synthons in", (t1 - t0), 'secs')
     return synthons
 
 
@@ -91,7 +94,7 @@ def main():
     parser.add_argument('--password', help='Neo4j password')
 
     args = parser.parse_args()
-    utils.log_dm_event("FindSynthons Args: ", args)
+    DmLog.emit_event("FindSynthons Args: ", args)
 
     if args.server:
         neo4j_server = args.server
@@ -119,9 +122,9 @@ def main():
                     neo4j_server, neo4j_username, neo4j_password,
                     standardize=not args.no_standardize, report_hits=args.report_hits)
 
-    utils.log_dm_event('Search found {} synthons.'.format(count))
+    DmLog.emit_event('Search found {} synthons.'.format(count))
     if count:
-        utils.log_dm_cost(1)
+        DmLog.emit_cost(1)
 
 
 if __name__ == "__main__":
