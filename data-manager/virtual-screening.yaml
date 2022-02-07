@@ -2170,24 +2170,6 @@ jobs:
             creates: '{{ dataDir }}/*/*/*.smi'
             # additional *.smi files might have already been generated
             type: files
-          log_file:
-            title: Nextflow log file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
-            mime-types:
-            - text/plain
-            type: file
-          trace_file:
-            title: Nextflow trace file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
-            mime-types:
-            - text/plain
-            type: file
-          report_file:
-            title: Nextflow report file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
-            mime-types:
-            - text/html
-            type: file
       # there are no options for this job
 
   generate-low-energy-conformers:
@@ -2243,24 +2225,6 @@ jobs:
             creates: '{{ dataDir }}/sha256/*/*/*_le_confs.sdf'
             # additional *.sdf files might have already been generated
             type: files
-          log_file:
-            title: Nextflow log file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
-            mime-types:
-            - text/plain
-            type: file
-          trace_file:
-            title: Nextflow trace file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
-            mime-types:
-            - text/plain
-            type: file
-          report_file:
-            title: Nextflow report file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
-            mime-types:
-            - text/html
-            type: file
       # there are no options for this job
 
   run-rdock:
@@ -2339,24 +2303,6 @@ jobs:
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
-            type: file
-          log_file:
-            title: Nextflow log file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
-            mime-types:
-            - text/plain
-            type: file
-          trace_file:
-            title: Nextflow trace file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
-            mime-types:
-            - text/plain
-            type: file
-          report_file:
-            title: Nextflow report file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
-            mime-types:
-            - text/html
             type: file
       options:
         type: object
@@ -2467,24 +2413,6 @@ jobs:
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-run-smina/78'
               derived-from: ligands
-          log_file:
-            title: Nextflow log file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
-            mime-types:
-            - text/plain
-            type: file
-          trace_file:
-            title: Nextflow trace file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
-            mime-types:
-            - text/plain
-            type: file
-          report_file:
-            title: Nextflow report file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
-            mime-types:
-            - text/html
-            type: file
       options:
         type: object
         required:
@@ -2573,24 +2501,6 @@ jobs:
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}'
-            type: file
-          log_file:
-            title: Nextflow log file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/nextflow.log'
-            mime-types:
-            - text/plain
-            type: file
-          trace_file:
-            title: Nextflow trace file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/trace.txt'
-            mime-types:
-            - text/plain
-            type: file
-          report_file:
-            title: Nextflow report file
-            creates: '{{ DM_INSTANCE_DIRECTORY }}/report.html'
-            mime-types:
-            - text/html
             type: file
       options:
         type: object
