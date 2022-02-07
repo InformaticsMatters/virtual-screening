@@ -1,6 +1,9 @@
 # Virtual screening tools
 
 ![build](https://github.com/InformaticsMatters/virtual-screening/workflows/build/badge.svg)
+![publish-stable](https://github.com/InformaticsMatters/virtual-screening/workflows/publish-stable/badge.svg)
+
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/informaticsmatters/virtual-screening)
 
 This repo contains a set of tools to prepare inputs for virtual screening.
 
