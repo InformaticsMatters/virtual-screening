@@ -16,8 +16,10 @@
 
 
 import argparse, os, json, gzip, time, uuid
-import utils
 from hashlib import sha256
+import utils
+from dm_job_utilities.dm_log import DmLog
+
 from rdkit import Chem, RDLogger
 from rdkit.Chem import rdMolDescriptors
 from standardize_molecule import standardize_to_iso_smiles
@@ -69,7 +71,7 @@ def shard(inputs, source, version, output_dir, delimiter,
         err_f = None
     
     for input in inputs:
-        utils.log_dm_event("Processing", input)
+        DmLog.emit_event("Processing", input)
 
         with (gzip.open(input, 'rt') if input.endswith('.gz') else open(input, 'rt')) as f:
         
@@ -83,9 +85,9 @@ def shard(inputs, source, version, output_dir, delimiter,
                     count += 1
                     
                     if interval and count % interval == 0:
-                        utils.log_dm_event("Processed {} records".format(count))
+                        DmLog.emit_event("Processed {} records".format(count))
                     if count % 50000 == 0:
-                        utils.log_dm_cost(count)
+                        DmLog.emit_cost(count)
                     
                     # read the line
                     line = line.strip()
@@ -97,13 +99,13 @@ def shard(inputs, source, version, output_dir, delimiter,
                         std_smi, mol = standardize_to_iso_smiles(o_smi)
                     except Exception as ex:
                         errors += 1
-                        utils.log_dm_event('Error during standardisation of', line)
+                        DmLog.emit_event('Error during standardisation of', line)
                         write_error(line, err_f)
                         continue
                     
                     if not mol:
                         errors += 1
-                        utils.log_dm_event("Failed to process", line)
+                        DmLog.emit_event("Failed to process", line)
                         write_error(line, err_f)
                         continue
                         
@@ -117,7 +119,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                     sha256_digest = sha256(bytes(std_smi, 'utf-8')).hexdigest()
                     hac = mol.GetNumHeavyAtoms()
                     if hac > 99:
-                        utils.log_dm_event('Molecule has {} atoms - skipping'.format(hac))
+                        DmLog.emit_event('Molecule has {} atoms - skipping'.format(hac))
                         continue
                             
                     # find if the molecule exists, or if not create the sharded data
@@ -136,7 +138,7 @@ def shard(inputs, source, version, output_dir, delimiter,
                   
                         if 'smiles' in data:
                             if data['smiles'] != std_smi:
-                                utils.log_dm_event('WARNING: SMILES are inconsistent {} {}'.format(data['smiles'], std_smi))
+                                DmLog.emit_event('WARNING: SMILES are inconsistent {} {}'.format(data['smiles'], std_smi))
                                 continue
                         else:
                             data['smiles'] = std_smi
@@ -216,7 +218,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("shard: ", args)
+    DmLog.emit_event("shard: ", args)
     
     t0 = time.time()
     count, duplicates, errors = shard(args.input, args.source, args.version, args.outdir, args.delimiter, name_column=args.name_column,
@@ -227,8 +229,8 @@ def main():
     if duration_s < 1:
         duration_s = 1
 
-    utils.log_dm_event('Processed {} records in {} seconds. {} duplicates, {} errors.'.format(count, duration_s, duplicates, errors))
-    utils.log_dm_cost(count)
+    DmLog.emit_event('Processed {} records in {} seconds. {} duplicates, {} errors.'.format(count, duration_s, duplicates, errors))
+    DmLog.emit_cost(count)
 
 if __name__ == "__main__":
     main()

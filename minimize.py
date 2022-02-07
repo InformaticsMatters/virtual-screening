@@ -17,6 +17,7 @@
 
 import sys, argparse, time
 import utils
+from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -37,7 +38,7 @@ def minimise(input, output, cycles=200, interval=0):
             for mol in suppl:
                 count += 1
                 if not mol:
-                    utils.log_dm_event("Failed to read molecule", count)
+                    DmLog.emit_event("Failed to read molecule", count)
                     errors += 1
                     continue
                 try:
@@ -48,7 +49,7 @@ def minimise(input, output, cycles=200, interval=0):
                     if converged == 1:
                         non_converged += 1
                     elif converged == -1:
-                        utils.log_dm_event("Force field could not be set up for molecule", count)
+                        DmLog.emit_event("Force field could not be set up for molecule", count)
                         errors += 1
 
                     probe_mol = Chem.RemoveHs(molh)
@@ -66,9 +67,9 @@ def minimise(input, output, cycles=200, interval=0):
                     errors += 1
 
                 if interval and count % interval == 0:
-                    utils.log_dm_event("Processed {} records, {} errors".format(count, errors))
+                    DmLog.emit_event("Processed {} records, {} errors".format(count, errors))
                 if success % 10000 == 0:
-                    utils.log_dm_cost(success)
+                    DmLog.emit_cost(success)
 
     return count, success, errors, non_converged
 
@@ -90,8 +91,8 @@ def main():
     utils.log("minimize.py: ", args)
 
     count, success, errors, non_converged = minimise(args.input, args.output, args.cycles, interval=args.interval)
-    utils.log_dm_event('Processed {} molecules. {} did not converge. {} errors'.format(count, non_converged, errors))
-    utils.log_dm_cost(success)
+    DmLog.emit_event('Processed {} molecules. {} did not converge. {} errors'.format(count, non_converged, errors))
+    DmLog.emit_cost(success)
     
     
 if __name__ == "__main__":

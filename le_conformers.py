@@ -23,6 +23,7 @@ same methodology that this module uses.
 """
 import os, argparse, traceback, time, gzip
 import utils
+from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -111,7 +112,7 @@ def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens, num_co
 def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_threshold=1.0,
             num_conformers=None, interval=None):
 
-    utils.log_dm_event('Executing ...')
+    DmLog.emit_event('Executing ...')
 
     input_count = 0
     enumerated_count = 0
@@ -129,20 +130,20 @@ def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_th
                 digest = tokens[2]
 
                 if interval and input_count % interval == 0:
-                    utils.log_dm_event("Processed {} records".format(input_count))
+                    DmLog.emit_event("Processed {} records".format(input_count))
 
                 parts = [data_dir]
                 parts.extend(utils.get_path_from_digest(digest))
                 path = os.path.join(*parts)
                 if not os.path.isdir(path):
-                    utils.log_dm_event('WARNING, path', path, 'not found')
+                    DmLog.emit_event('WARNING, path', path, 'not found')
                     error_count += 1
                     continue
 
                 smi_in = os.path.join(path, digest + '.smi')
                 sdf_out = os.path.join(path, digest + '_le_confs.sdf.gz')
                 if not os.path.exists(smi_in):
-                    utils.log_dm_event('WARNING, smiles file', smi_in, 'not found')
+                    DmLog.emit_event('WARNING, smiles file', smi_in, 'not found')
                     error_count += 1
                     continue
 
@@ -160,7 +161,7 @@ def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_th
                                 mol = Chem.MolFromSmiles(enum_smi)
                                 if not mol:
                                     error_count += 1
-                                    utils.log_dm_event("ERROR, Failed to create molecule", input_count, enumerated_count)
+                                    DmLog.emit_event("ERROR, Failed to create molecule", input_count, enumerated_count)
                                     continue
 
                                 molh = Chem.AddHs(mol)
@@ -211,7 +212,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("le_conformers: ", args)
+    DmLog.emit_event("le_conformers: ", args)
 
     start = time.time()
     input_count, enumerated_count, conformer_count, error_count = \
@@ -224,8 +225,8 @@ def main():
                 )
     end = time.time()
 
-    utils.log_dm_event('Inputs:', input_count, 'Enumerated:', enumerated_count,
-                       'Conformers:', conformer_count, 'Errors:', error_count, 'Time (s):', end - start)
+    DmLog.emit_event('Inputs:', input_count, 'Enumerated:', enumerated_count,
+                     'Conformers:', conformer_count, 'Errors:', error_count, 'Time (s):', end - start)
 
 
 if __name__ == "__main__":

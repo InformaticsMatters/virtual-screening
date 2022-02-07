@@ -1,8 +1,11 @@
 FROM informaticsmatters/rdock:2013.1
 LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 
-RUN yum -y update && yum -y install python-jinja2 && yum clean all
+RUN yum -y update &&\
+    yum -y install python-jinja2 &&\
+    yum clean all
+
+RUN pip install im-data-manager-job-utilities==1.0.0
 
 COPY prepare_rdock.py rdock_*.sh /code/
 RUN chmod 755 /code/prepare_rdock.py
-

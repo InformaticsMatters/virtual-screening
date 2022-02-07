@@ -17,6 +17,8 @@
 
 import argparse, time
 import utils
+from dm_job_utilities.dm_log import DmLog
+
 from rdkit import Chem, SimDivFilters
 from rdkit.Chem import rdMolDescriptors
 
@@ -39,20 +41,20 @@ def pick(input, seeds, output, count, threshold, interval=0):
                     tokens = line.strip().split('\t')
                     smi = tokens[0]
                     seed_molecules.add(smi)
-        utils.log_dm_event("Found", len(seed_molecules), 'seeds')
+        DmLog.emit_event("Found", len(seed_molecules), 'seeds')
     
     with open(input) as inf:
         utils.expand_path(output)
         with open(output, 'w') as outf:
             
-            utils.log_dm_event('Starting fingerprinting ...')
+            DmLog.emit_event('Starting fingerprinting ...')
             t0 = time.time()
             first_picks = []
             for line in inf:
                 inputs += 1
                 
                 if interval and inputs % interval == 0:
-                    utils.log_dm_event("... fingerprinted {} records".format(inputs))
+                    DmLog.emit_event("... fingerprinted {} records".format(inputs))
                     
                 tokens = line.strip().split('\t')
                 
@@ -76,27 +78,27 @@ def pick(input, seeds, output, count, threshold, interval=0):
                 data.append(tokens)
                 
             t1 = time.time()
-            utils.log_dm_event('Fingerprinting took {} seconds'.format((t1-t0)))
+            DmLog.emit_event('Fingerprinting took {} seconds'.format((t1-t0)))
             
-            utils.log_dm_event('Starting picking ...')
+            DmLog.emit_event('Starting picking ...')
             t2 = time.time()
             mmp = SimDivFilters.MaxMinPicker()
             if not count:
                 count = len(fingerprints)
             if threshold:
                 picks, thresh = mmp.LazyBitVectorPickWithThreshold(fingerprints, len(fingerprints), count, 1.0 - threshold, firstPicks=first_picks)
-                utils.log_dm_event('Final pick threshold was', 1.0 - thresh)
+                DmLog.emit_event('Final pick threshold was', 1.0 - thresh)
             else:
                 picks = mmp.LazyBitVectorPick(fingerprints, len(fingerprints), count)
             
             t3 = time.time()
-            utils.log_dm_event('Picking took {} seconds'.format((t3-t2)))
+            DmLog.emit_event('Picking took {} seconds'.format((t3-t2)))
             
-            utils.log_dm_event('Writing data ....')
+            DmLog.emit_event('Writing data ....')
             for pick in picks:
                 d = data[pick]
                 outf.write('\t'.join(d) + '\n')
-            utils.log_dm_event('Finished')
+            DmLog.emit_event('Finished')
                 
     return inputs, len(fingerprints), len(picks), num_dups
 
@@ -120,12 +122,12 @@ def main():
     utils.log("max_min_picker.py: ", args)
     
     if not args.count and not args.threshold:
-        utils.log_dm_event('Must specify count or threshold or both')
+        DmLog.emit_event('Must specify count or threshold or both')
         exit(1)
     
     total, candidates, picked, dups = pick(args.input, args.seeds, args.output, args.count, args.threshold, interval=args.interval)
-    utils.log_dm_event('Picked {} from {} molecules. {} duplicates'.format(picked, candidates, dups))
-    utils.log_dm_cost(candidates)
+    DmLog.emit_event('Picked {} from {} molecules. {} duplicates'.format(picked, candidates, dups))
+    DmLog.emit_cost(candidates)
     
     
 if __name__ == "__main__":

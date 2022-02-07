@@ -17,6 +17,7 @@
 
 import time, argparse
 import utils, le_conformers
+from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
 
@@ -58,7 +59,7 @@ def main():
     parser.add_argument('--remove-hydrogens', action='store_true', help='Remove hydrogens from the output')
 
     args = parser.parse_args()
-    utils.log_dm_event("le_conformers_for_mol: ", args)
+    DmLog.emit_event("le_conformers_for_mol: ", args)
 
     if args.input and args.smiles:
         raise ValueError("Can't specify both --input and --smiles options")
@@ -78,8 +79,8 @@ def main():
                     remove_hydrogens=args.remove_hydrogens, rms_threshold=args.rms_threshold)
     end = time.time()
 
-    utils.log_dm_event('Generated:', count, 'conformers', 'Time (s):', end - start)
-    utils.log_dm_cost(count)
+    DmLog.emit_event('Generated:', count, 'conformers', 'Time (s):', end - start)
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":

@@ -55,12 +55,13 @@ Use the fragment network to find expansions of a molecule that contain a particu
 
 import os, argparse, time
 
+import utils
+from dm_job_utilities.dm_log import DmLog
+from standardize_molecule import standardize_to_noniso_smiles
+
 from rdkit import RDLogger
 
 from neo4j import GraphDatabase
-
-import utils
-from standardize_molecule import standardize_to_noniso_smiles
 
 
 RDLogger.logger().setLevel(RDLogger.ERROR)
@@ -188,8 +189,8 @@ def main():
                     hops=args.hops, standardize=not args.no_standardize,
                     report_hits=args.report_hits)
 
-    utils.log_dm_event('Search found {} molecules.'.format(count))
-    utils.log_dm_cost(count)
+    DmLog.emit_event('Search found {} molecules.'.format(count))
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":

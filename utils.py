@@ -20,50 +20,6 @@ def log(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def log_dm_event(*args):
-    """Generate a Data Manager-compliant event message.
-    The Data Manager watches stdout and interprets certain formats
-    as an 'event'. These are then made available to the client.
-    Here we write the message using the expected format.
-    """
-    _ = _SBUF.truncate(0)
-    print(*args, file=_SBUF)
-    msg_time = datetime.now(timezone.utc).replace(microsecond=0)
-    print('%s # %s -EVENT- %s' % (msg_time.isoformat(),
-                                  _INFO,
-                                  _SBUF.getvalue().strip()))
-
-def log_dm_cost(cost, incremental=False):
-    """Generate a Data Manager-compliant cost message.
-    The Data Manager watches stdout and interprets certain formats
-    as a 'cost' lines, and they're typically used for billing purposes.
-
-    The cost must be a non-negative number.
-
-    The cost interpreted as a total cost if incremental is False.
-    If costs are to be added to existing costs set incremental to False.
-    Total cost values are written without a '+' prefix.
-    When incremental, the cost values are written
-    with a '+' prefix, i.e. '+1' or '+0'.
-    """
-    global _DM_COST_SEQUENCE_NUMBER
-
-    # Ensure this cost message is unique
-    _DM_COST_SEQUENCE_NUMBER += 1
-
-    # Cost is always expected to be a number that's not negative.
-    assert isinstance(cost, numbers.Number)
-    assert cost >= 0
-
-    cost_str = str(cost)
-    if incremental:
-        cost_str = '+' + cost_str
-    msg_time = datetime.now(timezone.utc).replace(microsecond=0)
-    print('%s # %s -COST- %s %d' % (msg_time.isoformat(),
-                                    _INFO,
-                                    cost_str,
-                                    _DM_COST_SEQUENCE_NUMBER))
-
 def get_path_from_digest(digest, num_chars=default_num_chars, num_levels=default_num_levels):
     parts = []
     start = 0

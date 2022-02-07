@@ -18,8 +18,10 @@
 3D alignment using Open3DAlign
 """
 
-import argparse, os, sys
+import argparse, sys
 import utils
+from dm_job_utilities.dm_log import DmLog
+
 from rdkit import Chem
 from rdkit.Chem import rdMolAlign
 import rdkit_utils
@@ -91,9 +93,9 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
     q_mol = Chem.AddHs(q_mol, addCoords=True)
 
     align_perf, score_perf = process_mol(q_mol, q_mol, use_crippen)
-    utils.log_dm_event('Query self-alignment score and align:', score_perf , align_perf)
+    DmLog.emit_event('Query self-alignment score and align:', score_perf , align_perf)
 
-    utils.log_dm_event('Opening', outfile_sdf, 'as output')
+    DmLog.emit_event('Opening', outfile_sdf, 'as output')
     writer = Chem.SDWriter(outfile_sdf)
     try:
         # read the conformers
@@ -137,9 +139,9 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
                 output_count += 1
 
             if interval and input_count % interval == 0:
-                utils.log_dm_event("Processed {} molecules, {} outputs".format(input_count, output_count))
+                DmLog.emit_event("Processed {} molecules, {} outputs".format(input_count, output_count))
             if input_count % 10000 == 0:
-                utils.log_dm_cost(output_count)
+                DmLog.emit_cost(output_count)
 
     finally:
         writer.close()
@@ -166,7 +168,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("open3dalign.py: ", args)
+    DmLog.emit_event("open3dalign.py: ", args)
 
     input_count, output_count, error_count, mean_score, score_perf = \
         execute(args.inputs, args.query, args.outfile,
@@ -175,9 +177,9 @@ def main():
 
     tmpl1 = 'Processed {} conformers. Generated {} outputs. {} errors.'
     tmpl2 = 'Perfect score: {} Average score: {}'
-    utils.log_dm_event(tmpl1.format(input_count, output_count, error_count))
-    utils.log_dm_event(tmpl2.format(score_perf, mean_score))
-    utils.log_dm_cost(output_count)
+    DmLog.emit_event(tmpl1.format(input_count, output_count, error_count))
+    DmLog.emit_event(tmpl2.format(score_perf, mean_score))
+    DmLog.emit_cost(output_count)
     
     
 if __name__ == "__main__":

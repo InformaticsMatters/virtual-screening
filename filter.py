@@ -17,7 +17,7 @@
 
 import os, glob, argparse
 import utils
-from hashlib import sha256
+from dm_job_utilities.dm_log import DmLog
 
 def file_matches(filename, min_hac, max_hac):
 
@@ -34,7 +34,7 @@ def file_matches(filename, min_hac, max_hac):
 
 def list_files(input_dir, min_hac=None, max_hac=None):
     pattern = os.path.join(input_dir, '[0-9]*.smi')
-    utils.log_dm_event('Inspecting files', pattern)
+    DmLog.emit_event('Inspecting files', pattern)
     files = glob.glob(pattern)
     matched = []
     for file in files:
@@ -81,7 +81,7 @@ def filter(input_dirs, output_file, min_hac=None, max_hac=None,
     for input_dir in input_dirs:
         files = list_files(input_dir, min_hac, max_hac)
         all_files.extend(files)
-    utils.log_dm_event('Files to process:', all_files)
+    DmLog.emit_event('Files to process:', all_files)
     count = 0
     total = 0
     num_dups = 0
@@ -90,7 +90,7 @@ def filter(input_dirs, output_file, min_hac=None, max_hac=None,
     utils.expand_path(output_file)
     with open(output_file, 'w') as out:
         for i, file in enumerate(all_files):
-            utils.log_dm_event('Processing', file)
+            DmLog.emit_event('Processing', file)
             with open(file) as f:
                 header_line = f.readline()
                 header_tokens = header_line.strip().split('\t')
@@ -160,7 +160,7 @@ def main():
     parser.add_argument('--max-sp3', type=int, help="Max value for SP3 count")
 
     args = parser.parse_args()
-    utils.log_dm_event("filter: ", args)
+    DmLog.emit_event("filter: ", args)
     
     total, count, num_dups = filter(args.inputs, args.outfile, 
         min_hac=args.min_hac, max_hac=args.max_hac,
@@ -171,8 +171,8 @@ def main():
         min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
         min_sp3=args.min_sp3, max_sp3=args.max_sp3)
 
-    utils.log_dm_event('Matched {} out of {} records. {} duplicates'.format(count, total, num_dups))
-    utils.log_dm_cost(count)
+    DmLog.emit_event('Matched {} out of {} records. {} duplicates'.format(count, total, num_dups))
+    DmLog.emit_cost(count)
     
 
 if __name__ == "__main__":

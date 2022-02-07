@@ -18,6 +18,7 @@
 import argparse, os
 import utils
 from utils import get_path_from_digest
+from dm_job_utilities.dm_log import DmLog
 
 
 def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir, interval=0):
@@ -32,7 +33,7 @@ def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir, interval=0):
     
     dups = set()
     
-    utils.log_dm_event('Processing file', infile)
+    DmLog.emit_event('Processing file', infile)
     with open(infile) as inf:
         utils.expand_path(outfile_enum)
         with open(outfile_enum, 'w') as outenum:
@@ -43,7 +44,7 @@ def prepare_lists(infile, outfile_enum, outfile_le_confs, data_dir, interval=0):
                     total += 1
 
                     if interval and total % interval == 0:
-                        utils.log_dm_event("Processed {} records".format(total))
+                        DmLog.emit_event("Processed {} records".format(total))
 
                     tokens = line.strip().split('\t')
                     smi = tokens[0]
@@ -107,9 +108,9 @@ def main():
  {} already enumerated, {} already have low energy conformers,\
  {} need enumeration, {} need low energy conformers generated'
 
-    utils.log_dm_event(tmpl.format(
+    DmLog.emit_event(tmpl.format(
         total, duplicates, errors, existing_enum, existing_confs, count_enum, count_confs))
-    utils.log_dm_cost(total)
+    DmLog.emit_cost(total)
     
     
 if __name__ == "__main__":

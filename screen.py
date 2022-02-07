@@ -17,13 +17,15 @@
 import argparse, time
 import traceback
 
+import utils, rdkit_utils
+from dm_job_utilities.dm_log import DmLog
+
 from rdkit import Chem
 from rdkit import DataStructs
 from rdkit.Chem import AllChem
 from rdkit.Chem import MACCSkeys
 from rdkit.Chem.Fingerprints import FingerprintMols
 
-import utils, rdkit_utils
 
 """
 Filter a file of SMILES using fingerprint based similarity.
@@ -107,26 +109,26 @@ def validate_params(descriptor, metric, alpha, beta, nbits):
     if descriptor == 'morgan2' or descriptor == 'morgan3':
         if not (metric == 'tamimoto' or metric == 'dice' or metric == 'tversky'):
             if not nbits:
-                utils.log_dm_event('When using', descriptor, 'descriptor and', metric, 'metric',
+                DmLog.emit_event('When using', descriptor, 'descriptor and', metric, 'metric',
                                    'the nbits parameter must be defined')
                 exit(1)
             else:
                 if metric == 'tversky':
-                    utils.log_dm_event('Using {} bit vector and {} metric with alpha={}, beta={}'
+                    DmLog.emit_event('Using {} bit vector and {} metric with alpha={}, beta={}'
                                        .format(descriptor, metric, alpha, beta))
                 else:
-                    utils.log_dm_event('Using {} bit vector and {} metric'.format(descriptor, metric))
+                    DmLog.emit_event('Using {} bit vector and {} metric'.format(descriptor, metric))
         else:
             if metric == 'tversky':
-                utils.log_dm_event('Using {} counts and {} metric with alpha={}, beta={}'
+                DmLog.emit_event('Using {} counts and {} metric with alpha={}, beta={}'
                                    .format(descriptor, metric, alpha, beta))
             else:
-                utils.log_dm_event('Using {} counts and {} metric'.format(descriptor, metric))
+                DmLog.emit_event('Using {} counts and {} metric'.format(descriptor, metric))
     elif metric == 'tversky':
-        utils.log_dm_event('Using {} descriptor and {} metric with alpha={}, beta={}'
+        DmLog.emit_event('Using {} descriptor and {} metric with alpha={}, beta={}'
                            .format(descriptor, metric, alpha, beta))
     else:
-        utils.log_dm_event('Using {} descriptor and {} metric'.format(descriptor, metric))
+        DmLog.emit_event('Using {} descriptor and {} metric'.format(descriptor, metric))
 
 
 def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
@@ -167,7 +169,7 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
             if not mol:
                 raise ValueError('Failed to read query molecule:', q_count)
             q_mols.append(mol)
-        utils.log_dm_event('Read', len(q_mols), 'query molecules')
+        DmLog.emit_event('Read', len(q_mols), 'query molecules')
 
     q_fps = []
     for q_mol in q_mols:
@@ -187,7 +189,7 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                 count += 1
 
                 if interval and count % interval == 0:
-                    utils.log_dm_event("Processed {} records, {} hits".format(count, hits))
+                    DmLog.emit_event("Processed {} records, {} hits".format(count, hits))
 
                 line = line.strip()
                 tokens = line.split(delimiter)
@@ -214,7 +216,7 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                     t_mol = Chem.MolFromSmiles(smi)
                     if not t_mol:
                         errors += 1
-                        utils.log_dm_event('Failed to process molecule', count, smi)
+                        DmLog.emit_event('Failed to process molecule', count, smi)
                         continue
                     t_fp = my_descriptor(t_mol, nbits)
                     sims = []
@@ -288,7 +290,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("screen: ", args)
+    DmLog.emit_event("screen: ", args)
 
     delimiter = utils.read_delimiter(args.delimiter)
     queries_delimiter = utils.read_delimiter(args.queries_delimiter)
@@ -306,9 +308,9 @@ def main():
     if duration_s < 1:
         duration_s = 1
 
-    utils.log_dm_event(input_count, 'inputs,', hit_count, 'hits,', error_count, 'errors.',
+    DmLog.emit_event(input_count, 'inputs,', hit_count, 'hits,', error_count, 'errors.',
                          'Time (s):', duration_s)
-    utils.log_dm_cost(input_count)
+    DmLog.emit_cost(input_count)
 
 
 if __name__ == "__main__":
