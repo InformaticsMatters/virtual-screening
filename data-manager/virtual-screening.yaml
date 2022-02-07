@@ -56,7 +56,7 @@ jobs:
     keywords:
     - rdkit
     - ligand preparation
-    # link to documetnation for the job
+    # link to documentation for the job
     doc-url: https://discourse.squonk.it/t/job-shard/67
     # The container image that contains the Job implementation
     # (in v1, these are hosted on Docker Hub)

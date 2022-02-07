@@ -37,3 +37,9 @@ services:
       context: .
       dockerfile: Dockerfile-oddt
     image: informaticsmatters/vs-oddt:${IMAGE_TAG:-latest}
+
+  plants:
+    build:
+      context: .
+      dockerfile Dockerfile-plants
+    image: informaticsmatters/vs-plants:${IMAGE_TAG:-latest}
