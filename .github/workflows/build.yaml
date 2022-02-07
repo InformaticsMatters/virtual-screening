@@ -40,8 +40,8 @@ jobs:
         pip install -r build-requirements.txt
     - name: Jote
       run: |
-        jote --manifest manifest-fragnet-search.yaml --dry-run
+        jote --manifest manifest-fragnet-search.yaml --dry-run --allow-no-tests 
         jote --manifest manifest-virtual-screening.yaml --dry-run
-        jote --manifest manifest-silicos-it.yaml --allow-no-tests --dry-run
+        jote --manifest manifest-silicos-it.yaml --dry-run --allow-no-tests
     - name: Build
       run: docker-compose build
