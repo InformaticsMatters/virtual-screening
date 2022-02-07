@@ -41,5 +41,12 @@ services:
   plants:
     build:
       context: .
-      dockerfile Dockerfile-plants
+      dockerfile: Dockerfile-plants
     image: informaticsmatters/vs-plants:${IMAGE_TAG:-latest}
+
+  fragnet-search:
+    build:
+      context: .
+      dockerfile: Dockerfile-fns
+    image: informaticsmatters/vs-fragnet-search:${IMAGE_TAG:-latest}
+

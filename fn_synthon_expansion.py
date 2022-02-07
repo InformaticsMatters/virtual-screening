@@ -54,14 +54,10 @@ Use the fragment network to find expansions of a molecule that contain a particu
 """
 
 import os, argparse, time
-
-import utils
-from dm_job_utilities.dm_log import DmLog
-from standardize_molecule import standardize_to_noniso_smiles
-
 from rdkit import RDLogger
-
 from neo4j import GraphDatabase
+import utils
+from standardize_molecule import standardize_to_noniso_smiles
 
 
 RDLogger.logger().setLevel(RDLogger.ERROR)
@@ -83,6 +79,9 @@ def process(smiles, synthon, outfile,
             standardize=True,
             report_hits=False
             ):
+
+    if hops > 4:
+        raise ValueError('Hops greater than 4 are not allowed')
 
     if standardize:
         std_smi, mol = standardize_to_noniso_smiles(smiles)
@@ -138,7 +137,7 @@ def run_query(tx, query, smiles, synthon, report_hits):
 
 def main():
     # Example usage:
-    # ./fn-synthon-expansion.py -s 'c1ccco1' -x '[Xe]C1C=CCCC1' --server "bolt://localhost:7687" \
+    # ./fn_synthon_expansion.py -s 'c1ccco1' -x '[Xe]C1C=CCCC1' --server "bolt://localhost:7687" \
     #    --username <username> --password <password> --hops 2
 
     parser = argparse.ArgumentParser(description='Fragnet synthon expansion')
@@ -150,15 +149,14 @@ def main():
     parser.add_argument('--hac-max', type=int, help='The max change in heavy atom count')
     parser.add_argument('--rac-min', type=int, help='The min change in ring atom count')
     parser.add_argument('--rac-max', type=int, help='The max change in ring atom count')
-    parser.add_argument('--hops', type=int, default=2, help='The number of graph traversals (hops)')
+    parser.add_argument('--hops', type=int, default=2, help='The number of graph traversals (hops). Max 4')
     parser.add_argument('--no-standardize', action='store_true', help='The molecules do not need standardizing')
     parser.add_argument('--server', help='Neo4j database server')
     parser.add_argument('--username', help='Neo4j username')
     parser.add_argument('--password', help='Neo4j password')
 
-
     args = parser.parse_args()
-    utils.log("SynthonExpansion Args: ", args)
+    utils.log_dm_event("SynthonExpansion Args: ", args)
 
     if args.server:
         neo4j_server = args.server
@@ -189,8 +187,8 @@ def main():
                     hops=args.hops, standardize=not args.no_standardize,
                     report_hits=args.report_hits)
 
-    DmLog.emit_event('Search found {} molecules.'.format(count))
-    DmLog.emit_cost(count)
+    utils.log_dm_event('Search found {} molecules.'.format(count))
+    utils.log_dm_cost(count)
 
 
 if __name__ == "__main__":
