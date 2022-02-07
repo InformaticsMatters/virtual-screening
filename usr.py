@@ -31,8 +31,9 @@ can, and usually should, be output. If conformers are generated using the above 
 group-by-field parameter should typically be std_smi.
 """
 
-import argparse, os, time
+import argparse, time
 import utils
+from dm_job_utilities.dm_log import DmLog
 
 from oddt import toolkit
 from oddt import shape
@@ -63,7 +64,7 @@ def execute(inputs_sdf, queries_file, outfile_sdf, method, group_by_field, thres
     qmol.removeh()
     qshape = method_func(qmol)
 
-    utils.log_dm_event('Opening', outfile_sdf, 'as output')
+    DmLog.emit_event('Opening', outfile_sdf, 'as output')
     writer = toolkit.Outputfile('sdf', outfile_sdf, overwrite=True)
     try:
         # read the conformers
@@ -87,9 +88,9 @@ def execute(inputs_sdf, queries_file, outfile_sdf, method, group_by_field, thres
             input_count += 1
 
             if interval and input_count % interval == 0:
-                utils.log_dm_event("Processed {} molecules, {} hits. {} outputs".format(input_count, hit_count, output_count))
+                DmLog.emit_event("Processed {} molecules, {} hits. {} outputs".format(input_count, hit_count, output_count))
             if input_count % 10000 == 0:
-                utils.log_dm_cost(input_count)
+                DmLog.emit_cost(input_count)
 
             if similarity > threshold:
                 hit_count += 1
@@ -146,7 +147,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("usr.py: ", args)
+    DmLog.emit_event("usr.py: ", args)
 
     start = time.time()
     input_count, output_count, error_count, mean_similarity = \
@@ -158,8 +159,8 @@ def main():
         duration_s = 1
 
     tmpl = 'Processed {} conformers. Generated {} outputs. {} errors. Average similarity is {}. Time (s): {}'
-    utils.log_dm_event(tmpl.format(input_count, output_count, error_count, mean_similarity, duration_s))
-    utils.log_dm_cost(input_count)
+    DmLog.emit_event(tmpl.format(input_count, output_count, error_count, mean_similarity, duration_s))
+    DmLog.emit_cost(input_count)
     
     
 if __name__ == "__main__":

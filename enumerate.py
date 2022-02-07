@@ -27,6 +27,7 @@ script patches the atom blocks to add the charge information. See rdkit_utils.py
 """
 import os, sys, argparse, traceback, uuid, gzip
 import utils, rdkit_utils
+from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -100,7 +101,7 @@ def execute(input, data_dir, delimiter='\t',
             max_tautomers=25,
             interval=0):
 
-    utils.log_dm_event('Executing ...')
+    DmLog.emit_event('Executing ...')
 
     if enumerate_tautomers or combinatorial:
         enumerator = TautomerEnumerator()
@@ -121,12 +122,12 @@ def execute(input, data_dir, delimiter='\t',
             digest = tokens[2]
             
             if interval and count % interval == 0:
-                    utils.log_dm_event("Processed {} records".format(count))
+                    DmLog.emit_event("Processed {} records".format(count))
                     
             mol = Chem.MolFromSmiles(smi)
             if not mol:
                 errors += 1
-                utils.log_dm_event("Failed to create molecule", count)
+                DmLog.emit_event("Failed to create molecule", count)
                 continue
 
             # if we have HAC filters apply them
@@ -242,7 +243,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("enumerate_candidates: ", args)
+    DmLog.emit_event("enumerate_candidates: ", args)
 
     # save the arguments
     input = args.input
@@ -287,7 +288,7 @@ def main():
                                              interval=interval
                                              )
 
-    utils.log_dm_event('Count:', count, 'Total', total, 'Excluded:', excluded, 'Errors:', errors)
+    DmLog.emit_event('Count:', count, 'Total', total, 'Excluded:', excluded, 'Errors:', errors)
 
 
 

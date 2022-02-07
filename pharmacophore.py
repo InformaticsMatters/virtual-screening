@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import utils
+from dm_job_utilities.dm_log import DmLog
 from openbabel import pybel
 from jinja2 import Template
 import argparse, os, time, tempfile, glob
@@ -111,7 +112,7 @@ def _do_processing(dir, inputs, fragments, outputfile, alignment_torsion_weight,
         num_mols += 1
 
         if interval and num_mols % interval == 0:
-            utils.log_dm_event("Processed {} records".format(num_mols))
+            DmLog.emit_event("Processed {} records".format(num_mols))
 
     # run pharmACOphore
     for i, mol_path in enumerate(mol_paths):
@@ -228,7 +229,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("pharmacophore.py: ", args)
+    DmLog.emit_event("pharmacophore.py: ", args)
 
     t0 = time.time()
     count, errors = process(args.input, args.fragments, args.outfile, dir=args.work_dir,
@@ -241,7 +242,7 @@ def main():
     if duration_s < 1:
         duration_s = 1
 
-    utils.log_dm_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
+    DmLog.emit_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
 
 
 if __name__ == "__main__":

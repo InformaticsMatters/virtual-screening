@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse, time, traceback
+from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
 from rdkit.Chem import rdMolAlign
@@ -33,11 +34,11 @@ def align(query_mol, inputs_sdf, outputs_sdf, query_atoms=None, keep_all=False, 
         with Chem.SDMolSupplier(query_mol) as supplr:
             query = next(supplr)
     else:
-        utils.log_dm_event("Unsupported query format. Must be .mol or .sdf. Found:", query_mol)
+        DmLog.emit_event("Unsupported query format. Must be .mol or .sdf. Found:", query_mol)
         exit(1)
 
     if not query:
-        utils.log_dm_event("Failed to read query molecule. Can't continue")
+        DmLog.emit_event("Failed to read query molecule. Can't continue")
         exit(1)
 
     utils.log('Using MCS params:', mcs_params)
@@ -66,11 +67,11 @@ def align(query_mol, inputs_sdf, outputs_sdf, query_atoms=None, keep_all=False, 
                         writer.write(mol)
                 except:
                     errors += 1
-                    utils.log_dm_event("Error processing molecule", count)
+                    DmLog.emit_event("Error processing molecule", count)
                     traceback.print_exc()
 
                 if interval and count % interval == 0:
-                    utils.log_dm_event("Processed {} records, {} errors".format(count, errors))
+                    DmLog.emit_event("Processed {} records, {} errors".format(count, errors))
 
     return count, errors
 
@@ -143,7 +144,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("align_mol: ", args)
+    DmLog.emit_event("align_mol: ", args)
 
     if args.align_atoms:
         query_atoms = list(map(lambda s: int(s), args.align_atoms.split(',')))
@@ -174,8 +175,8 @@ def main():
                           query_atoms=query_atoms, keep_all=args.keep_all, mcs_params=mcs_params, interval=args.interval)
     end = time.time()
 
-    utils.log_dm_event('Processed', count, 'molecules.', errors, 'errors. Time (s):', end - start)
-    utils.log_dm_cost(count)
+    DmLog.emit_event('Processed', count, 'molecules.', errors, 'errors. Time (s):', end - start)
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":

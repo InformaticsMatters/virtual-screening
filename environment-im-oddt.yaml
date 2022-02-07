@@ -6,4 +6,5 @@ dependencies:
   - pip=21.1.1
   - rdkit=2021.03.5
   - pip:
+    - im-data-manager-job-utilities==1.0.1
     - git+https://github.com/oddt/oddt.git@master

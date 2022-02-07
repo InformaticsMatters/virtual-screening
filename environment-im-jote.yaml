@@ -10,3 +10,4 @@ dependencies:
   - pip
   - pip:
     - im-jote
+    - im-data-manager-job-utilities==1.0.1

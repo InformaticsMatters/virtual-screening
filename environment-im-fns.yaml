@@ -7,3 +7,4 @@ dependencies:
   - neo4j-python-driver=4.4.1
   - pip:
     - im-standardize-molecule==0.1.0
+    - im-data-manager-job-utilities==1.0.1

@@ -18,6 +18,7 @@
 import argparse, os, gzip, time
 
 import utils, rdkit_utils
+from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, Crippen
@@ -69,13 +70,14 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
         count += 1
 
         if interval and count % interval == 0:
-            utils.log_dm_event("Processed {} records".format(count))
+            DmLog.emit_event("Processed {} records".format(count))
         if count % 10000 == 0:
-            utils.log_dm_cost(count)
+            # Emit a 'total' cost, replacing all prior costs
+            DmLog.emit_cost(count)
 
         if not mol:
             errors += 1
-            utils.log_dm_event("Failed to process record", count)
+            DmLog.emit_event("Failed to process record", count)
             continue
 
         # calculate the molecular props
@@ -93,7 +95,7 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
             tpsa = rdMolDescriptors.CalcTPSA(mol)
         except:
             errors += 1
-            utils.log_dm_event('Failed to process record', count)
+            DmLog.emit_event('Failed to process record', count)
             continue
 
         # write the output
@@ -124,7 +126,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("rdk_props.py: ", args)
+    DmLog.emit_event("rdk_props.py: ", args)
 
     # special processing of delimiter to allow it to be set as a name
 
@@ -140,8 +142,9 @@ def main():
     if duration_s < 1:
         duration_s = 1
 
-    utils.log_dm_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
-    utils.log_dm_cost(count)
+    DmLog.emit_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
+    # Emit final 'total' cost, replacing all prior costs
+    DmLog.emit_cost(count)
     
 
 if __name__ == "__main__":

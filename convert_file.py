@@ -26,9 +26,8 @@ import uuid
 import os
 import gzip
 import sys
-from typing import Dict
 from conversion_utils import sdf_get_next_record, is_valid_uuid
-from utils import log_dm_event
+from dm_job_utilities.dm_log import DmLog
 
 _CONVERSION_MAP = {'chemical/x-mdl-sdfile': 'sdf',
                   'squonk/x-dataset-molecule-v2+json': 'json'}
@@ -63,7 +62,7 @@ class ConvertFile:
         try:
             method = getattr(self, method_name)
         except AttributeError:
-            log_dm_event('Method to support %s not found', to_mime_type)
+            DmLog.emit_event('Method to support %s not found', to_mime_type)
             return False
 
         # Call the method as we return it
@@ -103,7 +102,7 @@ class ConvertFile:
             outfile.write(json_str)
 
             if self.interval and self.records % self.interval == 0:
-                log_dm_event("Processed {} records".format(self.records))
+                DmLog.emit_event("Processed {} records".format(self.records))
 
         outfile.write(']')
 
@@ -154,11 +153,11 @@ def main():
                         help="Reporting interval")
 
     args = parser.parse_args()
-    log_dm_event("convert_file.py: ", args)
+    DmLog.emit_event("convert_file.py: ", args)
 
      # if no input file then raise error and exit
     if not os.path.isfile(args.input_file):
-        log_dm_event('File {} is not present'.format(args.input_file))
+        DmLog.emit_event('File {} is not present'.format(args.input_file))
         sys.exit(1)
 
     if args.output_file:
@@ -168,7 +167,7 @@ def main():
         filename, file_extension = os.path.splitext(args.input_file)
         outfile = filename + '.json'
 
-    log_dm_event('Converting {} to format {} in file {}...'.
+    DmLog.emit_event('Converting {} to format {} in file {}...'.
                  format(args.input_file, args.output_format, outfile))
 
     converter = ConvertFile(args.interval)
@@ -179,9 +178,9 @@ def main():
                                         outfile)
 
     if processed:
-        log_dm_event('Conversion successful. {} records processed, {} errors.'.format(converter.records, converter.errors))
+        DmLog.emit_event('Conversion successful. {} records processed, {} errors.'.format(converter.records, converter.errors))
     else:
-        log_dm_event('Converter failed')
+        DmLog.emit_event('Converter failed')
         sys.exit(1)
 
 

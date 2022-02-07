@@ -81,12 +81,13 @@ from __future__ import print_function
 import argparse, traceback
 import json, sys
 
+import utils, interact
+from dm_job_utilities.dm_log import DmLog
+
 import oddt
 from oddt import toolkit, spatial, interactions
 
 from rdkit import Chem
-
-import utils, interact
 
 
 # start function definitions #########################################
@@ -169,7 +170,7 @@ def process(protein_files, ligands, output_file, key_inters, filter_strict=False
                 total += 1
 
             if interval and total % interval == 0:
-                utils.log_dm_event("Processed {} molecules".format(total))
+                DmLog.emit_event("Processed {} molecules".format(total))
 
         # print(json.dumps(report_data, cls=interact.InteractionEncoder))
 
@@ -228,7 +229,7 @@ def main():
                             exact_protein=args.exact_protein, exact_ligand=args.exact_ligand,
                             keep_hs_protein=args.keep_hs_protein, keep_hs_ligand=args.keep_hs_ligand,
                             report_file=args.report_file, compare_file=args.compare, interval=args.interval)
-    utils.log_dm_event('Processing complete.', count, 'records processed.', errors, 'errors')
+    DmLog.emit_event('Processing complete.', count, 'records processed.', errors, 'errors')
 
 
 if __name__ == "__main__":

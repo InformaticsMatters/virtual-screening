@@ -25,6 +25,8 @@ It operates in 2 different modes, specified by the --mode argument:
 
 import argparse, os, time, gzip
 import utils, rdkit_utils
+from dm_job_utilities.dm_log import DmLog
+
 from rdkit import Chem
 
 
@@ -55,9 +57,9 @@ def execute(input, output, data_dir, mode,
                 inputs += 1
 
                 if interval and inputs % interval == 0:
-                    utils.log_dm_event("Processed {} records, {} conformers".format(inputs, conformers))
+                    DmLog.emit_event("Processed {} records, {} conformers".format(inputs, conformers))
                 if inputs % 10000 == 0:
-                    utils.log_dm_cost(inputs)
+                    DmLog.emit_cost(inputs)
 
                 tokens = line.strip().split('\t')
                 smi = tokens[0]
@@ -125,7 +127,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log_dm_event("assemble_conformers.py: ", args)
+    DmLog.emit_event("assemble_conformers.py: ", args)
 
     t0 = time.time()
     inputs, total, errors, duplicates = execute(args.input, args.output, args.data_dir, args.mode,
@@ -136,10 +138,10 @@ def main():
                                                 interval=args.interval)
     t1 = time.time()
 
-    utils.log_dm_event(
+    DmLog.emit_event(
         'Processed {} inputs with {} unique mols in {}s. {} errors, {} duplicates'.format(inputs, total, (t1 - t0),
                                                                                           errors, duplicates))
-    utils.log_dm_cost(inputs)
+    DmLog.emit_cost(inputs)
 
 
 if __name__ == "__main__":
