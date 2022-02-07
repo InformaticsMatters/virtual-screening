@@ -43,3 +43,5 @@ jobs:
         jote --manifest manifest-fragnet-search.yaml --dry-run
         jote --manifest manifest-virtual-screening.yaml --dry-run
         jote --manifest manifest-silicos-it.yaml --allow-no-tests --dry-run
+    - name: Build
+      run: docker-compose build
