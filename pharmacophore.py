@@ -1,0 +1,248 @@
+#!/usr/bin/env python
+
+# Copyright 2022 Informatics Matters Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import utils
+from openbabel import pybel
+from jinja2 import Template
+import argparse, os, time, tempfile, glob
+import subprocess
+
+template = Template("""
+score donor donor -6.00 0.25
+score acceptor acceptor -6.00 0.25
+score donacc donacc -6.00 0.25
+score donacc acceptor -3.00 0.25
+score donacc donor -3.00 0.25
+score nonpolar_noring nonpolar_noring -0.25 0.25
+
+ringscore -10.00 0.25
+
+alignment_torsion_weight {{ alignment_torsion_weight }}
+
+aco_sigma 1.0
+aco_ants 20
+aco_evap 0.2
+
+pher_smoothings 3
+pher_pbest 0.5
+pher_force_descent_update 5
+simplex_tolerance 0.02
+refine_simplex_tolerance 0.0001
+
+{% for frag in fragments %}
+ligand_file {{ frag }} fixed{% endfor %}
+ligand_file {{ molecule }}
+
+cluster_structures {{ cluster_structures }}
+cluster_rmsd {{ cluster_rmsd }}
+
+output_dir {{ output_dir }}
+
+""")
+
+
+def process(inputs, fragments, outputfile, alignment_torsion_weight=20, cluster_structures=5, cluster_rmsd=2,
+            dir=None,
+            interval=None):
+
+    if dir:
+        if not os.path.exists(dir):
+            os.makedirs(dir, exist_ok=True)
+        num_mols, num_errors = _do_processing(dir, inputs, fragments, outputfile,
+                                              alignment_torsion_weight,
+                                              cluster_structures,
+                                              cluster_rmsd,
+                                              interval)
+    else:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            utils.log('created temporary directory', tmpdirname)
+            num_mols, num_errors = _do_processing(tmpdirname, inputs, fragments, outputfile,
+                                                  alignment_torsion_weight,
+                                                  cluster_structures,
+                                                  cluster_rmsd,
+                                                  interval)
+
+    return num_mols, num_errors
+
+
+def _do_processing(dir, inputs, fragments, outputfile, alignment_torsion_weight, cluster_structures, cluster_rmsd, interval) :
+    num_mols = 0
+    num_frags = 0
+    num_errors = 0
+
+    frag_paths = []
+    mol_paths = []
+
+    # write the fragments as mol2 files
+    for frag in fragments:
+        mol = next(pybel.readfile("mol", frag))
+        mol.addh()
+        p = os.path.join(dir, 'frag' + str(num_frags) + '.mol2')
+        frag_paths.append(p)
+        mol.write(format='mol2', filename=p)
+        num_frags += 1
+    utils.log('Fragments:', frag_paths)
+
+    # write the inputs as mol2 files
+    suppl = pybel.readfile("sdf", inputs)
+    for mol in suppl:
+        props = {}
+        props.update(mol.data)
+        if 'MOL Chiral Flag' in props:
+            del props['MOL Chiral Flag']
+        mol.addh()
+        p = os.path.join(dir, 'mol' + str(num_mols) + '.mol2')
+        mol.write(format='mol2', filename=p)
+        chg_block = _read_charge_block(p)
+        mol_paths.append([p, props, chg_block])
+        num_mols += 1
+
+        if interval and num_mols % interval == 0:
+            utils.log_dm_event("Processed {} records".format(num_mols))
+
+    # run pharmACOphore
+    for i, mol_path in enumerate(mol_paths):
+        # create the config file
+        path = mol_path[0]
+        output_dir = os.path.join(dir, 'results' + str(i))
+        mol_path.append(output_dir)
+        content = template.render(alignment_torsion_weight=alignment_torsion_weight,
+                                  cluster_structures=cluster_structures,
+                                  cluster_rmsd=cluster_rmsd,
+                                  fragments=frag_paths,
+                                  molecule=path,
+                                  output_dir=output_dir)
+
+        config = os.path.join(dir, 'align' + str(i) + '.config')
+        with open(config, 'wt') as writer:
+            writer.write(content)
+
+        # run plants
+        cmd = ['plants', '--mode', 'align', config]
+        utils.log("CMD: " + " ".join(cmd))
+        proc = subprocess.run(cmd, capture_output=True)
+
+        utils.log('Completed molecule', i)
+
+    # collate the results to a SD file
+    with pybel.Outputfile('sdf', outputfile, overwrite=True) as writer:
+        for mol_path in mol_paths:
+            props = mol_path[1]
+            chg_block = mol_path[2]
+            output_dir = mol_path[3]
+            utils.log('Handling', output_dir)
+            # read the scores
+            scores = []
+            with open(os.path.join(output_dir, 'ranking.csv')) as reader:
+                header = reader.readline()
+                while True:
+                    line = reader.readline()
+                    if not line:
+                        break
+                    else:
+                        tokens = line.split(',')
+                        scores.append(tokens[1])
+
+            # read the mol2 files and write to SDF
+            for i, f in enumerate(glob.glob(os.path.join(output_dir, 'aligned_mol*_conf_*.mol2'))):
+                utils.log('Handling molecule', i, f)
+                mol2block = _write_charge_block(f, chg_block)
+                #print(mol2block)
+                mol = pybel.readstring("mol2", mol2block)
+                mol.removeh()
+                mol.data.update(props)
+                mol.data['PH4_SCORE'] = scores[i]
+                writer.write(mol)
+
+    return num_mols, num_errors
+
+
+def _write_charge_block(mol2file, chg_block):
+    lines = []
+    with open(mol2file, 'rt') as reader:
+        while True:
+            line = reader.readline()
+            if not line:
+                break
+            elif line.strip() == '@<TRIPOS>BOND':
+                lines.extend(chg_block)
+                lines.append(line)
+            elif line.strip() == 'NO_CHARGES':
+                lines.append('GASTEIGER\n')
+            else:
+                lines.append(line)
+    return ''.join(lines)
+
+
+def _read_charge_block(mol2file):
+    started = False
+    block = []
+    with open(mol2file, 'rt') as reader:
+        while True:
+            line = reader.readline()
+            if not line:
+                break
+            else:
+                if started:
+                    if line[0] == '@':
+                        break
+                    else:
+                        block.append(line)
+                else:
+                    if line.strip() == '@<TRIPOS>UNITY_ATOM_ATTR':
+                        block.append(line)
+                        started = True
+
+    return block
+
+
+def main():
+
+    # Example usage:
+    #   ./pharmacophore.py -i in.sdf -f mol1.mol mol2.mol --outfile out.sdf
+
+    ### command line args definitions #########################################
+
+    parser = argparse.ArgumentParser(description='3D alignment using pharmACOphore')
+    parser.add_argument('-i', '--input', required=True, help="Input file as SDF")
+    parser.add_argument('-f', '--fragments', nargs='+', required=True, help="Molfiles with fragments")
+    parser.add_argument('-o', '--outfile', required=True, help="Output file SDF")
+    parser.add_argument('-w', '--work-dir', help="Directory to work in. If not defined a temp dir is used")
+    parser.add_argument('-t', '--torsion-weight', type=float, default=20,
+                        help="Weight for torsional energy contribution")
+    parser.add_argument('-r', '--rmsd', type=float, default=2, help="RMSD pruning threshold")
+    parser.add_argument('-c', '--count', type=int, default=10, help="Number of alignments to retain")
+    parser.add_argument("--interval", type=int, help="Reporting interval")
+
+    args = parser.parse_args()
+    utils.log_dm_event("pharmacophore.py: ", args)
+
+    t0 = time.time()
+    count, errors = process(args.input, args.fragments, args.outfile, dir=args.work_dir,
+                            cluster_structures=args.count, cluster_rmsd=args.rmsd,
+                            alignment_torsion_weight=args.torsion_weight,
+                            interval=args.interval)
+    t1 = time.time()
+    # Duration? No less than 1 second?
+    duration_s = int(t1 - t0)
+    if duration_s < 1:
+        duration_s = 1
+
+    utils.log_dm_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
+
+
+if __name__ == "__main__":
+    main()
