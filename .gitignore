@@ -1,6 +1,7 @@
 molecules
 misc
 work
+**.pyc
 __pycache__
 .idea
 .nextflow*
