@@ -17,7 +17,7 @@ WORKDIR ${HOME}
 
 COPY fn_*.py utils.py ./
 
-# conda install our requirements, including RDKit and OpenBabel
+# conda install our requirements, including RDKit and Neo4j drivers
 RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 neo4j-python-driver=4.4.1 &&\
   pip install im-standardize-molecule==0.1.0 &&\
   conda init bash
