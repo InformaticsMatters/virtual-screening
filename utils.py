@@ -1,8 +1,6 @@
 import io
-from datetime import datetime, timezone
 import logging
-import numbers
-import sys, os
+import os
 
 default_num_chars = 2
 default_num_levels = 2
