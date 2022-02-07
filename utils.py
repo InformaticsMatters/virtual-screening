@@ -1,17 +1,11 @@
-import io
-import logging
+from __future__ import print_function
+
 import os
 import sys
 
 default_num_chars = 2
 default_num_levels = 2
 
-_SBUF = io.StringIO()
-_INFO = logging.getLevelName(logging.INFO)
-
-# A value used to ensure cost lines are unique (regardless of timestamp)
-# It's incremented on entry to log_dm_cost()
-_DM_COST_SEQUENCE_NUMBER = 0
 
 def log(*args, **kwargs):
     """Log output to STDERR
@@ -41,6 +35,7 @@ def expand_path(path):
         if not os.path.isdir(head_tail[0]):
             log('Creating directories for', head_tail[0])
             os.makedirs(head_tail[0], exist_ok=True)
+
 
 def UpdateChargeFlagInAtomBlock(mb):
     """
