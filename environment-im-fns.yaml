@@ -1,0 +1,9 @@
+name: im-vs-fns
+channels:
+  - conda-forge
+dependencies:
+  - pip=21.1.1
+  - rdkit=2021.03.5
+  - neo4j-python-driver=4.4.1
+  - pip:
+    - im-standardize-molecule==0.1.0

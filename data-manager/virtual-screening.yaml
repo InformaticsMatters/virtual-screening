@@ -2021,115 +2021,97 @@ jobs:
     name: Fragment network expansion
     description: >-
       Expand a set of molecules using the fragment network
+      NOTE: this is not yet working
     version: '1.0.0'
     category: virtual screening
     keywords:
     - fragment-network
     - candidate-selection
     image:
-      name: informaticsmatters/vs-prep
+      name: informaticsmatters/vs-fragnet-search
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      environment:
+      - name: NEO4J_USERNAME
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: username
+      - name: NEO4J_PASSWORD
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: password
+      - name: NEO4J_SERVER
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: server
     command: >-
-      /code/expander.py
-      --input '{{ inputFile }}'
-      {% if outputDir is defined %}--outdir '{{ outputDir }}'{% endif %}
-      --hac-min {{ hacMin }}
-      --hac-max {{ hacMax }}
-      --rac-min {{ racMin }}
-      --rac-max {{ racMax }}
+      /code/fn_expand.py
+      --smiles '{{ smiles }}'
+      --outfile '{{ outputFile }}'
       --hops {{ hops }}
-      {% if indexAsFilename %}--index-as-filename{% endif %}
-      {% if excludeInputs %}--exclude-inputs{% endif %}
-      {% if excludeFiles is defined %}--excludes {{ excludeFiles }}{% endif %}
+      {% if hacMin is defined %}--hac-min {{ hacMin }}{% endif %}
+      {% if hacMax is defined %}--hac-max {{ hacMax }}{% endif %}
+      {% if racMin is defined %}--rac-min {{ racMin }}{% endif %}
+      {% if racMax is defined %}--rac-max {{ racMax }}{% endif %}
     variables:
       order:
-        inputs:
-        - inputFile
-        - excludes
         options:
-        - outputDir
+        - smiles
+        - outputFile
+        - hops
         - hacMin
         - hacMax
         - racMin
         - racMax
-        - hops
-        - indexAsFilename
-        - excludeInputs
-      inputs:
-        type: object
-        required:
-        - inputFile
-        properties:
-          inputFile:
-            title: SDF file with molecules to expand
-            mime-types:
-            - chemical/x-mdl-sdfile
-            type: file
-          excludes:
-            title: Exclude molecules from these files in the outputs (optional)
-            mime-types:
-            - chemical/x-mdl-sdfile
-            type: file
-            multiple: true
       outputs:
         type: object
         properties:
-          jsonOutputs:
-            title: Query results from fragment network
-            mime-types:
-            - application/json
-            creates: '{{ outputDir }}/*.json'
-            type: files
-          smilesOutputs:
+          results:
             title: Expanded molecules as SMILES
             mime-types:
             - squonk/x-smiles
-            creates: '{{ outputDir }}/*.smi'
-            type: files
+            creates: '{{ outputFile }}'
+            type: file
       options:
         type: object
         required:
-        - hacMin
-        - hacMax
-        - racMin
-        - racMax
+        - smiles
+        - outputFile
         - hops
-        - indexAsFilename
-        - excludeInputs
         properties:
-          outputDir:
-            title: Directory for output files
+          smiles:
+            title: Query SMILES
             type: string
-          hacMin:
-            title: Heavy atom count decrease
-            type: integer
-            default: 3
-          hacMax:
-            title: Heavy atom count increase
-            type: integer
-            default: 3
-          racMin:
-            title: Ring atom count decrease
-            type: integer
-            default: 1
-          racMax:
-            title: Ring atom count increase
-            type: integer
-            default: 1
+          outputFile:
+            title: Output file (.smi)
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.smi$"
           hops:
             title: Number of fragment network hops
             type: integer
             default: 1
-          indexAsFilename:
-            title: Use the molecule index as the file name
-            type: boolean
-            default: false
-          excludeInputs:
-            title: Exclude inputs in the .smi output
-            type: boolean
-            default: true
+            minimum: 1
+            maximum: 3
+          hacMin:
+            title: Min heavy atom count
+            type: integer
+            minimum: 1
+          hacMax:
+            title: Max heavy atom count
+            type: integer
+            minimum: 1
+          racMin:
+            title: Min ring atom count
+            type: integer
+            minimum: 1
+          racMax:
+            title: Max ring atom count
+            type: integer
+            minimum: 1
 
   ####################
   # nextflow jobs
