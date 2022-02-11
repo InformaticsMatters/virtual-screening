@@ -9,7 +9,7 @@ process open3dalign {
 
     input:
     path inputs // .sdf
-    path  query  // .sdf or .mol
+    path query  // .sdf or .mol
 
     output:
     path "o3da_${inputs.name}"
@@ -22,6 +22,6 @@ process open3dalign {
       --interval $params.interval\
       ${params.remove_hydrogens ? '--remove-hydrogens' : ''}\
       ${params.crippen ? '--crippen' : ''}\
-      ${params.threshold ? '--threshold ' + threshold : ''}\
+      ${params.threshold ? '--threshold ' + threshold : ''}
     """
 }

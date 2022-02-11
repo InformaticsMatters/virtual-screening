@@ -314,6 +314,7 @@ def get_num_chiral_centers(mol):
 def get_num_sp3_centres(mol):
     return sum((x.GetHybridization() == Chem.HybridizationType.SP3) for x in mol.GetAtoms())
 
+
 def sdf_read_mol(input):
     txt = sdf_read_block(input)
     if txt == None:
@@ -338,6 +339,7 @@ def sdf_record_gen(hnd):
             mol_text_tmp = ""
             yield mol_text
 
+
 def rdk_read_single_mol(input):
     # read the molecule. Can be SDF or Mol format
     # if SDF then the first molecule is used.
@@ -353,6 +355,37 @@ def rdk_read_single_mol(input):
     else:
         raise ValueError('Unsupported file type. Must be .mol .sdf or .sdf.gz. Found ' + input)
     return mol
+
+
+def rdk_merge_mols(inputs):
+    """
+    Merge multiple molecules into a single molecule
+    :param input:
+    :return:
+    """
+    merged_mol = Chem.RWMol()
+    count = 0
+    for input in inputs:
+        if input.endswith('.mol'):
+            mol = Chem.MolFromMolFile(input)
+            merged_mol.InsertMol(mol)
+            count += 1
+        elif input.endswith('.sdf'):
+            suppl = Chem.SDMolSupplier(input)
+            for mol in suppl:
+                merged_mol.InsertMol(mol)
+                count += 1
+        elif input.endswith('.sdf.gz'):
+            with gzip.open(input, 'rb') as gz:
+                suppl = Chem.ForwardSDMolSupplier(gz)
+                for mol in suppl:
+                    merged_mol.InsertMol(mol)
+                    count += 1
+        else:
+            raise ValueError('Unsupported file type. Must be .mol .sdf or .sdf.gz. Found ' + input)
+    Chem.SanitizeMol(merged_mol)
+    return merged_mol, count
+
 
 def rdk_mol_supplier(input):
     if input.endswith('.sdf'):

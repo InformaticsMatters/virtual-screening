@@ -78,6 +78,12 @@ def process(inputs, fragments, outputfile, alignment_torsion_weight=20, cluster_
 
     return num_mols, num_errors
 
+def _write_frag_mol2(mol, dir, index):
+    mol.addh()
+    p = os.path.join(dir, 'frag' + str(index) + '.mol2')
+    mol.write(format='mol2', filename=p)
+    return p
+
 
 def _do_processing(dir, inputs, fragments, outputfile, alignment_torsion_weight, cluster_structures, cluster_rmsd, interval) :
     num_mols = 0
@@ -89,13 +95,22 @@ def _do_processing(dir, inputs, fragments, outputfile, alignment_torsion_weight,
 
     # write the fragments as mol2 files
     for frag in fragments:
-        mol = next(pybel.readfile("mol", frag))
-        mol.addh()
-        p = os.path.join(dir, 'frag' + str(num_frags) + '.mol2')
-        frag_paths.append(p)
-        mol.write(format='mol2', filename=p)
-        num_frags += 1
+        if frag.endswith('.mol'):
+            mol = next(pybel.readfile("mol", frag))
+            p = _write_frag_mol2(mol, dir, num_frags)
+            frag_paths.append(p)
+            num_frags += 1
+        elif frag.endswith('.sdf'):
+            mols = pybel.readfile("sdf", frag)
+            for mol in mols:
+                p = _write_frag_mol2(mol, dir, num_frags)
+                frag_paths.append(p)
+                num_frags += 1
+        else:
+            raise ValueError('Fragments must be .mol or .sdf. Found', frag)
+
     utils.log('Fragments:', frag_paths)
+    DmLog.emit_event("Found {} fragments".format(num_frags))
 
     # write the inputs as mol2 files
     suppl = pybel.readfile("sdf", inputs)
@@ -212,14 +227,15 @@ def _read_charge_block(mol2file):
 
 def main():
 
-    # Example usage:
-    #   ./pharmacophore.py -i in.sdf -f mol1.mol mol2.mol --outfile out.sdf
+    # Example usages:
+    #   ./pharmacophore.py -i data/candidates.sdf -f data/Mpro-x0107_0A.mol data/Mpro-x1382_0A.mol --outfile out.sdf
+    #   ./pharmacophore.py -i data/candidates.sdf -f data/fragments.sdf --outfile out.sdf
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='3D alignment using pharmACOphore')
     parser.add_argument('-i', '--input', required=True, help="Input file as SDF")
-    parser.add_argument('-f', '--fragments', nargs='+', required=True, help="Molfiles with fragments")
+    parser.add_argument('-f', '--fragments', nargs='+', required=True, help="Molfiles or SD files with fragments")
     parser.add_argument('-o', '--outfile', required=True, help="Output file SDF")
     parser.add_argument('-w', '--work-dir', help="Directory to work in. If not defined a temp dir is used")
     parser.add_argument('-t', '--torsion-weight', type=float, default=20,

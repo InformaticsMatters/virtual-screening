@@ -229,6 +229,8 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                         amean_sims = sum(sims) / len(q_mols)
                         gmean_sims = calc_geometric_mean(sims)
                         prod_sims = multiply_list(sims)
+                        #if prod_sims > 0.15:
+                        #    print(sims, prod_sims)
                         if query_file:
                             # clear the sims as we don't want to write individual scores when using a query file
                             sims = []
@@ -286,7 +288,7 @@ def main():
     parser.add_argument("--sim-index", type=int, default=0, help="Similarity score index")
     parser.add_argument("--alpha", type=float, default=1.0, help="Tversky alpha parameter")
     parser.add_argument("--beta", type=float, default=0.0, help="Tversky beta parameter")
-    parser.add_argument("--nbits", type=int, default=None, help="Number of bits if using Morgan  as bit vector e.g. 1024")
+    parser.add_argument("--nbits", type=int, default=None, help="Number of bits if using Morgan as bit vector e.g. 1024")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()

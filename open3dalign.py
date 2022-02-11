@@ -79,7 +79,7 @@ def process_confs(ref_mol, probe_mol, use_crippen):
     return aligns, scores, best_score, best_idx
 
 
-def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=None,
+def execute(inputs_sdf, ref_mols, outfile_sdf, use_crippen=False, threshold=None,
             remove_hydrogens=False, interval=None):
 
     input_count = 0
@@ -89,10 +89,11 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
 
     utils.expand_path(outfile_sdf)
 
-    q_mol = rdkit_utils.rdk_read_single_mol(query_file)
-    q_mol = Chem.AddHs(q_mol, addCoords=True)
+    ref_mol, num_frags = rdkit_utils.rdk_merge_mols(ref_mols)
+    DmLog.emit_event('Found {} reference molecules'.format(num_frags))
+    ref_mol = Chem.AddHs(ref_mol, addCoords=True)
 
-    align_perf, score_perf = process_mol(q_mol, q_mol, use_crippen)
+    align_perf, score_perf = process_mol(ref_mol, ref_mol, use_crippen)
     DmLog.emit_event('Query self-alignment score and align:', score_perf , align_perf)
 
     DmLog.emit_event('Opening', outfile_sdf, 'as output')
@@ -100,11 +101,6 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
     try:
         # read the conformers
         suppl = rdkit_utils.rdk_mol_supplier(inputs_sdf)
-
-        # TODO implement the group_by_field functionality
-        # mols_in_group = []
-        # mols_to_write = None
-        # current_group_field_value = None
 
         # iterate through the conformers and calculate the alignment
         for conf in suppl:
@@ -115,7 +111,7 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
 
             conf = Chem.AddHs(conf, addCoords=True)
             try:
-                align, score = process_mol(q_mol, conf, use_crippen)
+                align, score = process_mol(ref_mol, conf, use_crippen)
             except KeyboardInterrupt:
                 utils.log('Interrupted')
                 sys.exit(0)
@@ -141,7 +137,7 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
             if interval and input_count % interval == 0:
                 DmLog.emit_event("Processed {} molecules, {} outputs".format(input_count, output_count))
             if input_count % 10000 == 0:
-                DmLog.emit_cost(output_count)
+                DmLog.emit_cost(input_count)
 
     finally:
         writer.close()
@@ -153,18 +149,17 @@ def execute(inputs_sdf, query_file, outfile_sdf, use_crippen=False, threshold=No
 def main():
 
     # Example:
-    #   ./open3dalign.py -i database.sdf -q query.mol -o results.sdf
+    #   ./open3dalign.py -i data/candidates.sdf -q data/Mpro-x0107_0A.mol -o results.sdf
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Open3DAlign')
     parser.add_argument('-i', '--inputs', required=True, help="File with molecules to search (SDF)")
-    parser.add_argument('-q', '--query', required=True, help="File with the 3D query molecules (SDF or MOL)")
+    parser.add_argument('-q', '--query', nargs='+', required=True, help="File with the 3D query molecules (SDF or MOL)")
     parser.add_argument('-o', '--outfile', default='o3da-similarity.sdf', help="Output SD file for results")
     parser.add_argument('-c', '--crippen', action='store_true', help='Include Crippen (lipophilicity) considerations')
     parser.add_argument('-t', '--threshold', type=float, help="Score threshold for o3da_score_rel (0 - 1)")
-    parser.add_argument('-r', '--remove-hydrogens', action='store_true', help='Remove hydrogens from the outputs')
-    # parser.add_argument('-g', '--group-by-field', help="Field name to group records by and report only the best")
+    parser.add_argument('-r', '--remove-hydrogens', action='store_true', help='Remove hydrogens from the outputs')    # parser.add_argument('-g', '--group-by-field', help="Field name to group records by and report only the best")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
