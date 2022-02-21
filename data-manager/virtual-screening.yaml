@@ -1775,7 +1775,7 @@ jobs:
       working-directory: /data
     command: >-
       /code/minimize.py -i '{{ inputFile }}' -o '{{ outputFile }}'
-      -c {{ cycles }} --interval 1000
+      -c {{ cycles }} --molecule {{ molecule }} --interval 1000
     variables:
       order:
         options:
@@ -1805,6 +1805,7 @@ jobs:
         required:
         - outputFile
         - cycles
+        - molecule
         properties:
           outputFile:
             title: Output file name
@@ -1816,6 +1817,14 @@ jobs:
             type: integer
             minimum: 1
             default: 200
+          molecule:
+            title: Molecule to write
+            type: string
+            default: minimized
+            enum:
+            - minimized
+            - original
+            - merged
     tests:
       simple-execution:
         inputs:
@@ -1823,6 +1832,7 @@ jobs:
         options:
           outputFile: results.sdf
           cycles: 100
+          molecule: minimized
         checks:
           exitCode: 0
           outputs:
