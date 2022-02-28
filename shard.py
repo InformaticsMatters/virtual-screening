@@ -203,6 +203,9 @@ def main():
     #
     # ./shard.py -i /data/data/molport/molport-2021-12/fixed/iis_smiles-00*.gz -s molport -v dec_2021 -n 2 \
     #   --interval 100000 -e molport-dec-2021-errors.smi --skip-lines 1
+    #
+    # /shard.py -i misc/Enamine_REAL_HAC_6_21_311M_CXSMILES.cxsmiles -s enamine -v feb2022_6_21 -n 1\
+    #   --skip-lines 1 --interval 100000
 
     ### command line args definitions #########################################
 
@@ -213,7 +216,7 @@ def main():
     parser.add_argument('-o', '--outdir', default='molecules', help="Dir for the molecules output")
     parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter")
     parser.add_argument('-n', '--name-column', type=int, help="Column for name field (zero based)")
-    parser.add_argument('--skip-lines', default=0, type=int, help="Skip this many lines e.g. use 1 for skipping a header line")
+    parser.add_argument('--skip-lines', default=0, type=int, help="Skip this many lines e.g. use 1 to skip header line")
     parser.add_argument('-e', '--errors-file', help="Optional file to write bad lines to")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
