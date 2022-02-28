@@ -1,6 +1,7 @@
 params.scratch = false
 // docking params
 params.num_dockings = 25
+params.mode = 'dock' // or minimise, score etc. Look in /rDock_2013.1_src/data/scripts for the options
 
 
 process rdock_docking {
@@ -37,9 +38,9 @@ process rdock_docking {
     # do the docking
     for f in mol*.sd; do
       echo "Docking \$f"
-      rbdock -r docking.prm -p dock.prm -n $params.num_dockings -i \$f -o docked_\${f::-3} > rdock_out_\${f::-3}.log
+      rbdock -r docking.prm -p '${params.mode}.prm' -n $params.num_dockings -i "\$f" -o "docked_\${f::-3}" > "rdock_out_\${f::-3}.log"
       if [ \$? != 0 ]; then
-        cat \$f >> ${part.name.replace('ligands', 'failed')}
+        cat "\$f" >> '${part.name.replace('ligands', 'failed')}'
       fi
     done
 

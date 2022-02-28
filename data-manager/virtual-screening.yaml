@@ -2168,6 +2168,7 @@ jobs:
       --asfile '{{ asFile }}'
       --num_dockings {{ numDockings }}
       --output_basename {{ outputFile }}
+      --mode {{ mode }}
       {% if resultsDir is defined %}--publish_dir {{ resultsDir }}{% endif %}
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
       -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
@@ -2181,6 +2182,7 @@ jobs:
         - prmFile
         - asFile
         - numDockings
+        - mode
       inputs:
         type: object
         required:
@@ -2223,6 +2225,7 @@ jobs:
         required:
         - numDockings
         - outputFile
+        - mode
         properties:
           outputFile:
             title: Base filename for results (no extension)
@@ -2237,6 +2240,14 @@ jobs:
             title: Number of dockings
             type: integer
             default: 50
+          mode:
+            title: Docking mode
+            type: string
+            default: dock
+            enum:
+            - dock
+            - minimise
+            - score
 
   run-smina:
     name: Run smina docking

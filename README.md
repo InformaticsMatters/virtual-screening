@@ -244,7 +244,7 @@ the active site definition. You can edit the `docking.prm` file if you need a di
 Now we can run the docking.
 ```
 nextflow run rdock-docking.nf\
-  --ligands results/16-25-candidates.sdf\
+  --ligands data/candidates.sdf\
   --protein dhfr-receptor-ph7.mol2\
   --prmfile docking.prm\
   --asfile docking.as\
