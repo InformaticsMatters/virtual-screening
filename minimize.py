@@ -22,9 +22,10 @@ from dm_job_utilities.dm_log import DmLog
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolAlign
+from rdkit.Chem import rdForceFieldHelpers
 
 
-def minimise(input, output, cycles=200, interval=0):
+def minimize(input, output, cycles=200, molecule='minimized', interval=0):
 
     count = 0
     errors = 0
@@ -44,8 +45,12 @@ def minimise(input, output, cycles=200, interval=0):
                 try:
                     mol = Chem.RemoveHs(mol)
                     molh = Chem.AddHs(mol, addCoords=True)
+
+                    ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(molh, AllChem.MMFFGetMoleculeProperties(molh))
+                    energy0 = ff.CalcEnergy()
+
                     res = AllChem.MMFFOptimizeMoleculeConfs(molh, maxIters=cycles)
-                    converged, energy = res[0]
+                    converged, energy1 = res[0]
                     if converged == 1:
                         non_converged += 1
                     elif converged == -1:
@@ -53,13 +58,29 @@ def minimise(input, output, cycles=200, interval=0):
                         errors += 1
 
                     probe_mol = Chem.RemoveHs(molh)
-
                     rmsd = rdMolAlign.AlignMol(probe_mol, mol)
-                    probe_mol.SetDoubleProp('RMSD', rmsd)
-                    probe_mol.SetIntProp('CONVERGED', converged)
-                    probe_mol.SetDoubleProp('ENERGY', energy)
 
-                    writer.write(probe_mol)
+                    if molecule == 'original':
+                        w_mol = mol
+                    elif molecule == 'minimized':
+                        w_mol = probe_mol
+                    elif molecule == 'merged':
+                        w_mol = Chem.RWMol(mol)
+                        w_mol.InsertMol(probe_mol)
+                        Chem.SanitizeMol(w_mol)
+                    else:
+                        raise ValueError('Invalid molecule to write:', molecule)
+
+                    w_mol.SetDoubleProp('RMSD', rmsd)
+                    if converged:
+                        converged_b = 'no'
+                    else:
+                        converged_b = 'yes'
+                    w_mol.SetProp('CONVERGED', converged_b)
+                    w_mol.SetDoubleProp('ENERGY_MIN', energy1)
+                    w_mol.SetDoubleProp('ENERGY_DELTA', energy0 - energy1)
+
+                    writer.write(w_mol)
                     success += 1
 
                 except RuntimeError as e:
@@ -85,12 +106,15 @@ def main():
     parser.add_argument('-i', '--input', required=True, help="File with inputs")
     parser.add_argument('-o', '--output', required=True, help="Output file")
     parser.add_argument('-c', '--cycles', type=int, default=200, help="Number of minimization cycles")
+    parser.add_argument('-m', '--molecule', choices=['minimized', 'original', 'merged'], default='minimized',
+                        help='Which molecule to write in the output SD file')
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     utils.log("minimize.py: ", args)
 
-    count, success, errors, non_converged = minimise(args.input, args.output, args.cycles, interval=args.interval)
+    count, success, errors, non_converged = minimize(args.input, args.output, args.cycles,
+                                                     molecule=args.molecule, interval=args.interval)
     DmLog.emit_event('Processed {} molecules. {} did not converge. {} errors'.format(count, non_converged, errors))
     DmLog.emit_cost(success)
     
