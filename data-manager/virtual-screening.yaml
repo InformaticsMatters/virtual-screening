@@ -2248,6 +2248,24 @@ jobs:
             - dock
             - minimise
             - score
+    tests:
+      simple-execution:
+        ignore:
+        inputs:
+          ligandsSDF: data/candidates-10.sdf
+          proteinMOL2: data/dhfr-receptor-ph7.mol2
+          prmFile: data/docking.prm
+          asFile: data/docking.as
+        options:
+          outputFile: rdock_results.sdf
+          numDockings: 1
+          mode: dock
+        checks:
+          exitCode: 0
+          outputs:
+          - name: rdock_results.sdf
+            checks:
+            - exists: true
 
   run-smina:
     name: Run smina docking
