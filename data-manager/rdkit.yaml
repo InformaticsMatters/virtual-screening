@@ -1,0 +1,1292 @@
+---
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: Virtual screening tools using RDKit
+collection: rdkit
+
+repository-url: https://github.com/InformaticsMatters/virtual-screening/rdkit.yaml
+repository-tag: '1.0.0'
+
+jobs:
+  max-min-picker:
+    name: Select diverse subset of molecules
+    description: >-
+      Select a diverse subset of molecules using the RDKit MaxMin Picker.
+      Morgan 2 fingerprints and Tanimoto distance is used.
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - ligand preparation
+    - diverse subset
+    - maxminpicker
+    - filter
+    doc-url: https://discourse.squonk.it/t/job-max-min-picker/69
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/max_min_picker.py --input '{{ inputFile }}'
+      {% if seeds is defined %}--seeds{% for file in seeds %} '{{ file }}'{% endfor %}{% endif %}
+      --output '{{ outputFile }}'
+      --count {{ count }}
+      {% if threshold is defined %}--threshold {{ threshold }}{% endif %}
+      --interval 10000
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to pick from
+            mime-types:
+            - squonk/x-smiles
+            type: file
+          seeds:
+            title: Molecules that are already picked
+            mime-types:
+            - squonk/x-smiles
+            type: file
+            multiple: true
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-csv
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - count
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+            default: diverse.smi
+          count:
+            title: Number of molecules to pick
+            type: integer
+            minimum: 1
+          threshold:
+            title: Similarity threshold
+            type: number
+            minimum: 0
+            maximum: 1
+    tests:
+      # An optional block of tests for this Job
+      simple-execution:
+        # If you define 'ignore:' the test is recognised but ignored
+        # (not executed). Setting 'ignore' allows you to skip tests
+        # that me be broken. The value is unimportant, i.e. you cannot
+        # set 'ignore: no', the test will still be ignored.
+        #ignore:
+        # Inputs.
+        # Files are expected to live in the project's 'data' directory
+        # but can be in sub-directories (i.e. 'foo/mols.smi').
+        inputs:
+          inputFile: data/mols.smi
+        # Non-file-based command options
+        options:
+          outputFile: diverse.smi
+          count: 100
+        # Test execution checks.
+        # Every test must declare an exitCode.
+        #
+        # Tests can optionally list outputs, these are files
+        # expected to be found in the test project directory when the test
+        # has completed successfully. The checks applied to the output
+        # can be one or more of 'exists' (i.e. the file must exist)
+        # 'lineCount' (for files where a line count makes sense).
+        #
+        # If the exit code is not correct the outputs are not checked.
+        checks:
+          exitCode: 0
+          outputs:
+          - name: diverse.smi
+            checks:
+            - exists: true
+            - lineCount: 100
+
+  conformers-for-mol:
+    name: Generate 3D conformers of a molecule
+    description: >-
+      Generate a low energy 3D conformers. The input is a molfile or SMILES. The output is a SD file.
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - conformer
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/le_conformers_for_mol.py
+        {% if inputMolfile is defined %}--input '{{ inputMolfile }}'{% endif %}
+        --output '{{ sdfout }}'
+        {% if smiles is defined %}--smiles '{{ smiles }}'{% endif %}
+        {% if numConfs is defined %}--num-conformers '{{ numConfs }}'{% endif %}
+        --minimize-cycles {{ minimizeCycles }}
+        --rms-threshold {{ rmsThreshold }}
+        {% if removeHydrogens is defined %}--remove-hydrogens{% endif %}
+    variables:
+      order:
+        options:
+        - smiles
+        - sdfout
+        - numConfs
+        - minimizeCycles
+        - rmsThreshold
+        - removeHydrogens
+      inputs:
+        type: object
+        properties:
+          inputMolfile:
+            title: Input molfile
+            mime-types:
+            - chemical/x-mdl-molfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outfile:
+            title: SDF file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ sdfout }}'
+            type: file
+      options:
+        type: object
+        required:
+        - sdfout
+        - minimizeCycles
+        - rmsThreshold
+        - removeHydrogens
+        properties:
+          smiles:
+            title: SMILES string for input
+            type: string
+          sdfout:
+            title: Filename for output
+            type: string
+            default: conformers.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          numConfs:
+            title: Number of conformers (leave blank for the default)
+            type: integer
+          minimizeCycles:
+            title: Number of minimization cycles
+            type: integer
+            default: 500
+          rmsThreshold:
+            type: number
+            default: 1.0
+          removeHydrogens:
+            type: boolean
+            default: true
+    tests:
+      simple-execution-molfile:
+        inputs:
+          inputMolfile: data/dhfr-ligand.mol
+        options:
+          sdfout: conformer-results.sdf
+          minimizeCycles: 100
+          rmsThreshold: 1.0
+          removeHydrogens: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: conformer-results.sdf
+            checks:
+            - exists: true
+
+  open3dalign:
+    name: 3D alignment using Open3DAlign
+    description: >-
+      Aligns conformers to a target molecule, with optional filtering
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - open3Dalign
+    - rdkit
+    - similarity
+    - shape
+    - filter
+    doc-url: https://discourse.squonk.it/t/open3dalign/99
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/open3dalign.py --inputs '{{ inputFile }}'
+      --query '{{ queryFile }}'
+      --outfile '{{ outputFile }}'
+      {% if crippen is defined %}--crippen{% endif %}
+      {% if removehs is defined %}--remove-hydrogens{% endif %}
+      {% if threshold is defined %}--threshold {{ threshold }}{% endif %}
+      --interval 10000
+    variables:
+      order:
+        inputs:
+        - queryFile
+        - inputFile
+        options:
+        - outputFile
+        - crippen
+        - removehs
+        - threshold
+      inputs:
+        type: object
+        required:
+        - queryFile
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to screen
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          queryFile:
+            title: Query molecule
+            mime-types:
+            - chemical/x-mdl-molfile
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Open3DAlign alignment
+                fields:
+                  o3da_score:
+                    type: number
+                    description: >-
+                      Alignment score
+                    required: true
+                    active: true
+                  o3da_score_rel:
+                    type: number
+                    description: >-
+                      Relative alignment score
+                    required: true
+                    active: true
+                  o3da_align:
+                    type: number
+                    description: >-
+                      Align
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/open3dalign/99'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: o3dalign.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          crippen:
+            title: Use Crippen contributions
+            type: boolean
+            default: false
+          removehs:
+            title: Remove Hs from outputs
+            type: boolean
+            default: true
+          threshold:
+            title: Filter threshold
+            type: number
+            minimum: 0
+            maximum: 1
+
+  rdkit-molprops:
+    name: Molecular property calculations
+    description: >-
+      Calculates molecular properties using RDKit
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - properties
+    doc-url: 'https://discourse.squonk.it/t/job-rdkit-props/91'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/rdkit_props.py --input '{{ inputFile }}'
+      --outfile '{{ outputFile }}'
+      {% if readHeader %}--read-header{% endif %}
+      {% if writeHeader %}--write-header{% endif %}
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
+      {% if sdfReadRecords is defined %}--sdf-read-records '{{ sdfReadRecords }}'{% endif %}
+      {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
+      --interval 10000
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Molecular property calculation
+                fields:
+                  hac:
+                    type: integer
+                    description: >-
+                      Heavy atom count
+                    required: true
+                    active: true
+                  num_rot_bonds:
+                    type: integer
+                    description: >-
+                      Rotatable bond count
+                    required: true
+                    active: true
+                  num_rings:
+                    type: integer
+                    description: >-
+                      Number of rings
+                    required: true
+                    active: true
+                  num_aro_rings:
+                    type: integer
+                    description: >-
+                      Number of aromatic rings
+                    required: true
+                    active: true
+                  num_cc:
+                    type: integer
+                    description: >-
+                      Number of chiral centres
+                    required: true
+                    active: true
+                  num_undef_cc:
+                    type: integer
+                    description: >-
+                      Number of undefined chiral centres
+                    required: true
+                    active: true
+                  num_sp3:
+                    type: integer
+                    description: >-
+                      Number of SP3 hybridised carbons
+                    required: true
+                    active: true
+                  logp:
+                    type: number
+                    description: >-
+                      Crippen LogP
+                    required: true
+                    active: true
+                  tpsa:
+                    type: number
+                    description: >-
+                      Topological polar surface area
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-rdkit-props/91'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          writeHeader:
+            title: Output has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type:
+            - string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          sdfReadRecords:
+            title: Number of SDF records to read field names
+            type: integer
+            default: 100
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/100.smi
+        options:
+          outputFile: results.sdf
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+
+  similarity-screen-smiles:
+    name: Descriptor based similarity screening (SMILES input)
+    description: >-
+      Filters molecules by molecular similarity using RDKit.
+      A number of descriptors and metrics are available.
+      Query molecule(s) are specified as parameters in SMILES format.
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - similarity
+    - descriptors
+    - screen
+    - fingerprint
+    - filter
+    doc-url: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/screen.py --input '{{ inputFile }}'
+      --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}
+      --output '{{ outputFile }}'
+      {% if readHeader is defined %}--read-header{% endif %}
+      {% if writeHeader is defined %}--write-header{% endif %}
+      --delimiter '{{ separator }}'
+      --descriptor '{{ descriptor }}'
+      --metric '{{ metric }}'
+      {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
+      {% if simIndex is defined %}--sim-index '{{ simIndex }}'{% endif %}
+      {% if alpha is defined %}--alpha {{ alpha }}{% endif %}
+      {% if beta is defined %}--beta {{ beta }}{% endif %}
+      {% if nbits is defined %}--nbits {{ nbits }}{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - outputFile
+        - smiles
+        - readHeader
+        - writeHeader
+        - separator
+        - descriptor
+        - metric
+        - threshold
+        - simIndex
+        - alpha
+        - beta
+        - nbits
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to screen
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Descriptor based similarity screening
+                fields:
+                  # Note that the fields that are output are dependent on the number of queries that are specified.
+                  # If there is only a single query then only the score_1 field will be present.
+                  # If there are 2 queries then there will also be a score_2 field and score_min, score_max, score_amean,
+                  #   score_gmean and score_prod fields.
+                  # If there are 3 queries then there will also be a score_3 field etc.
+                  score_1:
+                    type: number
+                    description: >-
+                      Similarity to query 1
+                    required: true
+                    active: true
+                  score_2:
+                    type: number
+                    description: >-
+                      Similarity to query 2
+                    required: true
+                    active: true
+                  score_3:
+                    type: number
+                    description: >-
+                      Similarity to query 3
+                    required: true
+                    active: true
+                  score_min:
+                    type: number
+                    description: >-
+                      Minimum similarity
+                    required: true
+                    active: true
+                  score_max:
+                    type: number
+                    description: >-
+                      Maximum similarity
+                    required: true
+                    active: true
+                  score_amean:
+                    type: number
+                    description: >-
+                      Arithmetic mean of similarities
+                    required: true
+                    active: true
+                  score_gmean:
+                    type: number
+                    description: >-
+                      Geometric mean of similarities
+                    required: true
+                    active: true
+                  score_prod:
+                    type: number
+                    description: >-
+                      Product of similarities
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+                derived-from: inputFile
+      options:
+        type: object
+        required:
+        - smiles
+        - outputFile
+        - separator
+        - descriptor
+        - metric
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          smiles:
+            title: Query SMILES
+            type: array
+            items:
+              type: string
+          readHeader:
+            title: Input has header line
+            type: boolean
+          writeHeader:
+            title: Output has header line
+            type: boolean
+            default: true
+          separator:
+            title: Separator for input file
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          descriptor:
+            title: Descriptor or fingerprint type
+            type: string
+            default: rdkit
+            enum:
+            - maccs
+            - morgan2
+            - morgan3
+            - rdkit
+          metric:
+            title: Similarity metric
+            type: string
+            default: tanimoto
+            enum:
+            - asymmetric
+            - braunblanquet
+            - cosine
+            - dice
+            - kulczynski
+            - mcconnaughey
+            - rogotgoldberg
+            - russel
+            - sokal
+            - tanimoto
+            - tversky
+          threshold:
+            title: Similarity threshold (0 - 1)
+            type: number
+            minimum: 0
+            maximum: 1
+          simIndex:
+            title: Similarity score column index
+            type: integer
+            minimum: 0
+          alpha:
+            title: Tversky alpha
+            type: number
+            default: 1
+            minimum: 0
+            maximum: 1
+          beta:
+            title: Tversky beta
+            type: number
+            default: 0
+            minimum: 0
+            maximum: 1
+          nbits:
+            title: Number of bits for Morgan bit vector
+            type: integer
+
+  similarity-screen-file:
+    name: Descriptor based similarity screening (file input)
+    description: >-
+      Filters molecules by molecular similarity using RDKit.
+      A number of descriptors and metrics are available.
+      Query molecule(s) are specified as parameters in SMILES format.
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - similarity
+    - descriptors
+    - screen
+    - fingerprint
+    - filter
+    doc-url: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/screen.py --input '{{ inputFile }}'
+      --queries '{{ queryFile }}'
+      --output '{{ outputFileName }}'
+      {% if headerInputs is defined %}--read-header{% endif %}
+      {% if headerQueries is defined %}--queries-read-header{% endif %}
+      {% if headerOutputs is defined %}--write-header{% endif %}
+      --delimiter '{{ separatorInputs }}'
+      --queries-delimiter '{{ separatorQueries }}'
+      --descriptor '{{ descriptor }}'
+      --metric '{{ metric }}'
+      {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
+      {% if simIndex is defined %}--sim-index '{{ simIndex }}'{% endif %}
+      {% if alpha is defined %}--alpha {{ alpha }}{% endif %}
+      {% if beta is defined %}--beta {{ beta }}{% endif %}
+      {% if nbits is defined %}--nbits {{ nbits }}{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - headerInputs
+        - headerQueries
+        - separatorInputs
+        - separatorQueries
+        - outputFileName
+        - headerOutputs
+        - descriptor
+        - metric
+        - threshold
+        - simIndex
+        - alpha
+        - beta
+        - nbits
+      inputs:
+        type: object
+        required:
+        - inputFile
+        - queriesFile
+        properties:
+          inputFile:
+            title: Molecules to screen
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+          queryFile:
+            title: Query molecules
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file name
+            mime-types:
+            - squonk/x-smiles
+            creates: '{{ outputFileName }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Descriptor based similarity screening
+                fields:
+                  score_min:
+                    type: number
+                    description: >-
+                      Minimum similarity
+                    required: true
+                    active: true
+                  score_max:
+                    type: number
+                    description: >-
+                      Maximum similarity
+                    required: true
+                    active: true
+                  score_amean:
+                    type: number
+                    description: >-
+                      Arithmetic mean of similarities
+                    required: true
+                    active: true
+                  score_gmean:
+                    type: number
+                    description: >-
+                      Geometric mean of similarities
+                    required: true
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+                derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFileName
+        - separatorInputs
+        - separatorQueries
+        - descriptor
+        - metric
+        properties:
+          outputFileName:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          headerInputs:
+            title: Input file has header line
+            type: boolean
+          headerQueries:
+            title: Queries file has header line
+            type: boolean
+          headerOutputs:
+            title: Output file has header line
+            type: boolean
+            default: true
+          separatorInputs:
+            title: Separator for input file
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          separatorQueries:
+            title: Separator for queries file
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          descriptor:
+            title: Descriptor or fingerprint type
+            type: string
+            default: rdkit
+            enum:
+            - maccs
+            - morgan2
+            - morgan3
+            - rdkit
+          metric:
+            title: Similarity metric
+            type: string
+            default: tanimoto
+            enum:
+            - asymmetric
+            - braunblanquet
+            - cosine
+            - dice
+            - kulczynski
+            - mcconnaughey
+            - rogotgoldberg
+            - russel
+            - sokal
+            - tanimoto
+            - tversky
+          threshold:
+            title: Similarity threshold (0 - 1)
+            type: number
+            minimum: 0
+            maximum: 1
+          simIndex:
+            title: Similarity score column index
+            type: integer
+            minimum: 0
+          alpha:
+            title: Tversky alpha
+            type: number
+            default: 1
+            minimum: 0
+            maximum: 1
+          beta:
+            title: Tversky beta
+            type: number
+            default: 0
+            minimum: 0
+            maximum: 1
+          nbits:
+            title: Number of bits for Morgan bit vector
+            type: integer
+
+  minimize-mmff94:
+    name: Energy minimize molecules
+    description: >-
+      Energy minimize molecules using RDKit and the MMFF94 force field
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - energy
+    - minimize
+    - minimise
+    - mmff94
+    - 3d
+    doc-url: 'https://discourse.squonk.it/t/job-minimize-mmff94/106'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/minimize.py -i '{{ inputFile }}' -o '{{ outputFile }}'
+      -c {{ cycles }} --molecule {{ molecule }} --interval 1000
+    variables:
+      order:
+        options:
+        - outputFile
+        - cycles
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to minimize
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - cycles
+        - molecule
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: minimized.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          cycles:
+            title: Number of cycles
+            type: integer
+            minimum: 1
+            default: 200
+          molecule:
+            title: Molecule to write
+            type: string
+            default: minimized
+            enum:
+            - minimized
+            - original
+            - merged
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/mols.sdf
+        options:
+          outputFile: results.sdf
+          cycles: 100
+          molecule: minimized
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+
+  align-molecules:
+    name: Align molecules
+    description: >-
+      Align molecules to a template molecule using MCS to determine matching atoms
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - 3d
+    - alignment
+    doc-url: 'https://discourse.squonk.it/t/job-align-molecules/107'
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/align_mol.py -i '{{ inputFile }}' -q '{{ queryMolecule }}' -o '{{ outputFile }}'
+      {% if alignAtoms is defined %}--align-atoms{{ alignAtoms }}{% endif %}
+      {% if keepAll %}--keep-all{% endif %}
+      {% if mcsMaximizeBonds is defined %}--mcs-maximize-bonds {{ mcsMaximizeBonds }}{% endif %}
+      {% if mcsMatchValences is defined %}--mcs-match-valences {{ mcsMatchValences }}{% endif %}
+      {% if mcsRingMatchesRingOnly is defined %}--mcs-ring-matches-ring-only {{ mcsRingMatchesRingOnly }}{% endif %}
+      {% if mcsCompleteRingsOnly is defined %}--mcs-complete-rings-only {{ mcsCompleteRingsOnly }}{% endif %}
+      {% if mcsMatchChiralTag is defined %}--mcs-match-chiral-tag {{ mcsMatchChiralTag }}{% endif %}
+      {% if mcsAtomCompare is defined %}--mcs-atom-compare {{ mcsAtomCompare }}{% endif %}
+      {% if mcsBondCompare is defined %}--mcs-bond-compare {{ mcsBondCompare }}{% endif %}
+      {% if mcsRingCompare is defined %}--mcs-ring-compare {{ mcsRingCompare }}{% endif %}
+      --interval 1000
+    variables:
+      order:
+        options:
+        - outputFile
+        - alignAtoms
+        - keepAll
+        - mcsMaximizeBonds
+        - mcsMatchValences
+        - mcsRingMatchesRingOnly
+        - mcsCompleteRingsOnly
+        - mcsMatchChiralTag
+        - mcsAtomCompare
+        - mcsBondCompare
+        - mcsRingCompare
+      inputs:
+        type: object
+        required:
+        - queryMolecule
+        - inputFile
+        properties:
+          queryMolecule:
+            title: Query molecule
+            mime-types:
+            - chemical/x-mdl-molfile
+            - chemical/x-mdl-sdfile
+            type: file
+          inputFile:
+            title: Molecules to align
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            default: aligned.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          alignAtoms:
+            title: Template atoms to align
+            type: string
+            pattern: "^[0-9,]+$"
+          keepAll:
+            title: Keep all alignments
+            type: boolean
+            default: false
+          mcsMaximizeBonds:
+            title: 'MCS: maximize bonds'
+            type: boolean
+            default: true
+          mcsMatchValences:
+            title: 'MCS: match valences'
+            type: boolean
+            default: false
+          mcsRingMatchesRingOnly:
+            title: 'MCS: ring atom only matches ring atom'
+            type: boolean
+            default: false
+          mcsCompleteRingsOnly:
+            title: 'MCS: match complete rings'
+            type: boolean
+            default: false
+          mcsMatchChiralTag:
+            title: 'MCS: match chiral tag'
+            type: boolean
+            default: false
+          mcsAtomCompare:
+            title: 'MCS: atom compare method'
+            type: string
+            default: CompareElements
+            enum:
+            - CompareAny
+            - CompareAnyHeavyAtom
+            - CompareElements
+            - CompareIsotopes
+          mcsBondCompare:
+            title: 'MCS: bond compare method'
+            type: string
+            default: CompareOrder
+            enum:
+            - CompareAny
+            - CompareOrder
+            - CompareOrderExact
+          mcsRingCompare:
+            title: 'MCS: ring compare method'
+            type: string
+            default: IgnoreRingFusion
+            enum:
+            - IgnoreRingFusion
+            - PermissiveRingFusion
+            - StrictRingFusion
+
+  cluster-butina:
+    name: Butina Clustering
+    description: >-
+      Cluster molecules with Butina and RDKit fingerprints
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - cluster
+    - butina
+    - fingerprint
+    doc-url: https://discourse.squonk.it/t/job-cluster-butina/121
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/cluster_butina.py --input '{{ inputFile }}'
+      --output {{ outputFile }}
+      --threshold {{ threshold }}
+      --descriptor {{ descriptor }}
+      --metric {{ metric }}
+      --fragment-method {{ fragment }}
+      {% if number is defined %}--num {{ number }}{% endif %}
+      {% if exclude is defined %}--exclude {{ exclude }}{% endif %}
+      {% if field is defined %}--field {{ field }}{% endif %}
+      {% if ascending is defined %}--ascending{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - threshold
+        - descriptor
+        - metric
+        - fragment
+        - number
+        - exclude
+        - field
+        - ascending
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cluster-butina/121'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - threshold
+        - descriptor
+        - metric
+        - fragment
+        properties:
+          outputFile:
+            title: Output file
+            type: string
+            default: clustered.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.(smi|sdf)$"
+          threshold:
+            title: Thereshold
+            type: number
+            minimum: 0
+            maximum: 1
+            default: 0.7
+          descriptor:
+            title: Fingerprint
+            type: string
+            default: rdkit
+            enum:
+            - maccs
+            - morgan2
+            - morgan3
+            - rdkit
+          metric:
+            title: Metric
+            type: string
+            default: tanimoto
+            enum:
+            - braunblanquet
+            - cosine
+            - dice
+            - kulczynski
+            - mcconnaughey
+            - rogotgoldberg
+            - russel
+            - sokal
+            - tanimoto
+          fragment:
+            title: Fragment method
+            type: string
+            default: hac
+            enum:
+            - hac
+            - mw
+          number:
+            title: Number to pick
+            type: integer
+          exclude:
+            title: Exclude moelcules this similar
+            type: number
+          field:
+            title: Field for optimising diversity
+            type: string
+            pattern: "^[A-Za-z0-9_ \\.\\-]+$"
+          ascending:
+            title: Optimise field values in ascending order
+            type: boolean
+    tests:
+      simple-execution-sdf2sdf:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: foo/clustered-mols.sdf
+          threshold: 0.8
+          descriptor: rdkit
+          metric: tanimoto
+          fragment: hac
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/clustered-mols.sdf
+            checks:
+            - exists: true
+      simple-execution-sdf2smi:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: foo/clustered-mols.smi
+          threshold: 0.8
+          descriptor: rdkit
+          metric: tanimoto
+          fragment: hac
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/clustered-mols.smi
+            checks:
+            - exists: true
+      simple-execution-diverse-count:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: foo/clustered-mols.smi
+          threshold: 0.6
+          descriptor: rdkit
+          metric: tanimoto
+          fragment: hac
+          number: 100
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/clustered-mols.smi
+            checks:
+            - exists: true
