@@ -35,10 +35,6 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
                        'num_sp3', 'logp', 'tpsa']
 
     # setup the reader
-    # if input.endswith('.sdf') or input.endswith('.sdf.gz'):
-    #     reader = rdkit_utils.SdfReader(input, id_column, sdf_read_records)
-    # else:
-    #     reader = rdkit_utils.SmilesReader(input, read_header, delimiter, id_column)
     reader = rdkit_utils.create_reader(input, id_column=id_column, sdf_read_records=sdf_read_records,
                                        read_header=read_header, delimiter=delimiter)
     extra_field_names = reader.get_extra_field_names()

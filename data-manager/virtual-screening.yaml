@@ -1973,6 +1973,182 @@ jobs:
             - PermissiveRingFusion
             - StrictRingFusion
 
+  cluster-butina:
+    name: Butina Clustering
+    description: >-
+      Cluster molecules with Butina and RDKit fingerprints
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - cluster
+    - butina
+    - fingerprint
+    doc-url: https://discourse.squonk.it/t/job-cluster-butina/121
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/cluster_butina.py --input '{{ inputFile }}'
+      --output {{ outputFile }}
+      --threshold {{ threshold }}
+      --descriptor {{ descriptor }}
+      --metric {{ metric }}
+      --fragment-method {{ fragment }}
+      {% if number is defined %}--num {{ number }}{% endif %}
+      {% if exclude is defined %}--exclude {{ exclude }}{% endif %}
+      {% if field is defined %}--field {{ field }}{% endif %}
+      {% if ascending is defined %}--ascending{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - threshold
+        - descriptor
+        - metric
+        - fragment
+        - number
+        - exclude
+        - field
+        - ascending
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cluster-butina/121'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - threshold
+        - descriptor
+        - metric
+        - fragment
+        properties:
+          outputFile:
+            title: Output file
+            type: string
+            default: clustered.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.(smi|sdf)$"
+          threshold:
+            title: Thereshold
+            type: number
+            minimum: 0
+            maximum: 1
+            default: 0.7
+          descriptor:
+            title: Fingerprint
+            type: string
+            default: rdkit
+            enum:
+            - maccs
+            - morgan2
+            - morgan3
+            - rdkit
+          metric:
+            title: Metric
+            type: string
+            default: tanimoto
+            enum:
+            - braunblanquet
+            - cosine
+            - dice
+            - kulczynski
+            - mcconnaughey
+            - rogotgoldberg
+            - russel
+            - sokal
+            - tanimoto
+          fragment:
+            title: Fragment method
+            type: string
+            default: hac
+            enum:
+            - hac
+            - mw
+          number:
+            title: Number to pick
+            type: integer
+          exclude:
+            title: Exclude moelcules this similar
+            type: number
+          field:
+            title: Field for optimising diversity
+            type: string
+            pattern: "^[A-Za-z0-9_ \\.\\-]+$"
+          ascending:
+            title: Optimise field values in ascending order
+            type: boolean
+    tests:
+      simple-execution-sdf2sdf:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: foo/clustered-mols.sdf
+          threshold: 0.8
+          descriptor: rdkit
+          metric: tanimoto
+          fragment: hac
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/clustered-mols.sdf
+            checks:
+            - exists: true
+      simple-execution-sdf2smi:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: foo/clustered-mols.smi
+          threshold: 0.8
+          descriptor: rdkit
+          metric: tanimoto
+          fragment: hac
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/clustered-mols.smi
+            checks:
+            - exists: true
+      simple-execution-diverse-count:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: foo/clustered-mols.smi
+          threshold: 0.6
+          descriptor: rdkit
+          metric: tanimoto
+          fragment: hac
+          number: 100
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/clustered-mols.smi
+            checks:
+            - exists: true
+
   sdf2json:
     name: Convert SDF to JSON format
     description: >-

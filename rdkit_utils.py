@@ -71,7 +71,6 @@ class SmilesWriter:
                 values.append(str(prop))
             else:
                 values.append('')
-
         line = self.sep.join(values)
         self.writer.write(line + "\n")
 
@@ -90,11 +89,14 @@ class SdfReader:
                 if r.atEnd():
                     break
                 else:
-                    mol = next(r)
-                    names = mol.GetPropNames()
-                    for name in names:
-                        if name not in self.field_names:
-                            self.field_names.append(name)
+                    try:
+                        mol = next(r)
+                        names = mol.GetPropNames()
+                        for name in names:
+                            if name not in self.field_names:
+                                self.field_names.append(name)
+                    except StopIteration:
+                        break
 
         # now create the real reader
         self.reader = self.create_reader(input)
@@ -226,6 +228,13 @@ def create_reader(input, type=None, id_column=None, sdf_read_records=100, read_h
         raise ValueError('Unexpected file type', type)
 
 
+def create_writer(outfile, delimiter='\t', extra_field_names=[], calc_prop_names=[]):
+    if outfile.endswith('.sdf') or outfile.endswith('sd'):
+        return SdfWriter(outfile, calc_prop_names)
+    else:
+        return SmilesWriter(outfile, delimiter, extra_field_names)
+
+
 def updateChargeFlagInAtomBlock(mb):
     """
     Add data for the charges to the atom block. This data is now deprecated and should be specified using "M  CHG" lines
@@ -293,7 +302,7 @@ def updateChargeFlagInAtomBlock(mb):
                 elif chg[1] == 3:
                     charge = '1'
                 else:
-                    print("ERROR! " + str(lines[0]) + "unknown charge flag: " + str(chg[1]))    # print name then go to next chg
+                    utils.log("ERROR! " + str(lines[0]) + "unknown charge flag: " + str(chg[1]))
                     break
                 # update modatom block line
                 lines[i] = f.format(x,y,z,symb,massDiff,charge,sp,hc,scb,v,hd,nu1,nu2,aamn,irf,ecf)
@@ -320,7 +329,6 @@ def sdf_read_mol(input):
     if txt == None:
         return None
     mol = Chem.MolFromMolBlock(txt)
-    print('NumProps:', mol.GetNumProps())
     return (txt, mol)
 
 
@@ -396,3 +404,86 @@ def rdk_mol_supplier(input):
     else:
         raise ValueError('Unsupported file type. Must be .mol .sdf or .sdf.gz. Found ' + input)
     return suppl
+
+
+def fragment(mol, mode):
+    frags = Chem.GetMolFrags(mol, asMols=True)
+
+    if len(frags) == 1:
+        return mol
+    else:
+        # TODO - handle ties
+        biggest_index = -1
+        i = 0
+        if mode == 'hac':
+            biggest_count = 0
+            for frag in frags:
+                hac = frag.GetNumHeavyAtoms()
+                if hac > biggest_count:
+                    biggest_count = hac
+                    biggest_mol = frag
+                    biggest_index = i
+                i+=1
+            utils.log("Chose fragment", biggest_index, "from", len(frags), "based on HAC")
+        elif mode == 'mw':
+            biggest_mw = 0
+            for frag in frags:
+                mw = Descriptors.MolWt(frag)
+                if mw > biggest_mw:
+                    biggest_mw = mw
+                    biggest_mol = frag
+                    biggest_index = i
+                i+=1
+            utils.log("Chose fragment", biggest_index, "from", len(frags), "based on MW")
+        else:
+            raise ValueError('Invalid fragment mode:',mode)
+
+        # copy the properties across
+        for name in mol.GetPropNames():
+            biggest_mol.SetProp(name, mol.GetProp(name))
+
+        # _Name is a magical property that is not in the ones returned by GetPropNames
+        if '_Name' in mol.GetPropNames():
+            biggest_mol.SetProp("_Name", mol.GetProp("_Name"))
+
+        return biggest_mol
+
+
+def fragmentAndFingerprint(reader, mols, data, fps, descriptor, fragmentMethod='hac', outputFragment=False):
+    """
+    Fragment the molecule if it has multiple fragments and generate fingerprints on the fragment.
+
+    :param reader: MolSupplier from which to read the molecules
+    :param mols: List to which the molecules are added
+    :param fps: List to which the fingerprints are added
+    :param descriptor: Function to generate the fingerprints from the molecule
+    :param fragmentMethod: The fragmentation method to use when there are multiple fragments (hac or mw)
+    :param outputFragment: Boolean that specifies whether to write the fragment or the original molecule to the mols list
+    :return: The number of errors encountered
+    """
+    errors = 0
+    count = 0
+    while True:
+        count += 1
+        t = reader.read()
+        # break if no more data to read
+        if not t:
+            break
+        mol, smi, id, props = t
+        if not mol:
+            utils.log('Failed to read molecule', count)
+            errors += 1
+            continue
+
+        frag = fragment(mol, fragmentMethod)
+        d = descriptor(frag)
+        if d:
+            if outputFragment:
+                mols.append(frag)
+                data.append((id, Chem.MolToSmiles(frag), props))
+            else:
+                mols.append(mol)
+                data.append((id, Chem.MolToSmiles(mol), props))
+            fps.append(d)
+            continue
+    return errors
