@@ -1,0 +1,104 @@
+---
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: XChem tools
+collection: xchem
+
+repository-url: https://github.com/InformaticsMatters/virtual-screening/xchem.yaml
+repository-tag: '1.0.0'
+
+jobs:
+  sucos:
+    name: Shape overlay with SuCOS
+    description: >-
+      Generate shape overlay scores using SuCOS.
+      The molecules need to be already aligned.
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - 3d
+    - shape
+    - sucos
+    doc-url: https://discourse.squonk.it/t/job-sucos/122
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/sucos.py --input '{{ inputFile }}'
+      --reference '{{ reference }}'
+      --output '{{ outputFile }}'
+      --score-mode {{ mode }}
+      {% if tanimoto %}--tanimoto{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - outputFile
+        - tanimoto
+        - mode
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to process
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          reference:
+            title: Reference molecule (.mol or .sdf)
+            mime-types:
+            - chemical/x-mdl-molfile
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - tanimoto
+        - mode
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+            default: sucos.sdf
+          tanimoto:
+            title: Use tanimoto distance
+            type: boolean
+          mode:
+            title: Score mode
+            type: string
+            default: all
+            enum:
+            - all
+            - closest
+            - best
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/Mpro-x0107-shapes.sdf
+          reference: data/Mpro-x0107_0A.mol
+        options:
+          outputFile: foo/sucos.sdf
+          mode: all
+          tanimoto: false
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/sucos.sdf
+            checks:
+            - exists: true

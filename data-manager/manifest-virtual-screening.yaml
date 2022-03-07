@@ -5,3 +5,4 @@ kind-version: '2021.1'
 job-definition-files:
 - virtual-screening.yaml
 - rdkit.yaml
+- xchem.yaml

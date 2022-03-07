@@ -21,7 +21,12 @@ import utils
 class SdfWriter:
 
     def __init__(self, outfile, prop_names):
-        self.writer = Chem.SDWriter(outfile)
+        if outfile.endswith('.gz'):
+            self.gzip = gzip.open(outfile, 'wt')
+            self.writer = Chem.SDWriter(self.gzip)
+        else:
+            self.gzip = None
+            self.writer = Chem.SDWriter(outfile)
         self.prop_names = prop_names
 
     def write(self, smi, mol, id, existing_props, new_props):
@@ -40,7 +45,9 @@ class SdfWriter:
         utils.log("WARNING: asked to write header for an SDF. No action will be taken.")
 
     def close(self):
-        pass
+        self.writer.close()
+        if self.gzip:
+            self.gzip.close()
 
 
 class SmilesWriter:
@@ -58,7 +65,6 @@ class SmilesWriter:
         self.writer.write(line + "\n")
 
     def write(self, smi, mol, id, existing_props, new_props):
-
         values = [smi]
         for prop in existing_props:
             if prop is not None:
