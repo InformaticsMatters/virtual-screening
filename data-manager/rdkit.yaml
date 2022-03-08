@@ -1001,7 +1001,7 @@ jobs:
       project-directory: /data
       working-directory: /data
     command: >-
-      /code/align_mol.py -i '{{ inputFile }}' -q '{{ queryMolecule }}' -o '{{ outputFile }}'
+      /code/align_mol.py -i '{{ inputFile }}' -q '{{ refMolecule }}' -o '{{ outputFile }}'
       {% if alignAtoms is defined %}--align-atoms{{ alignAtoms }}{% endif %}
       {% if keepAll %}--keep-all{% endif %}
       {% if mcsMaximizeBonds is defined %}--mcs-maximize-bonds {{ mcsMaximizeBonds }}{% endif %}
@@ -1030,11 +1030,11 @@ jobs:
       inputs:
         type: object
         required:
-        - queryMolecule
+        - refMolecule
         - inputFile
         properties:
-          queryMolecule:
-            title: Query molecule
+          refMolecule:
+            title: Reference molecule
             mime-types:
             - chemical/x-mdl-molfile
             - chemical/x-mdl-sdfile
@@ -1064,7 +1064,7 @@ jobs:
             default: aligned.sdf
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
           alignAtoms:
-            title: Template atoms to align
+            title: Reference atoms to align
             type: string
             pattern: "^[0-9,]+$"
           keepAll:
