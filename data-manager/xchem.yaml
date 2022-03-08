@@ -77,7 +77,7 @@ jobs:
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
             default: sucos.sdf
           tanimoto:
-            title: Use tanimoto distance
+            title: Use Tanimoto distance
             type: boolean
           mode:
             title: Score mode

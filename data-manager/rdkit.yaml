@@ -1139,6 +1139,7 @@ jobs:
       --descriptor {{ descriptor }}
       --metric {{ metric }}
       --fragment-method {{ fragment }}
+      {% if output_frag %}--output-fragment{% endif %}
       {% if number is defined %}--num {{ number }}{% endif %}
       {% if exclude is defined %}--exclude {{ exclude }}{% endif %}
       {% if field is defined %}--field {{ field }}{% endif %}
@@ -1151,6 +1152,7 @@ jobs:
         - descriptor
         - metric
         - fragment
+        - output_frag
         - number
         - exclude
         - field
@@ -1188,6 +1190,7 @@ jobs:
         - descriptor
         - metric
         - fragment
+        - output_frag
         properties:
           outputFile:
             title: Output file
@@ -1230,18 +1233,23 @@ jobs:
             enum:
             - hac
             - mw
+          output_frag:
+            title: Output fragment
+            type: boolean
           number:
             title: Number to pick
             type: integer
           exclude:
-            title: Exclude moelcules this similar
+            title: Exclude molecules this similar
             type: number
+            minimum: 0
+            maximum: 1
           field:
             title: Field for optimising diversity
             type: string
             pattern: "^[A-Za-z0-9_ \\.\\-]+$"
           ascending:
-            title: Optimise field values in ascending order
+            title: Field values ascending
             type: boolean
     tests:
       simple-execution-sdf2sdf:
@@ -1253,6 +1261,7 @@ jobs:
           descriptor: rdkit
           metric: tanimoto
           fragment: hac
+          output_frag: false
         checks:
           exitCode: 0
           outputs:
@@ -1268,6 +1277,7 @@ jobs:
           descriptor: rdkit
           metric: tanimoto
           fragment: hac
+          output_frag: false
         checks:
           exitCode: 0
           outputs:
@@ -1283,6 +1293,7 @@ jobs:
           descriptor: rdkit
           metric: tanimoto
           fragment: hac
+          output_frag: false
           number: 100
         checks:
           exitCode: 0
