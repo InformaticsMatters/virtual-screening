@@ -123,6 +123,7 @@ jobs:
     keywords:
     - rdkit
     - conformer
+    - 3d
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -220,6 +221,7 @@ jobs:
     - similarity
     - shape
     - filter
+    - 3d
     doc-url: https://discourse.squonk.it/t/open3dalign/99
     image:
       name: informaticsmatters/vs-prep

@@ -21,6 +21,7 @@ jobs:
     - shape
     - silicos-it
     - filter
+    - 3d
     doc-url: 'https://discourse.squonk.it/t/job-shape-it/93'
     image:
       name: 3dechem/silicos-it
@@ -137,6 +138,7 @@ jobs:
     - pharmacophore
     - silicos-it
     - filter
+    - 3d
     doc-url: 'https://discourse.squonk.it/t/job-align-it/94'
     image:
       name: 3dechem/silicos-it

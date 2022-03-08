@@ -295,6 +295,7 @@ jobs:
     - ligand preparation
     - enumeration
     - conformer
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-prep-enum-conf-lists/70
     image:
       name: informaticsmatters/vs-prep
@@ -362,6 +363,7 @@ jobs:
     category: virtual screening
     keywords:
     - ligand preparation
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-assemble-conformers/73
     image:
       name: informaticsmatters/vs-prep
@@ -547,6 +549,7 @@ jobs:
     - protein preparation
     - pdb2pqr
     - protonation
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-pdb2pqr/76
     image:
       name: informaticsmatters/vs-prep
@@ -634,6 +637,7 @@ jobs:
     keywords:
     - protein preparation
     - rdock
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-prepare-rdock/75
     image:
       name: informaticsmatters/vs-rdock
@@ -701,6 +705,7 @@ jobs:
     - electroshape
     - usrcat
     - filter
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87
     image:
       name: informaticsmatters/vs-oddt
@@ -936,6 +941,7 @@ jobs:
     - enumeration
     - dimorphite_dl
     - nextflow
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-enumerate-candidates/71
     image:
       name: informaticsmatters/vs-nextflow
@@ -991,6 +997,7 @@ jobs:
     - ligand preparation
     - conformer
     - nextflow
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-generate-low-energy-conformers/86
     image:
       name: informaticsmatters/vs-nextflow
@@ -1044,6 +1051,7 @@ jobs:
     - rdock
     - docking
     - nextflow
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-run-rdock/74
     image:
       name: informaticsmatters/vs-nextflow
@@ -1170,6 +1178,7 @@ jobs:
     - smina
     - docking
     - nextflow
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-run-smina/78
     image:
       name: informaticsmatters/vs-nextflow
@@ -1295,6 +1304,7 @@ jobs:
     - oddt
     - docking
     - nextflow
+    - 3d
     doc-url: https://discourse.squonk.it/t/job-oddt-score-interactions/79
     image:
       name: informaticsmatters/vs-nextflow
