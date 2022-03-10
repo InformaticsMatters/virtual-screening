@@ -21,10 +21,14 @@ from dm_job_utilities.dm_log import DmLog
 
 from oddt import toolkit, fingerprints
 
+# For a description of the fingerprints see:
+# https://oddt.readthedocs.io/en/latest/rst/oddt.html?highlight=dice#module-oddt.fingerprints
+
 fingerprint_types = {
     'if': fingerprints.InteractionFingerprint,
     'sif': fingerprints.SimpleInteractionFingerprint,
-    'splif': fingerprints.SPLIF
+    'splif': fingerprints.SPLIF,
+    'plec': fingerprints.PLEC
 }
 
 metric_types = {
@@ -49,7 +53,8 @@ def execute(inputs, protein, ligands, output, fingerprint='if', metric='dice', f
     protein_mol.protein = True
     ligand_mols = toolkit.readfile('sdf', ligands)
     input_mols = toolkit.readfile('sdf', inputs)
-    fps = [ fingerprint_types[fingerprint](m, protein_mol) for m in ligand_mols ]
+    fps = [fingerprint_types[fingerprint](m, protein_mol) for m in ligand_mols]
+    utils.log('Read {} ligands'.format(len(fps)))
 
     writer = toolkit.Outputfile('sdf', output, overwrite=True)
 
@@ -78,13 +83,13 @@ def execute(inputs, protein, ligands, output, fingerprint='if', metric='dice', f
                 utils.log("Failed", count, e)
                 errors += 1
 
+            if interval and count % interval == 0:
+                DmLog.emit_event("Processed {} records, {} errors".format(count, errors))
+            if success % 10000 == 0:
+                DmLog.emit_cost(success)
+
     finally:
         writer.close()
-
-        if interval and count % interval == 0:
-            DmLog.emit_event("Processed {} records, {} errors".format(count, errors))
-        if success % 10000 == 0:
-            DmLog.emit_cost(success)
 
     return count, errors
 
@@ -101,9 +106,9 @@ def main():
     parser.add_argument('-p', '--protein', required=True, help="Protein in PDB format")
     parser.add_argument('-l', '--ligands', required=True, help="Known ligands (.sdf)")
     parser.add_argument('-o', '--output', required=True, help="Output file (.sdf)")
-    parser.add_argument('-f', '--fingerprint', default='if', choices=['if', 'sif', 'splif'],
-                        help="Which fingerprint (if=InteractionFingerprint), sif=SimpleInteractionFingerprint" +
-                        " splif=SPLIF")
+    parser.add_argument('-f', '--fingerprint', default='if', choices=['if', 'sif', 'splif', 'plec'],
+                        help="Which fingerprint (if=InteractionFingerprint, sif=SimpleInteractionFingerprint" +
+                        " splif=SPLIF, plec=PLEC")
     parser.add_argument('-m', '--metric', default='dice', choices=['dice', 'tanimoto'],
                         help="Which metric (ignored if using splif fingerprint")
     parser.add_argument('--field-name', default='ODDT_IFP', help="Base name for the output fields")
