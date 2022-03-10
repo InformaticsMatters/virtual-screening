@@ -6,26 +6,47 @@ LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 #           for execution, and so we must ensure the code runs
 #           as any user.
 
-
 ENV HOME=/code
+
+# Install stuff for Nextflow and Docker
+RUN apt-get update &&\
+    apt-get install -y --no-install-recommends\
+        ca-certificates\
+        curl\
+        git\
+        gnupg\
+        lsb-release\
+        openjdk-11-jre-headless\
+        procps\
+        sudo &&\
+    apt-get clean -y
+
+# Install Docker (18.06.3)
+# See https://docs.docker.com/engine/install/debian/
+# We only need Docker if we're testout _outside_ of the Data Manager Kubernetes
+# environment, i.e. from the command-line or when using jote. The Data Manager
+# run the container using Kubernetes, not Docker.
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | \
+        gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg &&\
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+        $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN apt-get update &&\
+    apt-get install -y --no-install-recommends\
+        docker-ce=18.06.3~ce~3-0~debian containerd.io
+VOLUME /var/run/docker.sock
+
+# Create and move to the home directory
 WORKDIR ${HOME}
 
-COPY *.nf *.py site_substructures.smarts ./
-COPY nf-processes ./nf-processes
-
-
-RUN apt-get update &&\
- apt-get install -y --no-install-recommends\
- openjdk-11-jre-headless\
- curl\
- procps\
- git &&\
- apt-get clean -y
- 
 # Install nextflow
 RUN curl -s https://get.nextflow.io | bash && \
     chmod 755 nextflow && \
     mv nextflow /usr/local/bin/
+
+# Copy the code in
+COPY *.nf *.py site_substructures.smarts ./
+COPY nf-processes ./nf-processes
+COPY nextflow.config ./.nextflow/config
 
 # Adjust permissions for RunAsAnyUser
 RUN chmod 777 ${HOME} && \
@@ -33,5 +54,9 @@ RUN chmod 777 ${HOME} && \
     find ./.nextflow -type d | xargs chmod 777 && \
     find . -type f -name '*.jar' | xargs chmod 655
 
-ENV HOME=/code
-WORKDIR /code
+# To satisfy functional testing using the Data Manager Job Tester (jote)
+# we need to run docker with jote starting the container as user 8888.
+ENV JOTE_UID=8888
+RUN useradd --uid ${JOTE_UID} --gid root --home-dir ${HOME} \
+        --no-user-group --no-create-home jote && \
+    usermod -aG docker jote
