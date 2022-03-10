@@ -15,13 +15,14 @@
 # limitations under the License.
 
 
-import sys, argparse, time
+import sys, argparse
 import utils
 from dm_job_utilities.dm_log import DmLog
 
 from oddt import toolkit, fingerprints
 
-# For a description of the fingerprints see:
+# This uses ODDT. See https://oddt.readthedocs.io/en/latest/index.html
+# For a description of the ODDT fingerprints see:
 # https://oddt.readthedocs.io/en/latest/rst/oddt.html?highlight=dice#module-oddt.fingerprints
 
 fingerprint_types = {
@@ -99,12 +100,10 @@ def main():
     # Example:
     #   ./oddt_ifp.py -i data/dhfr_candidates.sdf -p data/dhfr-receptor.pdb -l data/dhfr-ligand.mol -o foo.sdf
 
-    ### command line args definitions #########################################
-
     parser = argparse.ArgumentParser(description='Minimize structures')
     parser.add_argument('-i', '--input', required=True, help="File with ligands to score (.sdf)")
     parser.add_argument('-p', '--protein', required=True, help="Protein in PDB format")
-    parser.add_argument('-l', '--ligands', required=True, help="Known ligands (.sdf)")
+    parser.add_argument('-l', '--ligands', required=True, help="Reference ligands to score against (.sdf)")
     parser.add_argument('-o', '--output', required=True, help="Output file (.sdf)")
     parser.add_argument('-f', '--fingerprint', default='if', choices=['if', 'sif', 'splif', 'plec'],
                         help="Which fingerprint (if=InteractionFingerprint, sif=SimpleInteractionFingerprint" +
@@ -115,7 +114,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    utils.log("minimize.py: ", args)
+    utils.log("oddt_ifp.py: ", args)
 
     count, errors = execute(args.input, args.protein, args.ligands, args.output,
                             fingerprint=args.fingerprint, metric=args.metric,
@@ -126,4 +125,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
