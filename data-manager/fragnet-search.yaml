@@ -12,7 +12,6 @@ jobs:
     name: Fragment network expansion
     description: >-
       Expand a set of molecules using the fragment network
-      NOTE: this is not yet working
     version: '1.0.0'
     category: virtual screening
     keywords:
