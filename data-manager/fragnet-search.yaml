@@ -47,7 +47,6 @@ jobs:
       {% if hacMax is defined %}--hac-max {{ hacMax }}{% endif %}
       {% if racMin is defined %}--rac-min {{ racMin }}{% endif %}
       {% if racMax is defined %}--rac-max {{ racMax }}{% endif %}
-      {% if noStandardize %}--no-standardize{% endif %}
     variables:
       order:
         options:
@@ -58,7 +57,6 @@ jobs:
         - hacMax
         - racMin
         - racMax
-        - noStandardize
       outputs:
         type: object
         properties:
@@ -74,15 +72,15 @@ jobs:
         - smiles
         - outputFile
         - hops
-        - noStandardize
         properties:
           smiles:
             title: Query SMILES
             type: string
-            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
+            pattern: "^[A-za-z0-9=\\[\\]\(\\)#\\+\\-\\.@/%]+$"
           outputFile:
             title: Output file (.smi)
             type: string
+            default: expansions.smi
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.smi$"
           hops:
             title: Number of fragment network hops
@@ -106,10 +104,6 @@ jobs:
             title: Max ring atom count
             type: integer
             minimum: 1
-          noStandardize:
-            title: Query does not need standardizing
-            type: boolean
-            default: false
 
   fragment-network-find-synthons:
     name: Fragment network find synthons
@@ -146,13 +140,11 @@ jobs:
       /code/fn_find_synthons.py
       --smiles '{{ smiles }}'
       --outfile '{{ outputFile }}'
-      {% if noStandardize %}--no-standardize{% endif %}
     variables:
       order:
         options:
         - smiles
         - outputFile
-        - noStandardize
       outputs:
         type: object
         properties:
@@ -167,20 +159,16 @@ jobs:
         required:
         - smiles
         - outputFile
-        - noStandardize
         properties:
           smiles:
             title: Query SMILES
             type: string
-            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
+            pattern: "^[A-za-z0-9=\\[\\]\(\\)#\\+\\-\\.@/%]+$"
           outputFile:
             title: Output file (.smi)
             type: string
+            default: synthons.smi
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.smi$"
-          noStandardize:
-            title: Query does not need standardizing
-            type: boolean
-            default: false
 
   fragment-network-synthon-expansion:
     name: Fragment network expansion
@@ -223,7 +211,6 @@ jobs:
       {% if hacMax is defined %}--hac-max {{ hacMax }}{% endif %}
       {% if racMin is defined %}--rac-min {{ racMin }}{% endif %}
       {% if racMax is defined %}--rac-max {{ racMax }}{% endif %}
-      {% if noStandardize %}--no-standardize{% endif %}
     variables:
       order:
         options:
@@ -235,7 +222,6 @@ jobs:
         - hacMax
         - racMin
         - racMax
-        - noStandardize
       outputs:
         type: object
         properties:
@@ -255,14 +241,15 @@ jobs:
           smiles:
             title: Query SMILES
             type: string
-            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
+            pattern: "^[A-za-z0-9=\\[\\]\(\\)#\\+\\-\\.@/%]+$"
           synthon:
             title: Synthon SMILES
             type: string
-            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
+            pattern: "^[A-za-z0-9=\\[\\]\(\\)#\\+\\-\\.@/%]+$"
           outputFile:
             title: Output file (.smi)
             type: string
+            default: synthon-expansions.smi
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.smi$"
           hops:
             title: Number of fragment network hops
@@ -286,7 +273,3 @@ jobs:
             title: Max ring atom count
             type: integer
             minimum: 1
-          noStandardize:
-            title: Query does not need standardizing
-            type: boolean
-            default: false
