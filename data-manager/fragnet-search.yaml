@@ -76,7 +76,7 @@ jobs:
           smiles:
             title: Query SMILES
             type: string
-            pattern: "^[A-za-z0-9=\\\\[\\]\(\\)\\+\\-\\.\\/%#@]+$"
+            pattern: "^[A-za-z0-9=\\\\[\\]\\(\\)\\+\\-\\.\\/%#@]+$"
           outputFile:
             title: Output file (.smi)
             type: string
@@ -163,7 +163,7 @@ jobs:
           smiles:
             title: Query SMILES
             type: string
-            pattern: "^[A-za-z0-9=\\\\[\\]\(\\)\\+\\-\\.\\/%#@]+$"
+            pattern: "^[A-za-z0-9=\\\\[\\]\\(\\)\\+\\-\\.\\/%#@]+$"
           outputFile:
             title: Output file (.smi)
             type: string
@@ -174,7 +174,6 @@ jobs:
     name: Fragment network expansion
     description: >-
       Expand a set of molecules using the fragment network
-      NOTE: this is not yet working
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -241,11 +240,11 @@ jobs:
           smiles:
             title: Query SMILES
             type: string
-            pattern: "^[A-za-z0-9=\\\\[\\]\(\\)\\+\\-\\.\\/%#@]+$"
+            pattern: "^[A-za-z0-9=\\\\[\\]\\(\\)\\+\\-\\.\\/%#@]+$"
           synthon:
             title: Synthon SMILES
             type: string
-            pattern: "^[A-za-z0-9=\\\\[\\]\(\\)\\+\\-\\.\\/%#@]+$"
+            pattern: "^[A-za-z0-9=\\\\[\\]\\(\\)\\+\\-\\.\\/%#@]+$"
           outputFile:
             title: Output file (.smi)
             type: string
