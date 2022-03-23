@@ -79,6 +79,7 @@ jobs:
           smiles:
             title: Query SMILES
             type: string
+            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
           outputFile:
             title: Output file (.smi)
             type: string
@@ -171,6 +172,7 @@ jobs:
           smiles:
             title: Query SMILES
             type: string
+            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
           outputFile:
             title: Output file (.smi)
             type: string
@@ -253,10 +255,11 @@ jobs:
           smiles:
             title: Query SMILES
             type: string
-            #pattern: "^[A-za-z0-9@\\/\[\]\(\)=$"
+            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
           synthon:
             title: Synthon SMILES
             type: string
+            pattern: "^[A-za-z0-9=\[\]\(\)#\+\-\.@/%]+$"
           outputFile:
             title: Output file (.smi)
             type: string
