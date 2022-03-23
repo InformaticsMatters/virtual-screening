@@ -3,7 +3,7 @@ kind: DataManagerJobDefinition
 kind-version: '2021.1'
 
 name: Fragment Network search tools
-collection: im-virtual-screening
+collection: im-fragment-network
 repository-url: https://github.com/InformaticsMatters/virtual-screening/fagnet-search.yaml
 repository-tag: '1.0.0'
 
@@ -48,6 +48,7 @@ jobs:
       {% if hacMax is defined %}--hac-max {{ hacMax }}{% endif %}
       {% if racMin is defined %}--rac-min {{ racMin }}{% endif %}
       {% if racMax is defined %}--rac-max {{ racMax }}{% endif %}
+      {% if noStandardize %}--no-standardize{% endif %}
     variables:
       order:
         options:
@@ -58,6 +59,7 @@ jobs:
         - hacMax
         - racMin
         - racMax
+        - noStandardize
       outputs:
         type: object
         properties:
@@ -73,6 +75,7 @@ jobs:
         - smiles
         - outputFile
         - hops
+        - noStandardize
         properties:
           smiles:
             title: Query SMILES
@@ -103,3 +106,185 @@ jobs:
             title: Max ring atom count
             type: integer
             minimum: 1
+          noStandardize:
+            title: Query does not need standardizing
+            type: boolean
+            default: false
+
+  fragment-network-find-synthons:
+    name: Fragment network find synthons
+    description: >-
+      Find the "synthons" of a molecule
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - fragment-network
+    - candidate-selection
+    - synthons
+    image:
+      name: informaticsmatters/vs-fragnet-search
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      environment:
+      - name: NEO4J_USERNAME
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: username
+      - name: NEO4J_PASSWORD
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: password
+      - name: NEO4J_SERVER
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: server
+    command: >-
+      /code/fn_find_synthons.py
+      --smiles '{{ smiles }}'
+      --outfile '{{ outputFile }}'
+      {% if noStandardize %}--no-standardize{% endif %}
+    variables:
+      order:
+        options:
+        - smiles
+        - outputFile
+        - noStandardize
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Synthons as SMILES
+            mime-types:
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - smiles
+        - outputFile
+        - noStandardize
+        properties:
+          smiles:
+            title: Query SMILES
+            type: string
+          outputFile:
+            title: Output file (.smi)
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.smi$"
+          noStandardize:
+            title: Query does not need standardizing
+            type: boolean
+            default: false
+
+  fragment-network-synthon-expansion:
+    name: Fragment network expansion
+    description: >-
+      Expand a set of molecules using the fragment network
+      NOTE: this is not yet working
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - fragment-network
+    - candidate-selection
+    image:
+      name: informaticsmatters/vs-fragnet-search
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      environment:
+      - name: NEO4J_USERNAME
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: username
+      - name: NEO4J_PASSWORD
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: password
+      - name: NEO4J_SERVER
+        value-from:
+          secret:
+            name: im-fragnet-graph
+            key: server
+    command: >-
+      /code/fn_synthon_expansion.py
+      --smiles '{{ smiles }}'
+      --synthon '{{ synthon }}'
+      --outfile '{{ outputFile }}'
+      --hops {{ hops }}
+      {% if hacMin is defined %}--hac-min {{ hacMin }}{% endif %}
+      {% if hacMax is defined %}--hac-max {{ hacMax }}{% endif %}
+      {% if racMin is defined %}--rac-min {{ racMin }}{% endif %}
+      {% if racMax is defined %}--rac-max {{ racMax }}{% endif %}
+      {% if noStandardize %}--no-standardize{% endif %}
+    variables:
+      order:
+        options:
+        - smiles
+        - synthon
+        - outputFile
+        - hops
+        - hacMin
+        - hacMax
+        - racMin
+        - racMax
+        - noStandardize
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Expanded molecules as SMILES
+            mime-types:
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - smiles
+        - outputFile
+        - hops
+        properties:
+          smiles:
+            title: Query SMILES
+            type: string
+            #pattern: "^[A-za-z0-9@\\/\[\]\(\)=$"
+          synthon:
+            title: Synthon SMILES
+            type: string
+          outputFile:
+            title: Output file (.smi)
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.smi$"
+          hops:
+            title: Number of fragment network hops
+            type: integer
+            default: 1
+            minimum: 1
+            maximum: 4
+          hacMin:
+            title: Min heavy atom count
+            type: integer
+            minimum: 1
+          hacMax:
+            title: Max heavy atom count
+            type: integer
+            minimum: 1
+          racMin:
+            title: Min ring atom count
+            type: integer
+            minimum: 1
+          racMax:
+            title: Max ring atom count
+            type: integer
+            minimum: 1
+          noStandardize:
+            title: Query does not need standardizing
+            type: boolean
+            default: false
