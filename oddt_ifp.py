@@ -26,10 +26,10 @@ from oddt import toolkit, fingerprints
 # https://oddt.readthedocs.io/en/latest/rst/oddt.html?highlight=dice#module-oddt.fingerprints
 
 fingerprint_types = {
-    'if': fingerprints.InteractionFingerprint,
-    'sif': fingerprints.SimpleInteractionFingerprint,
-    'splif': fingerprints.SPLIF,
-    'plec': fingerprints.PLEC
+    'if':    lambda m, p: fingerprints.InteractionFingerprint(m, p),
+    'sif':   lambda m, p: fingerprints.SimpleInteractionFingerprint(m, p),
+    'splif': lambda m, p: fingerprints.SPLIF(m, p),
+    'plec':  lambda m, p: fingerprints.PLEC(m, p, sparse=False)
 }
 
 metric_types = {
