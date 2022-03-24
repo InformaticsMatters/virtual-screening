@@ -10,7 +10,7 @@ The tools can be used *standalone*, but many are also packaged up as Squonk2 *jo
 
 More information can be found in the following docs:
 
-* [USER_GUIDE.md](User guide)
-* [DEVELOPER_GUIDE.md](Developer guide)
+* [User guide](USER_GUIDE.md)
+* [Developer guide](DEVELOPER_GUIDE.md)
 
-These tools are available under the [LICENSE](Apache2.0 license).
+These tools are available under the [Apache2.0 license](LICENSE).
