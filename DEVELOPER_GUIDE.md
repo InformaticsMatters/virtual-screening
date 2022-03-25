@@ -335,3 +335,15 @@ You will need to contact the administrator of your Squonk2 instance who will use
 `/admin/job-manifest` API endpoint to load your manifest. 
 Also, if your manifest or the job definitions it includes
 changes the administrator will need to use the `/admin/job-manifest/load` endpoint to reload the job manifests.
+
+## 9. Creating a Nextflow module
+
+If you want to be able to incorporate your tool into a [Nextflow](https://www.nextflow.io/) workflow then the best
+approach is to create a [Nextflow module](https://www.nextflow.io/docs/latest/dsl2.html#modules) using Nextflow's
+[DSL2](https://www.nextflow.io/docs/latest/dsl2.html). This allows your module to be easily incorporated into a 
+workflow that uses other modules that we have created. This way your module can be used in multiple workflows.
+
+The those modules can be found under [nf-processes](). Take a look at those as examples and at the Nextflow
+documentation. Once you have your module you can look at the `*.nf` files in this directory for examples of how to
+build a complete workflow out of modules. To make your workflow executable in Squonk2 you need to create a job
+definition as described above. Again, look at the existing examples for inspiration.
