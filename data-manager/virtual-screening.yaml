@@ -1163,7 +1163,7 @@ jobs:
           prmFile: data/docking.prm
           asFile: data/docking.as
         options:
-          outputFile: rdock_results.sdf
+          outputFile: rdock_results
           numDockings: 1
           mode: dock
         checks:
