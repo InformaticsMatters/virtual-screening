@@ -77,6 +77,7 @@ jobs:
       /code/shard.py -i{% for file in inputFiles %} '{{ file }}'{% endfor %}
       -s '{{ supplierName }}'
       -v '{{ supplierVersion }}' -o '{{ outputDir }}' -n {{ codeFieldIndex }}
+      --skip-lines {{ skipLines }}
       --errors-file '{{ supplierName }}_{{ supplierVersion }}_errors.smi'
       --interval 10000
     # Command variables - using JSONSchema to allow for simplified client
@@ -92,6 +93,7 @@ jobs:
         - supplierName
         - supplierVersion
         - codeFieldIndex
+        - skipLines
         - outputDir
       inputs:
         type: object
@@ -127,10 +129,11 @@ jobs:
         - supplierVersion
         - codeFieldIndex
         - outputDir
+        - skipLines
         properties:
           codeFieldIndex:
-            title: Index of vendor code field
-            default: 2
+            title: Index of vendor code field (zero based)
+            default: 1
             minimum: 1
             type: integer
           outputDir:
@@ -144,6 +147,11 @@ jobs:
           supplierVersion:
             title: Version of the molecule source
             type: string
+          skipLines:
+            title: Skip this many lines (e.g. 1 for a file with a header line)
+            type: integer
+            default: 0
+            minimum: 0
 
   filter:
     name: Filter candidate molecules
