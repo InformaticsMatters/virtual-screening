@@ -959,7 +959,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/enumerate.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/enumerate.nf
       --inputs '{{ inputFile }}'
       --data_dir '{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -1014,7 +1014,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/le_conformers.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
       --inputs '{{ inputFile }}'
       --data_dir '{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -1067,7 +1067,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/rdock-docking.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/rdock-docking.nf
       --ligands '{{ ligandsSDF }}'
       --protein '{{ proteinMOL2 }}'
       --prmfile '{{ prmFile }}'
@@ -1193,7 +1193,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/smina-docking.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/smina-docking.nf
       --ligands '{{ ligands }}'
       --protein '{{ protein }}'
       --ligand '{{ ligand }}'
@@ -1318,7 +1318,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/oddt-interactions.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/oddt-interactions.nf
       --ligands '{{ ligandsSDF }}'
       --protein '{{ proteinPDB }}'
       {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
