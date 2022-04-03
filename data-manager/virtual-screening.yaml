@@ -1156,7 +1156,6 @@ jobs:
             - score
     tests:
       simple-execution:
-        ignore:
         inputs:
           ligandsSDF: data/candidates-10.sdf
           proteinMOL2: data/dhfr-receptor-ph7.mol2

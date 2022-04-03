@@ -5,9 +5,11 @@
 name: im-jote
 channels:
   - conda-forge
+  - bioconda
 dependencies:
   - python == 3.10*
   - pip
+  - nextflow == 21.10.6
   - pip:
     - im-jote
     - im-data-manager-job-utilities==1.0.1
