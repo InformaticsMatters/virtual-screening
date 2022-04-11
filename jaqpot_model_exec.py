@@ -6,7 +6,7 @@ import rdkit_utils
 from jaqpotpy import Jaqpot
 
 
-def execute(input, output, model_id, api_key):
+def execute_jaqpot_model(input, output, model_id, api_key):
 
     from jaqpotpy.cfg import config
     config.verbose = False
@@ -23,7 +23,8 @@ def execute(input, output, model_id, api_key):
     jaqpot.set_api_key(api_key)
     molmod = MolecularModel.load_from_jaqpot(jaqpot=jaqpot, id=model_id)
     suppl = Chem.SDMolSupplier(input)
-    for mol in suppl:
+    for i, mol in enumerate(suppl):
+        print('mol:', i, mol)
         molmod(mol)
         print(molmod.Y)
         print(molmod.prediction)
@@ -50,7 +51,7 @@ def main():
     if not api_key:
         utils.log('WARNING: no Jaqpot API key provided')
 
-    execute(args.input, args.output, args.model_id, api_key)
+    execute_jaqpot_model(args.input, args.output, args.model_id, api_key)
 
 
 
