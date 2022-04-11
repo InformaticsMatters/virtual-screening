@@ -22,16 +22,10 @@ RUN apt-get update &&\
  git &&\
  apt-get clean -y
  
-# Install nextflow
-RUN curl -s https://get.nextflow.io | bash && \
+# Install nextflow. Releases are here: https://github.com/nextflow-io/nextflow/releases
+RUN curl -Ls -o nextflow https://github.com/nextflow-io/nextflow/releases/download/v21.10.6/nextflow-21.10.6-all && \
     chmod 755 nextflow && \
     mv nextflow /usr/local/bin/
 
 # Adjust permissions for RunAsAnyUser
-RUN chmod 777 ${HOME} && \
-    chmod 777 ${HOME}/.nextflow && \
-    find ./.nextflow -type d | xargs chmod 777 && \
-    find . -type f -name '*.jar' | xargs chmod 655
-
-ENV HOME=/code
-WORKDIR /code
+RUN chmod 777 ${HOME}

@@ -1,4 +1,8 @@
+// process params
 params.scratch = false
+params.errorStrategy = 'retry'
+params.maxRetries = 3
+
 // docking params
 params.num_dockings = 25
 params.mode = 'dock' // or minimise, score etc. Look in /rDock_2013.1_src/data/scripts for the options
@@ -7,21 +11,23 @@ params.mode = 'dock' // or minimise, score etc. Look in /rDock_2013.1_src/data/s
 process rdock_docking {
 
     container 'informaticsmatters/vs-rdock:latest'
-    errorStrategy 'ignore'
-    maxRetries 3
+    errorStrategy params.errorStrategy
+    maxRetries params.maxRetries
     scratch params.scratch
 
     input:
-    path part // e.g. mols_part_0019.sdf
-    path protein
+    path part    // e.g. mols_part_0019.sdf
+    path protein // MOL2 format
     path 'docking.prm'
     path 'docking.as'
 
     output:
-    path 'rdock_part_*.sdf' optional true // e.g. rdock_part_0019.sdf
-    path 'failed_part_*.sdf' optional true
+    path 'docked_*.sdf' optional true // e.g. docked_mols_part_0019.sdf
+    path 'failed_*.sdf' optional true
 
     """
+    set -e
+
     # split into single molecules
     sdsplit -1 -omol $part
 
@@ -38,13 +44,13 @@ process rdock_docking {
     # do the docking
     for f in mol*.sd; do
       echo "Docking \$f"
-      rbdock -r docking.prm -p '${params.mode}.prm' -n $params.num_dockings -i "\$f" -o "docked_\${f::-3}" > "rdock_out_\${f::-3}.log"
+      rbdock -r docking.prm -p '${params.mode}.prm' -n $params.num_dockings -i "\$f" -o "rdock_\${f::-3}" > "rdock_out_\${f::-3}.log"
       if [ \$? != 0 ]; then
-        cat "\$f" >> '${part.name.replace('ligands', 'failed')}'
+        cat "\$f" >> 'failed_${part.name}'
       fi
     done
 
     # combine the results
-    cat docked_mol*.sd > ${part.name.replace('mols_part_', 'rdock_part_')}
+    cat rdock_*.sd > 'docked_${part.name}'
     """
 }

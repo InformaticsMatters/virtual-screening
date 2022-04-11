@@ -17,8 +17,9 @@ limitations under the License.
 Run rDock docking on a set of candidate ligands provided in a SD file.
 
 Example:
-nextflow run rdock-docking.nf --ligands data/candidates.sdf --protein data/dhfr-receptor-ph7.mol2 --num_dockings 5\
-    --chunk_size 10 --publish_dir ./test
+nextflow run rdock-docking.nf --ligands data/candidates.sdf --protein data/dhfr-receptor-ph7.mol2 \
+     --prmfile data/docking.prm --asfile data/docking.as \
+     --num_dockings 5 --chunk_size 10 --publish_dir ./test
 */
 
 nextflow.enable.dsl=2
@@ -46,7 +47,7 @@ include { split_sdf } from './nf-processes/file/split_sdf.nf'
 include { rdock_docking as rdock } from './nf-processes/rdock/rdock_docking.nf'
 include { concatenate_files as collect_results } from './nf-processes/file/concatenate_files.nf' addParams(
     outputfile: params.output_basename + '.sdf',
-    glob: 'rdock_*.sdf')
+    glob: 'docked_*.sdf')
 include { concatenate_files as collect_failed } from './nf-processes/file/concatenate_files.nf' addParams(
     outputfile: params.output_basename + '_failed.sdf',
     glob: 'failed_*.sdf',

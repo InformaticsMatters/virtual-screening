@@ -77,6 +77,7 @@ jobs:
       /code/shard.py -i{% for file in inputFiles %} '{{ file }}'{% endfor %}
       -s '{{ supplierName }}'
       -v '{{ supplierVersion }}' -o '{{ outputDir }}' -n {{ codeFieldIndex }}
+      --skip-lines {{ skipLines }}
       --errors-file '{{ supplierName }}_{{ supplierVersion }}_errors.smi'
       --interval 10000
     # Command variables - using JSONSchema to allow for simplified client
@@ -92,6 +93,7 @@ jobs:
         - supplierName
         - supplierVersion
         - codeFieldIndex
+        - skipLines
         - outputDir
       inputs:
         type: object
@@ -127,10 +129,11 @@ jobs:
         - supplierVersion
         - codeFieldIndex
         - outputDir
+        - skipLines
         properties:
           codeFieldIndex:
-            title: Index of vendor code field
-            default: 2
+            title: Index of vendor code field (zero based)
+            default: 1
             minimum: 1
             type: integer
           outputDir:
@@ -144,6 +147,11 @@ jobs:
           supplierVersion:
             title: Version of the molecule source
             type: string
+          skipLines:
+            title: Skip this many lines (e.g. 1 for a file with a header line)
+            type: integer
+            default: 0
+            minimum: 0
 
   filter:
     name: Filter candidate molecules
@@ -951,7 +959,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/enumerate.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/enumerate.nf
       --inputs '{{ inputFile }}'
       --data_dir '{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -1006,7 +1014,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/le_conformers.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
       --inputs '{{ inputFile }}'
       --data_dir '{{ dataDir }}'
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -1059,7 +1067,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/rdock-docking.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/rdock-docking.nf
       --ligands '{{ ligandsSDF }}'
       --protein '{{ proteinMOL2 }}'
       --prmfile '{{ prmFile }}'
@@ -1148,14 +1156,13 @@ jobs:
             - score
     tests:
       simple-execution:
-        ignore:
         inputs:
           ligandsSDF: data/candidates-10.sdf
           proteinMOL2: data/dhfr-receptor-ph7.mol2
           prmFile: data/docking.prm
           asFile: data/docking.as
         options:
-          outputFile: rdock_results.sdf
+          outputFile: rdock_results
           numDockings: 1
           mode: dock
         checks:
@@ -1185,7 +1192,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/smina-docking.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/smina-docking.nf
       --ligands '{{ ligands }}'
       --protein '{{ protein }}'
       --ligand '{{ ligand }}'
@@ -1310,7 +1317,7 @@ jobs:
       type: nextflow
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run /code/oddt-interactions.nf
+      run {{ CODE_DIRECTORY|default('/code') }}/oddt-interactions.nf
       --ligands '{{ ligandsSDF }}'
       --protein '{{ proteinPDB }}'
       {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
