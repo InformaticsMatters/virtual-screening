@@ -6,8 +6,8 @@ from dm_job_utilities.dm_log import DmLog
 from jaqpotpy import Jaqpot
 
 
-def execute_jaqpot_model(input, output, model_id, api_key, filter=False, delimiter=None, id_column=None,
-                         read_header=False, write_header=False, sdf_read_records=100, interval=0):
+def execute_jaqpot_model(input, output, model_id, api_key, filter=False, threshold=None, delimiter=None,
+                         id_column=None, read_header=False, write_header=False, sdf_read_records=100, interval=0):
 
     from jaqpotpy.cfg import config
     config.verbose = False
@@ -18,7 +18,8 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, delimit
     model_name = molmod.Y.replace(' ', '_')
     DmLog.emit_event("Model is", model_name)
 
-    reader = rdkit_utils.create_reader(input, delimiter=delimiter, read_header=read_header, sdf_read_records=sdf_read_records)
+    reader = rdkit_utils.create_reader(input, delimiter=delimiter, read_header=read_header,
+                                       id_column=id_column, sdf_read_records=sdf_read_records)
     extra_field_names = reader.get_extra_field_names()
 
     calc_prop_names = [model_name + '_Inactive', model_name + '_Active']
@@ -53,8 +54,11 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, delimit
             DmLog.emit_cost(count)
 
         molmod(mol)
-        if filter and not molmod.prediction[0]:
-            continue
+        if filter:
+            if threshold and threshold > molmod.probability[0][1]:
+                continue
+            elif not molmod.prediction[0]:
+                continue
         utils.log("mol:", count, molmod.prediction, molmod.probability)
         writer.write(smi, mol, id, props, (molmod.probability[0]))
         if molmod.prediction[0]:
@@ -73,6 +77,8 @@ def main():
     parser.add_argument('-o', '--output', required=True, help="Output file (.sdf or .smi)")
     parser.add_argument('-k', "--api-key", help="Jaqpot API key")
     parser.add_argument('-f', "--filter", action='store_true', help="Only include actives in the output")
+    parser.add_argument('-t', "--threshold", type=float,
+                        help="Filtering threshold. If not specified then active category is used.")
     # to pass tab as delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
     parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
     parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
@@ -97,8 +103,8 @@ def main():
         DmLog.emit_event('WARNING: no Jaqpot API key provided')
         sys.exit(1)
 
-    execute_jaqpot_model(args.input, args.output, args.model_id, api_key, filter=args.filter, delimiter=delimiter,
-                         id_column=args.id_column,
+    execute_jaqpot_model(args.input, args.output, args.model_id, api_key, filter=args.filter, threshold=args.threshold,
+                         delimiter=delimiter, id_column=args.id_column,
                          read_header=args.read_header, write_header=args.write_header,
                          sdf_read_records=args.sdf_read_records, interval=args.interval)
 
