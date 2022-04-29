@@ -27,6 +27,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/max_min_picker.py --input '{{ inputFile }}'
       {% if seeds is defined %}--seeds{% for file in seeds %} '{{ file }}'{% endfor %}{% endif %}
@@ -129,6 +130,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/le_conformers_for_mol.py
         {% if inputMolfile is defined %}--input '{{ inputMolfile }}'{% endif %}
@@ -228,6 +230,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/open3dalign.py --inputs '{{ inputFile }}'
       --query '{{ queryFile }}'
@@ -337,6 +340,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/rdkit_props.py --input '{{ inputFile }}'
       --outfile '{{ outputFile }}'
@@ -499,6 +503,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/screen.py --input '{{ inputFile }}'
       --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}
@@ -715,6 +720,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/screen.py --input '{{ inputFile }}'
       --queries '{{ queryFile }}'
@@ -917,6 +923,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/minimize.py -i '{{ inputFile }}' -o '{{ outputFile }}'
       -c {{ cycles }} --molecule {{ molecule }} --interval 1000
@@ -1000,6 +1007,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/align_mol.py -i '{{ inputFile }}' -q '{{ refMolecule }}' -o '{{ outputFile }}'
       {% if alignAtoms is defined %}--align-atoms{{ alignAtoms }}{% endif %}
@@ -1134,6 +1142,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/cluster_butina.py --input '{{ inputFile }}'
       --output {{ outputFile }}

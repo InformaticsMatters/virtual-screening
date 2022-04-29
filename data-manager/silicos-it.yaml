@@ -28,6 +28,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       shape-it --reference '{{ refmol }}'
       --dbase '{{ molecules }}'
@@ -145,6 +146,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       align-it --reference '{{ refmol }}'
       --dbase '{{ inputs }}'

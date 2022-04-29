@@ -22,6 +22,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
       environment:
       - name: NEO4J_USERNAME
         value-from:
@@ -119,6 +120,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
       environment:
       - name: NEO4J_USERNAME
         value-from:
@@ -182,6 +184,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
       environment:
       - name: NEO4J_USERNAME
         value-from:

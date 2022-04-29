@@ -70,6 +70,7 @@ jobs:
       project-directory: /data
       working-directory: /data
       type: simple
+      fix-permissions: true
     # The command that will be used as the Kubernetes Pod 'command'
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
@@ -170,6 +171,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/filter.py -i{% for dir in inputDir %} '{{ dir }}'{% endfor %}
       -o '{{ outputFile }}'
@@ -310,6 +312,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/prepare_enum_conf_lists.py
       --input '{{ inputFile }}'
@@ -378,6 +381,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/assemble_conformers.py
       --input '{{ inputFile }}'
@@ -501,6 +505,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       obabel
       '{{ inputFile }}'
@@ -564,6 +569,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       pdb2pqr30 --with-ph {{ ph }}
       --titration-state-method propka
@@ -652,6 +658,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/prepare_rdock.py
       --receptor '{{ receptorFile }}'
@@ -720,6 +727,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/usr.py --inputs '{{ inputFile }}'
       --query '{{ queryFile }}'
@@ -824,6 +832,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/rdock_filter_sdf.sh '{{ inputFile }}' '{{ outputFile }}'
         {{ sortField }}
@@ -893,6 +902,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/convert_file.py --input-file '{{ inputFile }}'
       --input-format chemical/x-mdl-sdfile
@@ -957,6 +967,7 @@ jobs:
       project-directory: /data
       working-directory: /data
       type: nextflow
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/enumerate.nf
@@ -1012,6 +1023,7 @@ jobs:
       project-directory: /data
       working-directory: /data
       type: nextflow
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
@@ -1065,6 +1077,7 @@ jobs:
       project-directory: /data
       working-directory: /data
       type: nextflow
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/rdock-docking.nf
@@ -1316,6 +1329,7 @@ jobs:
       project-directory: /data
       working-directory: /data
       type: nextflow
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/oddt-interactions.nf

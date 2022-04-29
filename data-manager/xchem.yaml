@@ -26,6 +26,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/sucos.py --input '{{ inputFile }}'
       --reference '{{ reference }}'
