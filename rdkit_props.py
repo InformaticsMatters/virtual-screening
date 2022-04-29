@@ -40,10 +40,8 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
     extra_field_names = reader.get_extra_field_names()
 
     # setup the writer
-    if outfile.endswith('.sdf') or outfile.endswith('sd'):
-        writer = rdkit_utils.SdfWriter(outfile, calc_prop_names)
-    else:
-        writer = rdkit_utils.SmilesWriter(outfile, delimiter, extra_field_names)
+    writer = rdkit_utils.create_writer(outfile, extra_field_names=extra_field_names, calc_prop_names=calc_prop_names,
+                                       delimiter=delimiter)
 
     # read the input records and write the output
     while True:
@@ -54,13 +52,7 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
 
         mol, smi, id, props = t
         if count == 0 and write_header:
-            headers = ['smiles']
-            if extra_field_names:
-                headers.extend(extra_field_names)
-            else:
-                for i, prop in enumerate(props):
-                    headers.append('field' + str(i + 2))
-            headers.extend(calc_prop_names)
+            headers = rdkit_utils.generate_header_values(extra_field_names, calc_prop_names)
             writer.write_header(headers)
 
         count += 1

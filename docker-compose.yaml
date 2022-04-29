@@ -50,3 +50,9 @@ services:
       dockerfile: Dockerfile-fns
     image: informaticsmatters/vs-fragnet-search:${IMAGE_TAG:-latest}
 
+  jaqpot:
+    build:
+      context: .
+      dockerfile: Dockerfile-jaqpot
+    image: informaticsmatters/vs-jaqpot:${IMAGE_TAG:-latest}
+

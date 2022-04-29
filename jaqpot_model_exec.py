@@ -1,3 +1,19 @@
+#!/usr/bin/env python
+
+# Copyright 2022 Informatics Matters Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+
+
 import argparse, os, sys
 from jaqpotpy.models import MolecularModel
 import utils
@@ -28,13 +44,8 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
     writer = rdkit_utils.create_writer(output, extra_field_names=extra_field_names, calc_prop_names=calc_prop_names,
                                        delimiter=delimiter)
     if write_header:
-        headers = ['smiles']
-        if extra_field_names:
-            headers.extend(extra_field_names)
-        else:
-            for i, prop in enumerate(calc_prop_names):
-                headers.append('field' + str(i + 2))
-        headers.extend(calc_prop_names)
+        headers = rdkit_utils.generate_header_values(extra_field_names, calc_prop_names)
+        print('HEADERS', headers)
         writer.write_header(headers)
 
     num_actives = 0
@@ -59,7 +70,7 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
                 continue
             elif not molmod.prediction[0]:
                 continue
-        utils.log("mol:", count, molmod.prediction, molmod.probability)
+        # utils.log("mol:", count, molmod.prediction, molmod.probability)
         writer.write(smi, mol, id, props, (molmod.probability[0]))
         if molmod.prediction[0]:
             num_actives += 1
@@ -102,6 +113,7 @@ def main():
     if not api_key:
         DmLog.emit_event('WARNING: no Jaqpot API key provided')
         sys.exit(1)
+    print("API_KEY:", api_key)
 
     execute_jaqpot_model(args.input, args.output, args.model_id, api_key, filter=args.filter, threshold=args.threshold,
                          delimiter=delimiter, id_column=args.id_column,

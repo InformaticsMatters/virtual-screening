@@ -22,7 +22,3 @@ RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 openbabel=3.1.1 p
   conda init bash
 
 COPY *.py *.nf site_substructures.smarts ./
-
-# set the default umask to 002
-#RUN sed -i 's/UMASK\t\t022/UMASK\t\t002/' /etc/login.defs
-#RUN echo "umask 0002" > /etc/profile.d/umask.sh

@@ -218,6 +218,16 @@ class SmilesReader:
     def close(self):
         self.reader.close()
 
+def generate_header_values(extra_field_names, calc_prop_names):
+    headers = ['smiles']
+    if extra_field_names:
+        headers.extend(extra_field_names)
+    else:
+        for i, prop in enumerate(calc_prop_names):
+            headers.append('field' + str(i + 2))
+    headers.extend(calc_prop_names)
+    return headers
+
 
 def create_reader(input, type=None, id_column=None, sdf_read_records=100, read_header=False, delimiter='\t'):
     if type is None:

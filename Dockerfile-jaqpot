@@ -1,0 +1,12 @@
+FROM euclia/jaqpotpy:1.0.3
+
+RUN apt-get -y update &&\
+  apt-get -y install procps &&\
+  apt-get clean
+
+RUN pip install im-data-manager-job-utilities==1.0.1
+
+ENV HOME=/code
+WORKDIR ${HOME}
+
+COPY utils.py rdkit_utils.py jaqpot*.py ./

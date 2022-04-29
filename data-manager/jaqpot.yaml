@@ -1,0 +1,131 @@
+---
+# Tools from Silicos-it
+# See http://silicos-it.be.s3-website-eu-west-1.amazonaws.com/
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: Jaqpot predictive models
+collection: jaqpot
+repository-url: https://github.com/InformaticsMatters/virtual-screening/jaqpot.yaml
+repository-tag: '1.0.0'
+
+jobs:
+  covid-19-activity:
+    name: 3D shape alignment with shape-it
+    description: >-
+      Perform a shape alignment of a set of 3D molecules to a reference 3D molecule using Silicos-it's shape-it tool.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - jaqpot
+    - predictive model
+    - covid-19
+    doc-url: 'https://discourse.squonk.it/'
+    image:
+      name: informaticsmatters/vs-jaqpot
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    command: >-
+      /code/jaqpot_model_exec.py --model 'K1J1JzuZJxjY1q8YCD3h'
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if filter is defined and filter %}--filter{% endif %}
+      {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
+      {% if delimiter is defined %}--delimiter {{ delimiter }}{% endif %}
+      {% if idColumn is defined %}--id-column {{ idColumn }}{% endif %}
+      {% if readHeader is defined and readHeader %}--read-header{% endif %}
+      {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - outputFile
+        - filter
+        - threshold
+        - delimiter
+        - idColumn
+        - readHeader
+        - writeHeader
+        - apiKey
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to predict (.sdf or .smi)
+            mime-types:
+            - squonk/x-smiles
+            - chemical/x-daylight-smiles
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file name (.sdf or .smi)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - chemical/x-daylight-smiles
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - filter
+        - delimiter
+        - readHeader
+        - writeHeader
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          filter:
+            title: Only output actives
+            type: boolean
+            default: false
+          threshold:
+            title: Filter threshold
+            type: number
+            minimum: 0
+            maximum: 1
+          delimiter:
+            title: Delimiter for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: ID field (name for .sdf, zero based index for .smi)
+            type: string
+          readHeader:
+            title: Read header line
+            type: boolean
+            default: true
+          writeHeader:
+            title: Write header line
+            type: boolean
+            default: true
+    tests:
+      smiles-execution:
+        environment:
+        - JAQPOT_API_KEY
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: predictions.sdf
+          filter: false
+          readHeader: false
+          writeHeader: false
+        checks:
+          exitCode: 0
+          outputs:
+          - name: predictions.sdf
+            checks:
+            - exists: true
