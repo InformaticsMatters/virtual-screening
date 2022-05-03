@@ -56,8 +56,6 @@ jobs:
     keywords:
     - rdkit
     - ligand preparation
-    # link to documentation for the job
-    doc-url: https://discourse.squonk.it/t/job-shard/67
     # The container image that contains the Job implementation
     # (in v1, these are hosted on Docker Hub)
     # ... along with the image tag
@@ -165,7 +163,6 @@ jobs:
     - rdkit
     - ligand preparation
     - filter
-    doc-url: https://discourse.squonk.it/t/job-filter/68
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -306,7 +303,6 @@ jobs:
     - enumeration
     - conformer
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-prep-enum-conf-lists/70
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -375,7 +371,6 @@ jobs:
     keywords:
     - ligand preparation
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-assemble-conformers/73
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -499,7 +494,6 @@ jobs:
     keywords:
     - protein preparation
     - openbabel
-    doc-url: https://discourse.squonk.it/t/job-obabel-convert/77
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -563,7 +557,6 @@ jobs:
     - pdb2pqr
     - protonation
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-pdb2pqr/76
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
@@ -652,7 +645,6 @@ jobs:
     - protein preparation
     - rdock
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-prepare-rdock/75
     image:
       name: informaticsmatters/vs-rdock
       tag: 'latest'
@@ -721,7 +713,6 @@ jobs:
     - usrcat
     - filter
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87
     image:
       name: informaticsmatters/vs-oddt
       tag: 'latest'
@@ -826,7 +817,6 @@ jobs:
     - sdfilter
     - sdsort
     - filter
-    doc-url: 'https://discourse.squonk.it/t/job-filter-sdf/105'
     image:
       name: informaticsmatters/vs-rdock
       tag: 'latest'
@@ -960,7 +950,6 @@ jobs:
     - dimorphite_dl
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-enumerate-candidates/71
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -1003,62 +992,6 @@ jobs:
             type: files
       # there are no options for this job
 
-  generate-low-energy-conformers:
-    name: Generate 3D conformers (sharded)
-    description: >-
-      Generate a low energy 3D conformers of molecules. Inputs are defined
-      by the prep-enum-conf-lists job and outputs are written to the sharded file system.
-    version: '1.0.0'
-    category: virtual screening
-    keywords:
-    - rdkit
-    - ligand preparation
-    - conformer
-    - nextflow
-    - 3d
-    doc-url: https://discourse.squonk.it/t/job-generate-low-energy-conformers/86
-    image:
-      name: informaticsmatters/vs-nextflow
-      tag: 'latest'
-      project-directory: /data
-      working-directory: /data
-      type: nextflow
-      fix-permissions: true
-    command: >-
-      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
-      --inputs '{{ inputFile }}'
-      --data_dir '{{ dataDir }}'
-      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
-      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
-    variables:
-      inputs:
-        type: object
-        required:
-        - inputFile
-        - dataDir
-        properties:
-          inputFile:
-            title: Molecules to process
-            mime-types:
-            - chemical/x-csv
-            type: file
-          dataDir:
-            title: Directory with sharded data
-            type: directory
-            default: molecules/sha256
-      outputs:
-        type: object
-        properties:
-          enumerated:
-            title: 3D conformers
-            mime-types:
-            - chemical/x-mdl-sdfile
-            creates: '{{ dataDir }}/sha256/*/*/*_le_confs.sdf'
-            # additional *.sdf files might have already been generated
-            type: files
-      # there are no options for this job
-
   run-rdock:
     name: Run rRock docking
     description: >-
@@ -1070,7 +1003,6 @@ jobs:
     - docking
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-run-rdock/74
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -1196,7 +1128,6 @@ jobs:
     - docking
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-run-smina/78
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
@@ -1322,7 +1253,6 @@ jobs:
     - docking
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-oddt-score-interactions/79
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
