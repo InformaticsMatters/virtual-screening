@@ -20,12 +20,6 @@ name: Virtual screening tools using RDKit, OpenBabel and other open source tools
 # and must begin with a letter.
 collection: im-virtual-screening
 
-# The repository where this definition (and the code for the Job) can be found.
-repository-url: https://github.com/InformaticsMatters/virtual-screening/virtual-screening.yaml
-# The repository tag.
-# All definitions are expected to reside in a repository that has been tagged.
-repository-tag: '1.0.3'
-
 # Job definitions.
 # A list of jobs indexed using a unique identity (i.e. "shared-molecules").
 # Job identities must only container lower-case letters, numbers or a hyphen

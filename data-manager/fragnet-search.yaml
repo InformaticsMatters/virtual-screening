@@ -4,8 +4,6 @@ kind-version: '2021.1'
 
 name: Fragment Network search tools
 collection: im-fragment-network
-repository-url: https://github.com/InformaticsMatters/virtual-screening/fagnet-search.yaml
-repository-tag: '1.0.0'
 
 jobs:
   fragment-network-expand:
