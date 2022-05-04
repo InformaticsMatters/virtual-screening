@@ -1,17 +1,24 @@
-This describes how to run the *open3dalign* job from the *comp chem* category in the *rdkit* collection.
+# Job: open3dalign
+
+This describes how to run the `open3dalign` job from the `comp chem` category in the `rdkit` collection.
 
 ## What the job does
 
-Open3DAlign is a molecular alignment tool that can perform a rigid alignment of conformers to a reference structure. The original tool can be found [here](http://open3dalign.sourceforge.net/) and is described [here](https://doi.org/10.1007/s10822-011-9462-9), though the version used here is the one found in [RDKit](http://rdkit.org/docs/source/rdkit.Chem.rdMolAlign.html?highlight=open3d). TODO - explain the differences.
+Open3DAlign is a molecular alignment tool that can perform a rigid alignment of conformers to a reference structure.
+The original tool can be found [here](http://open3dalign.sourceforge.net/) and is described 
+[here](https://doi.org/10.1007/s10822-011-9462-9), though the version used here is the one found in
+[RDKit](http://rdkit.org/docs/source/rdkit.Chem.rdMolAlign.html?highlight=open3d). TODO - explain the differences.
 
-It takes as inputs a set of 3D conformers to be aligned and the reference molecule to align them to. The output is the conformers aligned to the reference molecule. The outputs can be filtered according to the quality of the alignment.
+It takes as inputs a set of 3D conformers to be aligned and the reference molecule to align them to. The output is the
+conformers aligned to the reference molecule. The outputs can be filtered according to the quality of the alignment.
 
-Typically this can be used as part of a ligand based virtual screening campaign to identify molecules with similar 3D shape and molecular properties to a known active molecule.
+Typically this can be used as part of a ligand based virtual screening campaign to identify molecules with similar 3D 
+shape and molecular properties to a known active molecule.
 
 ## Implementation details
 
-* Job implementation: [/open3dalign.py]()
-* Job definition: `jobs.open3dalign` in [/data-manager/rdkit.yaml]()
+* Job implementation: [open3dalign.py](/open3dalign.py)
+* Job definition: `jobs.open3dalign` in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job
 

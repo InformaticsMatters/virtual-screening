@@ -1,13 +1,16 @@
-This describes how to run the *minimize-mmff94* job from the *comp chem* category in the *rdkit* collection.
+# Job: minimize-mmff94
+
+This describes how to run the `minimize-mmff94` job from the `comp chem` category in the `rdkit` collection.
 
 ## What the job does
 
-This job reads a set of molecules form a SD file and performs an energy minimisation using RDKit and the MMFF94 force field. The minimized molecules are aligned to the original molecule.
+This job reads a set of molecules form a SD file and performs an energy minimisation using RDKit and the MMFF94 force 
+field. The minimized molecules are aligned to the original molecule.
 
 ## Implementation details
 
-* Job implementation: [/minimize.py]()
-* Job definition: `jobs.minimize-mmff94` in [/data-manager/rdkit.yaml]()
+* Job implementation: [minimize.py](/minimize.py)
+* Job definition: `jobs.minimize-mmff94` in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job
 

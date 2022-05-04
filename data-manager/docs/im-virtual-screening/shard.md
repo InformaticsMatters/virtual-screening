@@ -1,3 +1,5 @@
+# Job: shard
+
 This describes how to run the `shard` job from the `virtual screening` category in the `im-virtual-screening` collection.
 
 ## What the job does
@@ -35,7 +37,7 @@ The main purpose of running the shard job is to generate data that can easily fi
 
 ## Implementation details
 
-* Job implementation: [shard.py]()/shard.py
+* Job implementation: [shard.py](/shard.py)
 * Job definition: `jobs.shard` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job

@@ -1,4 +1,6 @@
-This describes how to run the *sucos* job from the *comp chem* category in the *xchem* collection.
+# Job: sucos
+
+This describes how to run the `sucos` job from the `comp chem` category in the `xchem` collection.
 
 ## What the job does
 
@@ -14,8 +16,8 @@ It uses RDKit FeatureMaps to determine the  feature complimentarity:
 
 ## Implementation details
 
-* Job implementation: [/sucos.py]()
-* Job definition: `cluster-butina jobs` in [/data-manager/xchem.yaml]()
+* Job implementation: [sucos.py](/sucos.py)
+* Job definition: `sucos job` in [xchem.yaml](../xchem.yaml)
 
 ## How to run the job
 

@@ -1,3 +1,5 @@
+# Job: molprops
+
 This describes how to run the `rdk-molprops` job from the `comp chem` category in the `rdkit` collection.
 
 ## What the job does
@@ -19,8 +21,8 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [/rdk_props.py]()
-* Job definition: `jobs.rdkit-molprops` in [/data-manager/rdkit.yaml]()
+* Job implementation: [rdk_props.py](/rdk_props.py)
+* Job definition: `jobs.rdkit-molprops` in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job
 
@@ -50,4 +52,4 @@ The file specified by the *Output file name* option is created containing all th
 
 ## Related topics
 
-- [Job: shard](../im-virtual-screening/shard.md) calculates many of the same properties.
+- [shard job](../im-virtual-screening/shard.md) calculates many of the same properties.

@@ -1,10 +1,13 @@
+# Jobs: similarity-screen-smiles and similarity-screen-file
+
 This describes how to run the `similarity-screen-smiles` or `similarity-screen-file` jobs from the `virtual screening`
-category in the `rdkit` collection..
+category in the `rdkit` collection.
 
 ## What the job does
 
 This job uses similarity search to filter a set of input molecules.
-It does this using RDKit descriptors and metrics, a summary of which can be found [here](http://rdkit.org/docs/GettingStartedInPython.html#fingerprinting-and-molecular-similarity).
+It does this using RDKit descriptors and metrics, a summary of which can be found 
+[here](http://rdkit.org/docs/GettingStartedInPython.html#fingerprinting-and-molecular-similarity).
 
 Molecules with a similarity greater than a user defined threshold are written out.
 
@@ -20,8 +23,8 @@ The definition of which molecules that pass the threshold can be defined by the 
 
 ## Implementation details
 
-* Job implementation: [/screen.py]()
-* Job definition: `jobs.similarity-screen-smiles` and `jobs.similarity-screen-file`  in [/data-manager/rdkit.yaml]()
+* Job implementation: [screen.py](/screen.py)
+* Job definition: `jobs.similarity-screen-smiles` and `jobs.similarity-screen-file`  in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job
 
@@ -71,10 +74,18 @@ Those values are appended to the results after the individual similarity scores.
 - score_gmean
 - score_prod
 
-For the similarity-screen-file job the individual scores and the score_prod are not output as it is expected that there are a large number of query molecules.
+For the similarity-screen-file job the individual scores and the score_prod are not output as it is expected that there 
+are a large number of query molecules.
 
-When using a threshold to filter the outputs you must specify the index of the score you want to use to filter. For instance, if you have two query molecules and want to use the *Geometric mean* to filter then the value to use for the *Similarity score column index* parameter should be 5 (the first score is index zero).
+When using a threshold to filter the outputs you must specify the index of the score you want to use to filter. For instance, 
+if you have two query molecules and want to use the *Geometric mean* to filter then the value to use for the 
+*Similarity score column index* parameter should be 5 (the first score is index zero).
 
-[2] When using the Tversky metric you also need to provide values for the *alpha* and *beta* parameters which determine the asymmetry of the search. Default values are alpha=1 and beta=0.  Typically these should add up to 1, but don't have to.
+[2] When using the Tversky metric you also need to provide values for the *alpha* and *beta* parameters which determine
+the asymmetry of the search. Default values are alpha=1 and beta=0.  Typically these should add up to 1, but don't have to.
 
-[3] When using Morgan fingerprints by default counts are used, but these can only be used with Tanimoto, Dice or Tversky metrics. If you want to use the other metrics then you can instead generate a bit vector. You do this by specifying a value for the *Number of bits for Morgan bit vector* parameter e.g. 1024. If you do not specify a value then count based descriptors are generated. See the [RDKit docs](http://rdkit.org/docs/GettingStartedInPython.html#morgan-fingerprints-circular-fingerprints) for more on this.
+[3] When using Morgan fingerprints by default counts are used, but these can only be used with Tanimoto, Dice or Tversky
+metrics. If you want to use the other metrics then you can instead generate a bit vector. You do this by specifying a
+value for the *Number of bits for Morgan bit vector* parameter e.g. 1024. If you do not specify a value then count based
+descriptors are generated. See the 
+[RDKit docs](http://rdkit.org/docs/GettingStartedInPython.html#morgan-fingerprints-circular-fingerprints) for more on this.

@@ -1,15 +1,19 @@
-This describes how to run the *cluster-butina* job from the *comp chem* category in the *rdkit* collection.
+# Job: cluster-butina
+
+This describes how to run the `cluster-butina` job from the `comp chem` category in the `rdkit` collection.
 
 ## What the job does
 
-This job takes a  set of molecules and clusters them using the Butina algorithm. A number of RDKit fingerprints and metrics can be used to determine the distance between the molecules. Optionally a diverse subset of those molecules can be selected.
+This job takes a  set of molecules and clusters them using the Butina algorithm. A number of RDKit fingerprints and 
+metrics can be used to determine the distance between the molecules. Optionally a diverse subset of those molecules can be selected.
 
-Note that the Butina algorithm does not scale to very large datasets (more than a few thousand). Consider using the [max-min-picker job](https://discourse.squonk.it/t/job-max-min-picker/69) if you want to pick a diverse subset from a very large number of candidates.
+Note that the Butina algorithm does not scale to very large datasets (more than a few thousand). Consider using the
+[max-min-picker job](max-min-picker job.md) if you want to pick a diverse subset from a very large number of candidates.
 
 ## Implementation details
 
-* Job implementation: [/cluster_butina.py]()
-* Job definition: `cluster-butina jobs` in [/data-manager/rdkit.yaml]()
+* Job implementation: [cluster_butina.py](/cluster_butina.py)
+* Job definition: `cluster-butina job` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 

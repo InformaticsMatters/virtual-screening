@@ -1,3 +1,5 @@
+# Job: conformers-for-mol
+
 This describes how to run the *conformers-for-mol* job from the *virtual screening* category in the *rdkit* collection.
 
 ## What the job does
@@ -18,8 +20,8 @@ The output is a SD-file containing the conformers.
 
 ## Implementation details
 
-* Python module: [/le_conformers.py](). This module is also used by the [generate-low-energy-conformers](generate-low-energy-conformers.md) job.
-* Job definition: `jobs.conformers-for-mol` in [/data-manager/rdkit.yaml]()
+* Python module: [le_conformers.py](/le_conformers.py). This module is also used by the [generate-low-energy-conformers](generate-low-energy-conformers.md) job.
+* Job definition: `jobs.conformers-for-mol` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 
