@@ -35,18 +35,19 @@ The main purpose of running the shard job is to generate data that can easily fi
 
 ## Implementation details
 
-Job implementation: [/shard.py]()
-Job definition: `jobs.shard` in [/data-manager/virtual-screening.yaml]()
+* Job implementation: [/shard.py]()
+* Job definition: `jobs.shard` in [/data-manager/virtual-screening.yaml]()
 
 ## How to run the job
 
 ### Inputs
-**Molecules to shard**: one or more files from a vendor in SMILES format. An example file with a small subset of ChemSpace can be found [here](https://github.com/InformaticsMatters/virtual-screening/blob/main/data/100000.smi).
+* **Molecules to shard**: one or more files from a vendor in SMILES format. An example file with a small subset of ChemSpace can be found [here](https://github.com/InformaticsMatters/virtual-screening/blob/main/data/100000.smi).
+
 ### Options
-**Source of the molecules**: a name that describes the source of the molecules e.g. `ChemSpace`
-**Version of the molecule source**: something that identifies the version of the molecules such as a release number or date e.g.  `feb_2021`
-**Index of vendor code field**: the zero based index of the column in the input that contains the vendor's code for that molecule e.g. `1`
-**Output directory**: the location where the sharded data is written. By convention use the value `molecules` unless you are just testing and do not want to modify that location.
+* **Source of the molecules**: a name that describes the source of the molecules e.g. `ChemSpace`
+* **Version of the molecule source**: something that identifies the version of the molecules such as a release number or date e.g.  `feb_2021`
+* **Index of vendor code field**: the zero based index of the column in the input that contains the vendor's code for that molecule e.g. `1`
+* **Output directory**: the location where the sharded data is written. By convention use the value `molecules` unless you are just testing and do not want to modify that location.
 
 ## Limitations
 1. It is currently assumed that the input is tab separated. The python module allows the delimited to be specified, but this option is not yet exposed in the job.

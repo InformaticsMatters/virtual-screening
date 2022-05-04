@@ -8,18 +8,18 @@ The output of the job is two files, one for enumeration (specified by the `outpu
 
 ## Implementation details
 
-Job implementation: [/prepare_enum_conf_lists.py]()
-Job definition: `jobs.prep-enum-conf-lists` in [/data-manager/virtual-screening.yaml]()
+* Job implementation: [/prepare_enum_conf_lists.py]()
+* Job definition: `jobs.prep-enum-conf-lists` in [/data-manager/virtual-screening.yaml]()
 
 ## How to run the job
 
 ### Inputs
-**Molecules to evaluate**: the input molecules to examine
-**Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
+* **Molecules to evaluate**: the input molecules to examine
+* **Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
 
 ### Options
-**Filename for molecules needing enumeration**: the name of the output file for the molecules needing enumeration
-**Filename for molecules needing 3D conformers**: the name of the output file for the molecules needing conformer generation
+* **Filename for molecules needing enumeration**: the name of the output file for the molecules needing enumeration
+* **Filename for molecules needing 3D conformers**: the name of the output file for the molecules needing conformer generation
 
 ## Related topics
 

@@ -14,8 +14,8 @@ It uses RDKit FeatureMaps to determine the  feature complimentarity:
 
 ## Implementation details
 
-Job implementation: [/sucos.py]()
-Job definition: `cluster-butina jobs` in [/data-manager/xchem.yaml]()
+* Job implementation: [/sucos.py]()
+* Job definition: `cluster-butina jobs` in [/data-manager/xchem.yaml]()
 
 ## How to run the job
 
@@ -23,14 +23,14 @@ You need to specify a SD-file of 3D molecules that will be scored, and a referen
 
 ### Inputs
 
-**Molecules to process**: molecules to analyse (.sdf)
-**Reference molecule**: the molecule to compare to (.mol or .sdf)
+* **Molecules to process**: molecules to analyse (.sdf)
+* **Reference molecule**: the molecule to compare to (.mol or .sdf)
 
 ### Options
 
-**Output file name**: name for the SD-file output
-**Use Tanimoto distance**: use symmetric Tamimoto distance instead of symmetric distance(1)
-**Score mode**: FeatureMaps score mode (2)
+* **Output file name**: name for the SD-file output
+* **Use Tanimoto distance**: use symmetric Tamimoto distance instead of symmetric distance(1)
+* **Score mode**: FeatureMaps score mode (2)
 
 Notes:
 (1) If the Tanimoto option is specified the [ShapeTanimotoDist](http://rdkit.org/docs/source/rdkit.Chem.rdShapeHelpers.html?highlight=shapetanimotodist#rdkit.Chem.rdShapeHelpers.ShapeTanimotoDist) function is used otherwise the [ShapeProtrudeDist](http://rdkit.org/docs/source/rdkit.Chem.rdShapeHelpers.html?highlight=shapeprotrudedist#rdkit.Chem.rdShapeHelpers.ShapeProtrudeDist) function is used.

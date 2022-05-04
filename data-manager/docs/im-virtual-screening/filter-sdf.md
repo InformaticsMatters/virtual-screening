@@ -13,18 +13,18 @@ file is the best record.
 The work in this job is done by the `sdsort` and `sdfilter` programs from rDock. Consult the 
 [rDock documentation](http://rdock.sourceforge.net/wp-content/uploads/2015/08/rDock_User_Guide.pdf) for details.
 
-Job definition: `jobs.filter-sdf` in [/data-manager/virtual-screening.yaml]()
+* Job definition: `jobs.filter-sdf` in [/data-manager/virtual-screening.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules to filter**: the input SD file
+* **Molecules to filter**: the input SD file
 
 ### Options
 
-**Output file name**: the name for the output SD file
-**Sort field**: the name of the field to sort by (assumed to have numeric values)
-**Group by field**: the name of the field used to identify the consecutive groups within the input. If not defined the 
+* **Output file name**: the name for the output SD file
+* **Sort field**: the name of the field to sort by (assumed to have numeric values)
+* **Group by field**: the name of the field used to identify the consecutive groups within the input. If not defined the 
 title line (first line of the SDF record) is used.
-**Sort descending**: Whether to sort descending or ascending (default false, so sort is ascending)
+* **Sort descending**: Whether to sort descending or ascending (default false, so sort is ascending)

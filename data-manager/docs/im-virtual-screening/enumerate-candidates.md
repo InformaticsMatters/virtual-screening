@@ -21,17 +21,17 @@ Typically the [generate-conformer](generate-conformer.md) job is run immediately
 
 This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-Python module: [/enumerate.py]()
-Nextflow workflow: [/enumerate.nf]()
-Job definition: `jobs.enumerate-candidates` in [/data-manager/virtual-screening.yaml]()
+* Python module: [/enumerate.py]()
+* Nextflow workflow: [/enumerate.nf]()
+* Job definition: `jobs.enumerate-candidates` in [/data-manager/virtual-screening.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules to enumerate**:  typically the  *Molecules needing enumeration* output of the 
+* **Molecules to enumerate**:  typically the  *Molecules needing enumeration* output of the 
 [prep-enum-conf-lists](prep-enum-conf-lists.md) job.
-**Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
+* **Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
 
 ### Options
 This job has no user definable options

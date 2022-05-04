@@ -18,8 +18,8 @@ This implementation is **not** optimised for performance, though the slowest ste
 
 This job uses the ODDT implementation of these three tools. Details can be found [here](https://oddt.readthedocs.io/en/latest/#molecular-shape-comparison).
 
-**Python module**: [/usr.py]()
-**Job definition**: `jobs.ultrafast-shape-recognition` in [/data-manager/virtual-screening.yaml]()
+* Python module: [/usr.py]()
+* Job definition: `jobs.ultrafast-shape-recognition` in [/data-manager/virtual-screening.yaml]()
 
 ## How to run the job
 
@@ -31,14 +31,14 @@ job that will generate low energy conformers of the molecules that you want to s
 
 ### Inputs
 
-**Query molecule**: A SD file or Molfile containing the molecule you want to use as a query. If SDF then the first record is used.
-**Molecules to screen**: Filename for conformers to be screened, typically the output of the  [filter](filter.md) job.
+* **Query molecule**: A SD file or Molfile containing the molecule you want to use as a query. If SDF then the first record is used.
+* **Molecules to screen**: Filename for conformers to be screened, typically the output of the  [filter](filter.md) job.
 
 ### Options
 
-**Output file name**: Name of the SD file containing the similar molecules.
-**Similarity threshold**: Similarity threshold to use (between 0 an 1). You may want to screen a small sample to determine the appropriate threshold.
-**Group by field**: Optional value for the field to group the input records by. Only the most similar molecule from each group will be reported. Typically use `std_smi` to get the most similar of all enumerated forms of each input molecule, or  `enum_smi` to group by the enumerated form (each tautomer, microstate etc.). If you do not specify a value then all forms above the similarity threshold are reported.
+* **Output file name**: Name of the SD file containing the similar molecules.
+* **Similarity threshold**: Similarity threshold to use (between 0 an 1). You may want to screen a small sample to determine the appropriate threshold.
+* **Group by field**: Optional value for the field to group the input records by. Only the most similar molecule from each group will be reported. Typically use `std_smi` to get the most similar of all enumerated forms of each input molecule, or  `enum_smi` to group by the enumerated form (each tautomer, microstate etc.). If you do not specify a value then all forms above the similarity threshold are reported.
 
 ### Outputs
 

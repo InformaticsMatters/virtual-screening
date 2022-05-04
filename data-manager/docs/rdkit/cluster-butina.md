@@ -8,27 +8,27 @@ Note that the Butina algorithm does not scale to very large datasets (more than 
 
 ## Implementation details
 
-Job implementation: [/cluster_butina.py]()
-Job definition: `cluster-butina jobs` in [/data-manager/rdkit.yaml]()
+* Job implementation: [/cluster_butina.py]()
+* Job definition: `cluster-butina jobs` in [/data-manager/rdkit.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules**: molecules to analyse (.smi or .sdf)
+* **Molecules**: molecules to analyse (.smi or .sdf)
 
 ### Options
 
-**Output file** : name for the output file (.smi or .sdf)
-**Threshold**: clustering threshold (0 - 1, 1 being identical)
-** Fingerprint**: fingerprint to use (maccs,  morgan2, morgan3, rdkit)
-**Metric**: The similarity measure to use (braunblanquet, cosine, dice, kulczynski, mcconnaughey, rogotgoldberg, russel, sokal, tanimoto)
-**Fragment method**: How to determine the biggest fragment (hac, mw)
-**Output fragment**: Output the biggest fragment rather than the entire molecule
-**Number to pick**: Number of molecules to pick for a diverse subset
-**Exclude molecules this similar**: Exclude molecules this similar when picking a diverse subset
-**Field for optimising diversity**: specify a field who's values is used to pick values for a diverse subset
-**Field values ascending**: The fields values should be treated as being in ascending order (e.g low values are preferred)
+* **Output file** : name for the output file (.smi or .sdf)
+* **Threshold**: clustering threshold (0 - 1, 1 being identical)
+* ** Fingerprint**: fingerprint to use (maccs,  morgan2, morgan3, rdkit)
+* **Metric**: The similarity measure to use (braunblanquet, cosine, dice, kulczynski, mcconnaughey, rogotgoldberg, russel, sokal, tanimoto)
+* **Fragment method**: How to determine the biggest fragment (hac, mw)
+* **Output fragment**: Output the biggest fragment rather than the entire molecule
+* **Number to pick**: Number of molecules to pick for a diverse subset
+* **Exclude molecules this similar**: Exclude molecules this similar when picking a diverse subset
+* **Field for optimising diversity**: specify a field who's values is used to pick values for a diverse subset
+* **Field values ascending**: The fields values should be treated as being in ascending order (e.g low values are preferred)
 
 
 #### Fragments

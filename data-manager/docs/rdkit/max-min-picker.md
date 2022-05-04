@@ -8,21 +8,21 @@ For more on the MaxMinPicker see this [blog post](http://rdkit.blogspot.com/2017
 
 ## Implementation details
 
-Job implementation: [/max_min_picker.py]()
-Job definition: `jobs.max-min-picker` in [/data-manager/rdkit.yaml]()
+* Job implementation: [/max_min_picker.py]()
+* Job definition: `jobs.max-min-picker` in [/data-manager/rdkit.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules to pick from**:  candidate molecules in SMILES format.
-**Molecules that are already picked**: Optional set of SMILES files with candidate molecules that are already picked (the seeds)
+* **Molecules to pick from**:  candidate molecules in SMILES format.
+* **Molecules that are already picked**: Optional set of SMILES files with candidate molecules that are already picked (the seeds)
 
 ### Options
 
-**Output file name**: name for the output file e.g. `diverse.smi`
-**Number of molecules to pick**: number of molecules to pick e.g. `1000`
-**Similarity threshold**: Optional similarity threshold to stop picking once reached.
+* **Output file name**: name for the output file e.g. `diverse.smi`
+* **Number of molecules to pick**: number of molecules to pick e.g. `1000`
+* **Similarity threshold**: Optional similarity threshold to stop picking once reached.
 
 ## Limitations
 

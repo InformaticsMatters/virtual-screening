@@ -7,14 +7,14 @@ Note that this job only generates a basic *default* version of these files and y
 
 ## Implementation details
 
-Python module: [/prepare_rdock.py]()
-Job definition: `jobs.prepare-rdock` in [/data-manager/virtual-screening.yaml]()
+* Python module: [/prepare_rdock.py]()
+* Job definition: `jobs.prepare-rdock` in [/data-manager/virtual-screening.yaml]()
 
 ## How to run the job
 
 ### Inputs
-**MOL2 file for receptor**: the prepared receptor in MOL2 format.
-**Molfile file for ligand**: a candidate ligand that is used to defined the cavity in Molfile format.
+* **MOL2 file for receptor**: the prepared receptor in MOL2 format.
+* **Molfile file for ligand**: a candidate ligand that is used to defined the cavity in Molfile format.
 
 ### Options
-**Base name for output files**: that base name for the output files
+* **Base name for output files**: that base name for the output files

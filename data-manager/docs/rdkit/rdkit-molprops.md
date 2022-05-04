@@ -19,24 +19,24 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-Job implementation: [/rdk_props.py]()
-Job definition: `jobs.rdkit-molprops` in [/data-manager/rdkit.yaml]()
+* Job implementation: [/rdk_props.py]()
+* Job definition: `jobs.rdkit-molprops` in [/data-manager/rdkit.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules**: The molecules to calculate, in SDF or delimited text files. If the file has a `.sdf` or `.sd` extension it is handled as a SD file, otherwise as delimited text.
+* **Molecules**: The molecules to calculate, in SDF or delimited text files. If the file has a `.sdf` or `.sd` extension it is handled as a SD file, otherwise as delimited text.
 
 ### Options
 
-**Output file name**: The name of the output file. The format to output is determined using the file extension, `.sdf` for a SD file, otherwise delimited text.
-**Input has header line**: when reading delimited text files read the first line as a header line containing the field names.
-**Output file name**: The name of the output file. The format to output is determined using the file extension, `.sdf` for a SD file, otherwise delimited text.
-**Output has header line**: when writing delimited text files writer the first line as a header line containing the field names (1, 2).
-** Separator for text formats**:  The delimiter used for delimited text files. Tab is recommended (1).
-**Index or name to use for ID field**:  Optional field specifying the index (delimited text files, zero based) or name (SD file) for the field that will be used as the ID of the record (e.g. written as the first line of the SD file record).
-**Number of SDF records to read field names**: When reading a SD file read this number of records to determine the fields that are present (3, 4).
+* **Output file name**: The name of the output file. The format to output is determined using the file extension, `.sdf` for a SD file, otherwise delimited text.
+* **Input has header line**: when reading delimited text files read the first line as a header line containing the field names.
+* **Output file name**: The name of the output file. The format to output is determined using the file extension, `.sdf` for a SD file, otherwise delimited text.
+* **Output has header line**: when writing delimited text files writer the first line as a header line containing the field names (1, 2).
+* ** Separator for text formats**:  The delimiter used for delimited text files. Tab is recommended (1).
+* **Index or name to use for ID field**:  Optional field specifying the index (delimited text files, zero based) or name (SD file) for the field that will be used as the ID of the record (e.g. written as the first line of the SD file record).
+* **Number of SDF records to read field names**: When reading a SD file read this number of records to determine the fields that are present (3, 4).
 
 ## Outputs
 

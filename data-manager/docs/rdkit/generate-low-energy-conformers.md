@@ -28,17 +28,17 @@ multiple conformers are generated for each form.
 
 This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-Python module: [/le_conformers.py](). This module is also used by the [conformers-for-mol](conformers-for-mol.md) job.
-Nextflow workflow: [/le_conformers.nf]()
-Job definition: `jobs.generate-low-energy-conformers` in [/data-manager/rdkit.yaml]()
+* Python module: [/le_conformers.py](). This module is also used by the [conformers-for-mol](conformers-for-mol.md) job.
+* Nextflow workflow: [/le_conformers.nf]()
+* Job definition: `jobs.generate-low-energy-conformers` in [/data-manager/rdkit.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules to process**: typically the *Filename for molecules needing 3D conformers* output of the
+* **Molecules to process**: typically the *Filename for molecules needing 3D conformers* output of the
 [prep-enum-conf-lists](prep-enum-conf-lists.md) job.
-**Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
+* **Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
 
 ### Options
 

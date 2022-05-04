@@ -10,21 +10,21 @@ The input is a file containing the molecules that need to be collected, typicall
 
 ## Implementation details
 
-Python module: [/assemble_conformers.py]()
-Job definition: `jobs.assemble-conformers` in [/data-manager/virtual-screening.yaml]()
+* Python module: [/assemble_conformers.py]()
+* Job definition: `jobs.assemble-conformers` in [/data-manager/virtual-screening.yaml]()
 
 ## How to run the job
 
 ### Inputs
-**Molecules to assemble**: the input molecules to assemble
-**Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
+* **Molecules to assemble**: the input molecules to assemble
+* **Directory with sharded data**: the directory with the sharded data (typically `molecules/sha256`)
 
 ### Options
-**Filename for SDF output**: the name of the output SDF file
-**Conformer mode**: `single` (for single enumerated conformer) or  `low-energy` for the multiple low energy conformers
-**Exclude base molecules**: Do not include the base molecule
-**Exclude enumerated tautomers**: Do not include enumerated tautomers
-**Exclude enumerated microstates**: Do not include microstates
+* **Filename for SDF output**: the name of the output SDF file
+* **Conformer mode**: `single` (for single enumerated conformer) or  `low-energy` for the multiple low energy conformers
+* **Exclude base molecules**: Do not include the base molecule
+* **Exclude enumerated tautomers**: Do not include enumerated tautomers
+* **Exclude enumerated microstates**: Do not include microstates
 
 ### Outputs
 

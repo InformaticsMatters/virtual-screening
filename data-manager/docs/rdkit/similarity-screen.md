@@ -20,32 +20,32 @@ The definition of which molecules that pass the threshold can be defined by the 
 
 ## Implementation details
 
-Job implementation: [/screen.py]()
-Job definition: `jobs.similarity-screen-smiles` and `jobs.similarity-screen-file`  in [/data-manager/rdkit.yaml]()
+* Job implementation: [/screen.py]()
+* Job definition: `jobs.similarity-screen-smiles` and `jobs.similarity-screen-file`  in [/data-manager/rdkit.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules to screen**: a file of molecules in SMILES format.
-**Query molecules**: a file of query molecules (similarity-screen-file only)
+* **Molecules to screen**: a file of molecules in SMILES format.
+* **Query molecules**: a file of query molecules (similarity-screen-file only)
 
 ### Options
 
-**Output file name**: the file name for the output
-**Query SMILES**: one or more query molecules (similarity-screen-smiles only)
-**Input file has header line**: the input file has a header line
-**Queries file has header line**: the queries file has a header line (similarity-screen-file only)
-**Output has header line**: write a header line for the output
-**Separator for input file**: separator for the inputs file
-**Separator for queries file**: separator for the queries file (similarity-screen-file only)
-**Descriptor or fingerprint type**: the type of molecular descriptor
-**Similarity metric**: The similarity metric to use
-**Similarity threshold**:  output molecules more similar to this (0 - 1)
-**Similarity score column index**: the index of the score to use to filter [1]
-**Tversky alpha**: The alpha parameter when using Tversky metric [2]
-**Tversky beta**: The beta parameter when using Tversky metric [2]
-**Number of bits for Morgan bit vector**: The fingerprint length when using Morgan bit vectors [3]
+* **Output file name**: the file name for the output
+* **Query SMILES**: one or more query molecules (similarity-screen-smiles only)
+* **Input file has header line**: the input file has a header line
+* **Queries file has header line**: the queries file has a header line (similarity-screen-file only)
+* **Output has header line**: write a header line for the output
+* **Separator for input file**: separator for the inputs file
+* **Separator for queries file**: separator for the queries file (similarity-screen-file only)
+* **Descriptor or fingerprint type**: the type of molecular descriptor
+* **Similarity metric**: The similarity metric to use
+* **Similarity threshold**:  output molecules more similar to this (0 - 1)
+* **Similarity score column index**: the index of the score to use to filter [1]
+* **Tversky alpha**: The alpha parameter when using Tversky metric [2]
+* **Tversky beta**: The beta parameter when using Tversky metric [2]
+* **Number of bits for Morgan bit vector**: The fingerprint length when using Morgan bit vectors [3]
 
 ### Outputs
 

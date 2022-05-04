@@ -18,23 +18,23 @@ The output is a SD-file containing the conformers.
 
 ## Implementation details
 
-Python module: [/le_conformers.py](). This module is also used by the [generate-low-energy-conformers](generate-low-energy-conformers.md) job.
-Job definition: `jobs.conformers-for-mol` in [/data-manager/rdkit.yaml]()
+* Python module: [/le_conformers.py](). This module is also used by the [generate-low-energy-conformers](generate-low-energy-conformers.md) job.
+* Job definition: `jobs.conformers-for-mol` in [/data-manager/rdkit.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Input molfile**: molfile containing the molecule (or use the **SMILES string for input** option).
+* **Input molfile**: molfile containing the molecule (or use the **SMILES string for input** option).
 
 ### Options
 
-**SMILES string for input**: input molecule (or use the **Input molfile** input)
-**Filename for output**: Output filename
-**Number of conformers**: Number of conformers to generate. If undefined the detail number of conformers is used (see above)
-**Number of minimization cycles**: Number of energy minimization cycles (default 500)
-**RMS threshold**: Remove molecules with RMSD less than this (lower energy conformer is retained)
-**Remove Hydrogens**: Remove explict hydrogens from the output
+* **SMILES string for input**: input molecule (or use the **Input molfile** input)
+* **Filename for output**: Output filename
+* **Number of conformers**: Number of conformers to generate. If undefined the detail number of conformers is used (see above)
+* **Number of minimization cycles**: Number of energy minimization cycles (default 500)
+* **RMS threshold**: Remove molecules with RMSD less than this (lower energy conformer is retained)
+* **Remove Hydrogens**: Remove explict hydrogens from the output
 
 ### Outputs
 

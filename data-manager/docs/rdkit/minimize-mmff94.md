@@ -6,20 +6,20 @@ This job reads a set of molecules form a SD file and performs an energy minimisa
 
 ## Implementation details
 
-Job implementation: [/minimize.py]()
-Job definition: `jobs.minimize-mmff94` in [/data-manager/rdkit.yaml]()
+* Job implementation: [/minimize.py]()
+* Job definition: `jobs.minimize-mmff94` in [/data-manager/rdkit.yaml]()
 
 ## How to run the job
 
 ### Inputs
 
-**Molecules to minimize**: Input molecules (*.sdf).
+* **Molecules to minimize**: Input molecules (*.sdf).
 
 ### Options
-**Output file name**: The name for the output file  (*.sdf).
-**Number of cycles**: The number of minimisation cycles
-**Remove Hs from outputs**: Remove hydrogen atoms from the outputs
-**Molecule to write**: which molecules to write: *minimized* = the minimized molecule, *original* = the original molecule, *merged* = both merged into a single molecule
+* **Output file name**: The name for the output file  (*.sdf).
+* **Number of cycles**: The number of minimisation cycles
+* **Remove Hs from outputs**: Remove hydrogen atoms from the outputs
+* **Molecule to write**: which molecules to write: *minimized* = the minimized molecule, *original* = the original molecule, *merged* = both merged into a single molecule
 
 ## Outputs
 
