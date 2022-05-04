@@ -1,3 +1,5 @@
+# Job: prep-enum-conf-lists
+
 This describes how to run the `prep-enum-conf-lists` job from the `virtual screening` category in the `im-virtual-screening` collection.
 
 ## What the job does
@@ -8,8 +10,8 @@ The output of the job is two files, one for enumeration (specified by the `outpu
 
 ## Implementation details
 
-* Job implementation: [/prepare_enum_conf_lists.py]()
-* Job definition: `jobs.prep-enum-conf-lists` in [/data-manager/virtual-screening.yaml]()
+* Job implementation: [prepare_enum_conf_lists.py](/prepare_enum_conf_lists.py)
+* Job definition: `jobs.prep-enum-conf-lists` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 

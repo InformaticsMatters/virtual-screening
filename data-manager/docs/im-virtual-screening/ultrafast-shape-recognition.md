@@ -1,4 +1,6 @@
-This topic describes how to run the `ultrafast-shape-recognition` job from the `virtual screening` category in the `im-virtual-screening` collection.
+# Job: ultrafast-shape-recognition
+
+This describes how to run the `ultrafast-shape-recognition` job from the `virtual screening` category in the `im-virtual-screening` collection.
 
 ## What the job does
 
@@ -8,25 +10,29 @@ This job runs one of the variants of Ultrafast Shape Recognition (USR)
 - **USRCAT**: Schreyer A, Blundell T (2012). DOI: [10.1186/1758-2946-4-27](http://dx.doi.org/10.1186/1758-2946-4-27)
 
 These allow molecular shape similarity to be determined **without** needing to align the molecules.
-The original USR algorithm considers just the shape of the molecules. Electroshape also considers electrostatics. USRCAT also considers a range of pharmacophore-style atom types.
+The original USR algorithm considers just the shape of the molecules. Electroshape also considers electrostatics. USRCAT
+also considers a range of pharmacophore-style atom types.
 
-All provide a fast way of comparing the molecular shape of a query molecule with a database of 3D conformers. Typical usage is to find molecules similar in shape to a known active molecule.
+All provide a fast way of comparing the molecular shape of a query molecule with a database of 3D conformers. Typical
+usage is to find molecules similar in shape to a known active molecule.
 
-This implementation is **not** optimised for performance, though the slowest step is the conformer generation that is needed beforehand.
+This implementation is **not** optimised for performance, though the slowest step is the conformer generation that is
+needed beforehand.
 
 ## Implementation details
 
-This job uses the ODDT implementation of these three tools. Details can be found [here](https://oddt.readthedocs.io/en/latest/#molecular-shape-comparison).
+This job uses the ODDT implementation of these three tools. Details can be found
+[here](https://oddt.readthedocs.io/en/latest/#molecular-shape-comparison).
 
-* Python module: [/usr.py]()
-* Job definition: `jobs.ultrafast-shape-recognition` in [/data-manager/virtual-screening.yaml]()
+* Python module: [usr.py](/usr.py)
+* Job definition: `jobs.ultrafast-shape-recognition` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 
 Prior to running the job you must generate a list of molecules you want to screen, probably by running the [filter](filter.md) job 
-(and possibly the [max-min-picker](max-min-picker.md) job to select a diverse subset of those).
+(and possibly the [max-min-picker](../rdkit/max-min-picker.md) job to select a diverse subset of those).
 Then you must run the [prep-enum-conf-lists](prep-enum-conf-lists.md) job, then the 
-[enumerate-candidates](enumerate-candidates].md) job, then the [generate-low-energy-conformers](generate-low-energy-conformers.md)
+[enumerate-candidates](enumerate-candidates].md) job, then the [generate-low-energy-conformers](../rdkit/generate-low-energy-conformers.md)
 job that will generate low energy conformers of the molecules that you want to screen. Generating the conformers can take a long time.
 
 ### Inputs

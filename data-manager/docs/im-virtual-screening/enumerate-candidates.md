@@ -1,3 +1,5 @@
+# Job: enumerate-candidates
+
 This describes how to run the `enumerate-candidates` job from the `virtual screening` category in the `im-virtual-screening` collection.
 
 ## What the job does
@@ -15,15 +17,15 @@ text file containing the SMILES, the UUID and a single letter code identifying w
 of the enumerated form (B = base molecule, M = microstate, T = tautomer, C = stereoisomer).
 That single letter code is pulled through into the 3D conformers that will be generated next, and hence into the docking results.
 
-Typically the [generate-conformer](generate-conformer.md) job is run immediately after this job.
+Typically the [generate-low-energy-conformers](../rdkit/generate-low-energy-conformers.md) job is run immediately after this job.
 
 ## Implementation details
 
 This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-* Python module: [/enumerate.py]()
-* Nextflow workflow: [/enumerate.nf]()
-* Job definition: `jobs.enumerate-candidates` in [/data-manager/virtual-screening.yaml]()
+* Python module: [enumerate.py](/enumerate.py)
+* Nextflow workflow: [enumerate.nf](/enumerate.nf)
+* Job definition: `jobs.enumerate-candidates` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 
@@ -46,4 +48,4 @@ A single conformer of each enumerated form is written.
 * [Description of the sharded molecule system](https://discourse.squonk.it/t/the-sharded-molecule-system/88)
 * [prep-enum-conf-lists job](prep-enum-conf-lists.md)
 * [assemble-conformers job](assemble-conformers.md)
-* [generate-low-energy-conformers job](generate-low-energy-conformers.md)
+* [generate-low-energy-conformers job](../rdkit/generate-low-energy-conformers.md)

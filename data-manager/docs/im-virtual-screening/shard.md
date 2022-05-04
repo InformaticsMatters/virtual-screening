@@ -35,8 +35,8 @@ The main purpose of running the shard job is to generate data that can easily fi
 
 ## Implementation details
 
-* Job implementation: [/shard.py]()
-* Job definition: `jobs.shard` in [/data-manager/virtual-screening.yaml]()
+* Job implementation: [shard.py]()/shard.py
+* Job definition: `jobs.shard` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 

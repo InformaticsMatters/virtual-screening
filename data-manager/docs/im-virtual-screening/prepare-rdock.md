@@ -1,14 +1,18 @@
+# Job: prepare-rdock
+
 This describes how to run the `prepare-rdock` job from the `virtual screening` category in the `im-virtual-screening` collection.
 
 ## What the job does
 
-This job can be used to generate the rDock configuration file (.prm file) and the cavity definition file (.as file) that are needed as inputs to the [run-rdock](https://discourse.squonk.it/t/job-run-rdock/74) job.
-Note that this job only generates a basic *default* version of these files and you might want to prepare your own versions of these files if you have more specific needs.
+This job can be used to generate the rDock configuration file (.prm file) and the cavity definition file (.as file) that
+are needed as inputs to the [run-rdock](run-rdock.md) job.
+Note that this job only generates a basic *default* version of these files and you might want to prepare your own
+versions of these files if you have more specific needs.
 
 ## Implementation details
 
-* Python module: [/prepare_rdock.py]()
-* Job definition: `jobs.prepare-rdock` in [/data-manager/virtual-screening.yaml]()
+* Python module: [prepare_rdock.py](/prepare_rdock.py)
+* Job definition: `jobs.prepare-rdock` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 

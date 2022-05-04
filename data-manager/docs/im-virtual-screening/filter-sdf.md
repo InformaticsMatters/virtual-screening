@@ -1,4 +1,6 @@
-This describes how to run the *filter-sdf* job from the *virtual screening* category in the *im-virtual-screening* collection.
+# Job: filter-sdf
+
+This describes how to run the `filter-sdf` job from the `virtual screening` category in the `im-virtual-screening` collection.
 
 ## What the job does
 
@@ -13,7 +15,7 @@ file is the best record.
 The work in this job is done by the `sdsort` and `sdfilter` programs from rDock. Consult the 
 [rDock documentation](http://rdock.sourceforge.net/wp-content/uploads/2015/08/rDock_User_Guide.pdf) for details.
 
-* Job definition: `jobs.filter-sdf` in [/data-manager/virtual-screening.yaml]()
+* Job definition: `jobs.filter-sdf` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 

@@ -1,3 +1,5 @@
+# Job: obabel-convert
+
 This describes how to run the `obabel-convert` job from the `virtual screening` category in the `im-virtual-screening` collection.
 
 ## What the job does
@@ -13,7 +15,7 @@ Also note that the [pdb2pqr](https://discourse.squonk.it/t/job-pdb2pqr/76) job p
 ## Implementation details
 
 * OpenBabel options: https://open-babel.readthedocs.io/en/latest/Command-line_tools/babel.html
-* Job definition: `jobs.obabel-convert` in [/data-manager/virtual-screening.yaml]()
+* Job definition: `jobs.obabel-convert` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml])
 
 ## How to run the job
 
