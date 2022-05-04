@@ -32,7 +32,7 @@ This job uses the ODDT implementation of these three tools. Details can be found
 Prior to running the job you must generate a list of molecules you want to screen, probably by running the [filter](filter.md) job 
 (and possibly the [max-min-picker](../rdkit/max-min-picker.md) job to select a diverse subset of those).
 Then you must run the [prep-enum-conf-lists](prep-enum-conf-lists.md) job, then the 
-[enumerate-candidates](enumerate-candidates].md) job, then the [generate-low-energy-conformers](../rdkit/generate-low-energy-conformers.md)
+[enumerate-candidates](enumerate-candidates.md) job, then the [generate-low-energy-conformers](../rdkit/generate-low-energy-conformers.md)
 job that will generate low energy conformers of the molecules that you want to screen. Generating the conformers can take a long time.
 
 ### Inputs
@@ -43,8 +43,10 @@ job that will generate low energy conformers of the molecules that you want to s
 ### Options
 
 * **Output file name**: Name of the SD file containing the similar molecules.
-* **Similarity threshold**: Similarity threshold to use (between 0 an 1). You may want to screen a small sample to determine the appropriate threshold.
-* **Group by field**: Optional value for the field to group the input records by. Only the most similar molecule from each group will be reported. Typically use `std_smi` to get the most similar of all enumerated forms of each input molecule, or  `enum_smi` to group by the enumerated form (each tautomer, microstate etc.). If you do not specify a value then all forms above the similarity threshold are reported.
+* **Similarity threshold**: Similarity threshold to use (between 0 an 1). You may want to screen a small sample to
+  determine the appropriate threshold.
+* **Group by field**: Optional value for the field to group the input records by. Only the most similar molecule from 
+  each group will be reported. Typically use `std_smi` to get the most similar of all enumerated forms of each input molecule, or  `enum_smi` to group by the enumerated form (each tautomer, microstate etc.). If you do not specify a value then all forms above the similarity threshold are reported.
 
 ### Outputs
 
@@ -57,5 +59,5 @@ If a *Group by field* was specified only the most similar conformer for each gro
 * [filter job](filter.md)
 * [prep-enum-conf-lists job](prep-enum-conf-lists.md)
 * [enumerate-candidates job](enumerate-candidates.md)
-* [generate-low-energy-conformers job](generate-low-energy-conformers.md)
+* [generate-low-energy-conformers job](../rdkit/generate-low-energy-conformers.md)
 * [assemble-conformers job](assemble-conformers.md)
