@@ -87,19 +87,19 @@ jobs:
             minimum: 1
             maximum: 3
           hacMin:
-            title: Min heavy atom count
+            title: Permitted reduction in heavy atom count
             type: integer
             minimum: 1
           hacMax:
-            title: Max heavy atom count
+            title: Permitted increase in heavy atom count
             type: integer
             minimum: 1
           racMin:
-            title: Min ring atom count
+            title: Permitted reduction in ring atom count
             type: integer
             minimum: 1
           racMax:
-            title: Max ring atom count
+            title: Permitted increase in ring atom count
             type: integer
             minimum: 1
 
