@@ -74,7 +74,7 @@ def appendWhereClause(where_clause, prefix, value):
     return where_clause
 
 
-def process(smiles, synthon, outfile,
+def process(smiles, synthons, outfile,
             neo4j_server, neo4j_username, neo4j_password,
             hac_min=None, hac_max=None,
             rac_min=None, rac_max=None,
@@ -89,9 +89,12 @@ def process(smiles, synthon, outfile,
     if standardize:
         std_smi, mol = standardize_to_noniso_smiles(smiles)
         smiles = std_smi
-        std_smi, mol = standardize_to_noniso_smiles(synthon)
-        synthon = std_smi
-        utils.log("Standardized molecules:", smiles, synthon)
+        std_synthons = []
+        for i, synthon in enumerate(synthons):
+            std_smi, mol = standardize_to_noniso_smiles(synthon)
+            std_synthons.append(std_smi)
+        synthons = std_synthons
+        utils.log("Standardized molecules:", smiles, " ".join(synthons))
 
     ihops = int(hops)
 
@@ -111,8 +114,11 @@ def process(smiles, synthon, outfile,
     utils.log("QUERY:", query)
 
     driver = GraphDatabase.driver(neo4j_server, auth=(neo4j_username, neo4j_password))
+    results = []
     with driver.session() as session:
-        results = session.read_transaction(run_query, query, smiles, synthon, report_hits)
+        for synthon in synthons:
+            result = session.read_transaction(run_query, query, smiles, synthon, report_hits)
+            results.extend(result)
 
     if outfile:
         with open(outfile, 'wt') as out:
@@ -142,10 +148,12 @@ def main():
     # Example usage:
     # ./fn_synthon_expansion.py -s 'c1ccco1' -x '[Xe]C1C=CCCC1' --server "bolt://localhost:7687" \
     #    --username <username> --password <password> --hops 2
+    # ./fn_synthon_expansion.py -s 'CNCc1ccncc1' -x '[Xe]CNCc1cccs1' '[Xe]c1ccncc1' --server "bolt://localhost:7687" \
+    #    --username neo4j --password test123 --hops 4 --report-hits
 
     parser = argparse.ArgumentParser(description='Fragnet synthon expansion')
     parser.add_argument('-s', '--smiles', required=True, help='Query SMILES')
-    parser.add_argument('-x', '--synthon', required=True, help='Synthon to be included')
+    parser.add_argument('-x', '--synthon', nargs="+", required=True, help='Synthon(s) to be included')
     parser.add_argument('-o', '--outfile', help='Output file')
     parser.add_argument('--report-hits', action='store_true', help='Write the results to stdout')
     parser.add_argument('--hac-min', type=int, help='The min change in heavy atom count')

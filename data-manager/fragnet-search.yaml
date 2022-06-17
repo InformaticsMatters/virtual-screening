@@ -242,6 +242,7 @@ jobs:
           synthon:
             title: Synthon SMILES
             type: string
+            multiple: true
           outputFile:
             title: Output file (.smi)
             type: string
