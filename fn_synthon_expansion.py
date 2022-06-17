@@ -149,7 +149,7 @@ def main():
     # ./fn_synthon_expansion.py -s 'c1ccco1' -x '[Xe]C1C=CCCC1' --server "bolt://localhost:7687" \
     #    --username <username> --password <password> --hops 2
     # ./fn_synthon_expansion.py -s 'CNCc1ccncc1' -x '[Xe]CNCc1cccs1' '[Xe]c1ccncc1' --server "bolt://localhost:7687" \
-    #    --username neo4j --password test123 --hops 4 --report-hits
+    #    --username <username> --password <password> --hops 4 --report-hits
 
     parser = argparse.ArgumentParser(description='Fragnet synthon expansion')
     parser.add_argument('-s', '--smiles', required=True, help='Query SMILES')
