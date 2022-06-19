@@ -200,6 +200,7 @@ def execute(input, output, descriptor, metric, threshold, fragment_method, outpu
             result_count += 1
         i += 1
     DmLog.emit_event("Output {} molecules".format(result_count))
+    DmLog.emit_cost(result_count)
 
     return len(clusters)
 

@@ -20,6 +20,7 @@ import argparse, time
 from rdkit import Chem
 
 import utils
+from dm_job_utilities.dm_log import DmLog
 
 
 def rank_smi(filename, id_idx):
@@ -94,13 +95,14 @@ def main():
     parser.add_argument('-o', '--output', required=True, help="Output as tab separated file")
 
     args = parser.parse_args()
-    utils.log_dm_event("ranker: ", args)
+    DmLog.emit_event("ranker: ", args)
 
     start = time.time()
     count, missing = rank(args.inputs, args.output, args.id_field)
     end = time.time()
 
-    utils.log_dm_event('Processed', count, 'records.', missing, 'missing. Time (s):', end - start)
+    DmLog.emit_event('Processed', count, 'records.', missing, 'missing. Time (s):', end - start)
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":
