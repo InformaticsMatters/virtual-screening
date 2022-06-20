@@ -189,7 +189,7 @@ jobs:
             - squonk/align-it-phar
             type: file
           inputs:
-            title: File with molecules to search
+            title: Molecules to align
             mime-types:
             - chemical/x-mdl-sdfile
             type: file
@@ -242,7 +242,7 @@ jobs:
             type: integer
             minimum: 1
           funcGroups:
-            title: Phrmacophore types
+            title: Pharmacophore types
             type: string
             default: AROM,HDON,HACC,LIPO,CHARGE
             pattern: "^[A-Z,]*$"
@@ -269,6 +269,6 @@ jobs:
             type: boolean
             default: false
           withExclusion:
-            title: Use exlusion spheres during optimisation
+            title: Use exclusion spheres during optimisation
             type: boolean
             default: false
