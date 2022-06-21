@@ -83,9 +83,11 @@ def shard(inputs, source, version, output_dir, delimiter,
             for line in f:
                 if line:
                     count += 1
-                    
+
                     if interval and count % interval == 0:
                         DmLog.emit_event("Processed {} records".format(count))
+                        if interval * 10 <= count:
+                            interval = interval * 2
                     if count % 50000 == 0:
                         DmLog.emit_cost(count)
                     

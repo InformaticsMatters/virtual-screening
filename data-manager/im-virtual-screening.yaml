@@ -72,7 +72,7 @@ jobs:
       -v '{{ supplierVersion }}' -o '{{ outputDir }}' -n {{ codeFieldIndex }}
       --skip-lines {{ skipLines }}
       --errors-file '{{ supplierName }}_{{ supplierVersion }}_errors.smi'
-      --interval 10000
+      --interval 50000
     # Command variables - using JSONSchema to allow for simplified client
     # presentation to the user. 'inputs' and 'outputs' use custom types
     # and typically consist of the definition of input files and output
