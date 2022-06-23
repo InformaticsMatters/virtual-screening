@@ -21,11 +21,15 @@ process split_sdf {
     for f in mols_part_*.sd; do
       n=\${f:10:-3}
       if [ \${#n} == 1 ]; then
-        mv \$f mols_part_000\${n}.sdf
+        mv \$f mols_part_0000\${n}.sdf
       elif [ \${#n} == 2 ]; then
-        mv \$f mols_part_00\${n}.sdf
+        mv \$f mols_part_000\${n}.sdf
       elif [ \${#n} == 3 ]; then
+        mv \$f mols_part_00\${n}.sdf
+      elif [ \${#n} == 4 ]; then
         mv \$f mols_part_0\${n}.sdf
+      else
+        mv \$f mols_part_\${n}.sdf
       fi
     done
     """

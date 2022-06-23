@@ -35,8 +35,10 @@ process rdock_docking {
     for f in mol*.sd; do
       n=\${f:3:-3}
       if [ \${#n} == 1 ]; then
-        mv \$f mol00\${n}.sd
+        mv \$f mol000\${n}.sd
       elif [ \${#n} == 2 ]; then
+        mv \$f mol00\${n}.sd
+      elif [ \${#n} == 3 ]; then
         mv \$f mol0\${n}.sd
       fi
     done
