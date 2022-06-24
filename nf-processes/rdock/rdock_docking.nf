@@ -11,8 +11,10 @@ params.mode = 'dock' // or minimise, score etc. Look in /rDock_2013.1_src/data/s
 process rdock_docking {
 
     container 'informaticsmatters/vs-rdock:latest'
-    errorStrategy params.errorStrategy
-    maxRetries params.maxRetries
+    //errorStrategy params.errorStrategy
+    //maxRetries params.maxRetries
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 500 as long); return 'retry' }
+    maxRetries 5
     scratch params.scratch
 
     input:
