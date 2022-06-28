@@ -11,8 +11,10 @@ params.mode = 'dock' // or minimise, score etc. Look in /rDock_2013.1_src/data/s
 process rdock_docking {
 
     container 'informaticsmatters/vs-rdock:latest'
-    errorStrategy params.errorStrategy
-    maxRetries params.maxRetries
+    //errorStrategy params.errorStrategy
+    //maxRetries params.maxRetries
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 500 as long); return 'retry' }
+    maxRetries 5
     scratch params.scratch
 
     input:
@@ -35,8 +37,10 @@ process rdock_docking {
     for f in mol*.sd; do
       n=\${f:3:-3}
       if [ \${#n} == 1 ]; then
-        mv \$f mol00\${n}.sd
+        mv \$f mol000\${n}.sd
       elif [ \${#n} == 2 ]; then
+        mv \$f mol00\${n}.sd
+      elif [ \${#n} == 3 ]; then
         mv \$f mol0\${n}.sd
       fi
     done

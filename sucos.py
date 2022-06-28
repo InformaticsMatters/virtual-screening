@@ -184,16 +184,15 @@ def process(reference, input, output, tani=False, score_mode=FeatMaps.FeatMapSco
             DmLog.emit_event("Processed {} records".format(count))
 
         if not mol:
-            utils.log('Failed to read molecule', count)
+            DmLog.emit_event('Failed to read molecule', count)
             errors += 1
             continue
         try:
             scores = get_sucos_scores(ref_mol, mol, tani=tani, ref_features=ref_features, score_mode=score_mode)
-            # utils.log("Scores:", scores[0], scores[1], scores[2])
             writer.write(None, mol, id, props, scores)
         except ValueError as e:
             errors += 1
-            utils.log("Molecule", count, "failed to score:", e.message)
+            DmLog.emit_event("Molecule", count, "failed to score:", e.message)
 
     writer.close()
     DmLog.emit_event("Completed. Processed {} molecules, {} errors".format(count, errors))
@@ -234,6 +233,8 @@ def main():
     # this does the processing
     count, errors = process(args.reference, args.input, args.output,
                             tani=args.tanimoto, score_mode=score_mode, interval=args.interval)
+
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":

@@ -227,6 +227,7 @@ def main():
 
     DmLog.emit_event('Inputs:', input_count, 'Enumerated:', enumerated_count,
                      'Conformers:', conformer_count, 'Errors:', error_count, 'Time (s):', end - start)
+    DmLog.emit_cost(conformer_count)
 
 
 if __name__ == "__main__":

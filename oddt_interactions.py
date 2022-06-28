@@ -230,6 +230,7 @@ def main():
                             keep_hs_protein=args.keep_hs_protein, keep_hs_ligand=args.keep_hs_ligand,
                             report_file=args.report_file, compare_file=args.compare, interval=args.interval)
     DmLog.emit_event('Processing complete.', count, 'records processed.', errors, 'errors')
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":

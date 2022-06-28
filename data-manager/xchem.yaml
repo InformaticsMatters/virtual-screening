@@ -4,9 +4,6 @@ kind-version: '2021.1'
 name: XChem tools
 collection: xchem
 
-repository-url: https://github.com/InformaticsMatters/virtual-screening/xchem.yaml
-repository-tag: '1.0.0'
-
 jobs:
   sucos:
     name: Shape overlay with SuCOS
@@ -20,12 +17,12 @@ jobs:
     - 3d
     - shape
     - sucos
-    doc-url: https://discourse.squonk.it/t/job-sucos/122
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/sucos.py --input '{{ inputFile }}'
       --reference '{{ reference }}'

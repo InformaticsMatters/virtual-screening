@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# NOTE: this uses Python2
 
 import argparse, os, subprocess, time, datetime
 from jinja2 import Template

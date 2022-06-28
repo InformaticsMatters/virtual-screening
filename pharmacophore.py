@@ -259,6 +259,7 @@ def main():
         duration_s = 1
 
     DmLog.emit_event('Processed {} records in {} seconds. {} errors.'.format(count, duration_s, errors))
+    DmLog.emit_cost(count)
 
 
 if __name__ == "__main__":

@@ -20,12 +20,6 @@ name: Virtual screening tools using RDKit, OpenBabel and other open source tools
 # and must begin with a letter.
 collection: im-virtual-screening
 
-# The repository where this definition (and the code for the Job) can be found.
-repository-url: https://github.com/InformaticsMatters/virtual-screening/virtual-screening.yaml
-# The repository tag.
-# All definitions are expected to reside in a repository that has been tagged.
-repository-tag: '1.0.3'
-
 # Job definitions.
 # A list of jobs indexed using a unique identity (i.e. "shared-molecules").
 # Job identities must only container lower-case letters, numbers or a hyphen
@@ -56,8 +50,6 @@ jobs:
     keywords:
     - rdkit
     - ligand preparation
-    # link to documentation for the job
-    doc-url: https://discourse.squonk.it/t/job-shard/67
     # The container image that contains the Job implementation
     # (in v1, these are hosted on Docker Hub)
     # ... along with the image tag
@@ -70,6 +62,7 @@ jobs:
       project-directory: /data
       working-directory: /data
       type: simple
+      fix-permissions: true
     # The command that will be used as the Kubernetes Pod 'command'
     # (after variable expansion). This is a jinja2 template with its variables
     # described in the `variables` block below (A JSONSchema block).
@@ -79,7 +72,7 @@ jobs:
       -v '{{ supplierVersion }}' -o '{{ outputDir }}' -n {{ codeFieldIndex }}
       --skip-lines {{ skipLines }}
       --errors-file '{{ supplierName }}_{{ supplierVersion }}_errors.smi'
-      --interval 10000
+      --interval 50000
     # Command variables - using JSONSchema to allow for simplified client
     # presentation to the user. 'inputs' and 'outputs' use custom types
     # and typically consist of the definition of input files and output
@@ -164,12 +157,12 @@ jobs:
     - rdkit
     - ligand preparation
     - filter
-    doc-url: https://discourse.squonk.it/t/job-filter/68
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/filter.py -i{% for dir in inputDir %} '{{ dir }}'{% endfor %}
       -o '{{ outputFile }}'
@@ -304,12 +297,12 @@ jobs:
     - enumeration
     - conformer
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-prep-enum-conf-lists/70
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/prepare_enum_conf_lists.py
       --input '{{ inputFile }}'
@@ -372,12 +365,12 @@ jobs:
     keywords:
     - ligand preparation
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-assemble-conformers/73
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/assemble_conformers.py
       --input '{{ inputFile }}'
@@ -495,12 +488,12 @@ jobs:
     keywords:
     - protein preparation
     - openbabel
-    doc-url: https://discourse.squonk.it/t/job-obabel-convert/77
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       obabel
       '{{ inputFile }}'
@@ -558,12 +551,12 @@ jobs:
     - pdb2pqr
     - protonation
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-pdb2pqr/76
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       pdb2pqr30 --with-ph {{ ph }}
       --titration-state-method propka
@@ -646,12 +639,12 @@ jobs:
     - protein preparation
     - rdock
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-prepare-rdock/75
     image:
       name: informaticsmatters/vs-rdock
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/prepare_rdock.py
       --receptor '{{ receptorFile }}'
@@ -714,12 +707,12 @@ jobs:
     - usrcat
     - filter
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87
     image:
       name: informaticsmatters/vs-oddt
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/usr.py --inputs '{{ inputFile }}'
       --query '{{ queryFile }}'
@@ -818,12 +811,12 @@ jobs:
     - sdfilter
     - sdsort
     - filter
-    doc-url: 'https://discourse.squonk.it/t/job-filter-sdf/105'
     image:
       name: informaticsmatters/vs-rdock
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/rdock_filter_sdf.sh '{{ inputFile }}' '{{ outputFile }}'
         {{ sortField }}
@@ -893,6 +886,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/convert_file.py --input-file '{{ inputFile }}'
       --input-format chemical/x-mdl-sdfile
@@ -950,13 +944,13 @@ jobs:
     - dimorphite_dl
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-enumerate-candidates/71
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/enumerate.nf
@@ -992,61 +986,6 @@ jobs:
             type: files
       # there are no options for this job
 
-  generate-low-energy-conformers:
-    name: Generate 3D conformers (sharded)
-    description: >-
-      Generate a low energy 3D conformers of molecules. Inputs are defined
-      by the prep-enum-conf-lists job and outputs are written to the sharded file system.
-    version: '1.0.0'
-    category: virtual screening
-    keywords:
-    - rdkit
-    - ligand preparation
-    - conformer
-    - nextflow
-    - 3d
-    doc-url: https://discourse.squonk.it/t/job-generate-low-energy-conformers/86
-    image:
-      name: informaticsmatters/vs-nextflow
-      tag: 'latest'
-      project-directory: /data
-      working-directory: /data
-      type: nextflow
-    command: >-
-      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
-      --inputs '{{ inputFile }}'
-      --data_dir '{{ dataDir }}'
-      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
-      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
-    variables:
-      inputs:
-        type: object
-        required:
-        - inputFile
-        - dataDir
-        properties:
-          inputFile:
-            title: Molecules to process
-            mime-types:
-            - chemical/x-csv
-            type: file
-          dataDir:
-            title: Directory with sharded data
-            type: directory
-            default: molecules/sha256
-      outputs:
-        type: object
-        properties:
-          enumerated:
-            title: 3D conformers
-            mime-types:
-            - chemical/x-mdl-sdfile
-            creates: '{{ dataDir }}/sha256/*/*/*_le_confs.sdf'
-            # additional *.sdf files might have already been generated
-            type: files
-      # there are no options for this job
-
   run-rdock:
     name: Run rRock docking
     description: >-
@@ -1058,13 +997,14 @@ jobs:
     - docking
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-run-rdock/74
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
+      memory: 5Gi
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/rdock-docking.nf
@@ -1183,13 +1123,13 @@ jobs:
     - docking
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-run-smina/78
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/smina-docking.nf
@@ -1308,13 +1248,13 @@ jobs:
     - docking
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-oddt-score-interactions/79
     image:
       name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
+      fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/oddt-interactions.nf

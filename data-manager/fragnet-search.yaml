@@ -4,8 +4,6 @@ kind-version: '2021.1'
 
 name: Fragment Network search tools
 collection: im-fragment-network
-repository-url: https://github.com/InformaticsMatters/virtual-screening/fagnet-search.yaml
-repository-tag: '1.0.0'
 
 jobs:
   fragment-network-expand:
@@ -22,6 +20,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
       environment:
       - name: NEO4J_USERNAME
         value-from:
@@ -88,19 +87,19 @@ jobs:
             minimum: 1
             maximum: 3
           hacMin:
-            title: Min heavy atom count
+            title: Permitted reduction in heavy atom count
             type: integer
             minimum: 1
           hacMax:
-            title: Max heavy atom count
+            title: Permitted increase in heavy atom count
             type: integer
             minimum: 1
           racMin:
-            title: Min ring atom count
+            title: Permitted reduction in ring atom count
             type: integer
             minimum: 1
           racMax:
-            title: Max ring atom count
+            title: Permitted increase in ring atom count
             type: integer
             minimum: 1
 
@@ -119,6 +118,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
       environment:
       - name: NEO4J_USERNAME
         value-from:
@@ -182,6 +182,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
       environment:
       - name: NEO4J_USERNAME
         value-from:
@@ -241,6 +242,7 @@ jobs:
           synthon:
             title: Synthon SMILES
             type: string
+            multiple: true
           outputFile:
             title: Output file (.smi)
             type: string

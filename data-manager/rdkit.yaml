@@ -4,9 +4,6 @@ kind-version: '2021.1'
 name: Virtual screening tools using RDKit
 collection: rdkit
 
-repository-url: https://github.com/InformaticsMatters/virtual-screening/rdkit.yaml
-repository-tag: '1.0.0'
-
 jobs:
   max-min-picker:
     name: Select diverse subset of molecules
@@ -21,12 +18,12 @@ jobs:
     - diverse subset
     - maxminpicker
     - filter
-    doc-url: https://discourse.squonk.it/t/job-max-min-picker/69
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/max_min_picker.py --input '{{ inputFile }}'
       {% if seeds is defined %}--seeds{% for file in seeds %} '{{ file }}'{% endfor %}{% endif %}
@@ -114,6 +111,62 @@ jobs:
             - exists: true
             - lineCount: 100
 
+  generate-low-energy-conformers:
+    name: Generate 3D conformers (sharded)
+    description: >-
+      Generate a low energy 3D conformers of molecules. Inputs are defined
+      by the prep-enum-conf-lists job and outputs are written to the sharded file system.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    - conformer
+    - nextflow
+    - 3d
+    doc-url: https://discourse.squonk.it/t/job-generate-low-energy-conformers/86
+    image:
+      name: informaticsmatters/vs-nextflow
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
+      --inputs '{{ inputFile }}'
+      --data_dir '{{ dataDir }}'
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+    variables:
+      inputs:
+        type: object
+        required:
+        - inputFile
+        - dataDir
+        properties:
+          inputFile:
+            title: Molecules to process
+            mime-types:
+            - chemical/x-csv
+            type: file
+          dataDir:
+            title: Directory with sharded data
+            type: directory
+            default: molecules/sha256
+      outputs:
+        type: object
+        properties:
+          enumerated:
+            title: 3D conformers
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ dataDir }}/sha256/*/*/*_le_confs.sdf'
+            # additional *.sdf files might have already been generated
+            type: files
+      # there are no options for this job
+
   conformers-for-mol:
     name: Generate 3D conformers of a molecule
     description: >-
@@ -129,6 +182,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/le_conformers_for_mol.py
         {% if inputMolfile is defined %}--input '{{ inputMolfile }}'{% endif %}
@@ -188,9 +242,11 @@ jobs:
             type: integer
             default: 500
           rmsThreshold:
+            title: RMS threshold
             type: number
             default: 1.0
           removeHydrogens:
+            title: Remove Hydrogens
             type: boolean
             default: true
     tests:
@@ -222,12 +278,12 @@ jobs:
     - shape
     - filter
     - 3d
-    doc-url: https://discourse.squonk.it/t/open3dalign/99
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/open3dalign.py --inputs '{{ inputFile }}'
       --query '{{ queryFile }}'
@@ -331,12 +387,12 @@ jobs:
     keywords:
     - rdkit
     - properties
-    doc-url: 'https://discourse.squonk.it/t/job-rdkit-props/91'
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/rdkit_props.py --input '{{ inputFile }}'
       --outfile '{{ outputFile }}'
@@ -493,12 +549,13 @@ jobs:
     - screen
     - fingerprint
     - filter
-    doc-url: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+    doc-url: rdkit/similarity-screen.md
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/screen.py --input '{{ inputFile }}'
       --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}
@@ -709,12 +766,13 @@ jobs:
     - screen
     - fingerprint
     - filter
-    doc-url: 'https://discourse.squonk.it/t/job-similarity-screen/92'
+    doc-url: rdkit/similarity-screen.md
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/screen.py --input '{{ inputFile }}'
       --queries '{{ queryFile }}'
@@ -911,12 +969,12 @@ jobs:
     - minimise
     - mmff94
     - 3d
-    doc-url: 'https://discourse.squonk.it/t/job-minimize-mmff94/106'
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/minimize.py -i '{{ inputFile }}' -o '{{ outputFile }}'
       -c {{ cycles }} --molecule {{ molecule }} --interval 1000
@@ -994,12 +1052,12 @@ jobs:
     - rdkit
     - 3d
     - alignment
-    doc-url: 'https://discourse.squonk.it/t/job-align-molecules/107'
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/align_mol.py -i '{{ inputFile }}' -q '{{ refMolecule }}' -o '{{ outputFile }}'
       {% if alignAtoms is defined %}--align-atoms{{ alignAtoms }}{% endif %}
@@ -1128,12 +1186,12 @@ jobs:
     - cluster
     - butina
     - fingerprint
-    doc-url: https://discourse.squonk.it/t/job-cluster-butina/121
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     command: >-
       /code/cluster_butina.py --input '{{ inputFile }}'
       --output {{ outputFile }}
