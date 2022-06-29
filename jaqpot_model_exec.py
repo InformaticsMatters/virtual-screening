@@ -31,6 +31,11 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
     jaqpot = Jaqpot()
     jaqpot.set_api_key(api_key)
     molmod = MolecularModel.load_from_jaqpot(jaqpot=jaqpot, id=model_id)
+    if molmod is None:
+        msg = "Model not found " + model_id
+        DmLog.emit_event(msg)
+        raise ValueError(msg)
+
     model_name = molmod.Y.replace(' ', '_')
     DmLog.emit_event("Model is", model_name)
 
@@ -101,7 +106,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    DmLog.emit_event("Expand Args: ", args)
+    DmLog.emit_event("Jaqpot model exec Args: ", args)
 
     delimiter = utils.read_delimiter(args.delimiter)
 
@@ -113,7 +118,8 @@ def main():
     if not api_key:
         DmLog.emit_event('WARNING: no Jaqpot API key provided')
         sys.exit(1)
-    print("API_KEY:", api_key)
+
+    print('API KEY:', api_key)
 
     execute_jaqpot_model(args.input, args.output, args.model_id, api_key, filter=args.filter, threshold=args.threshold,
                          delimiter=delimiter, id_column=args.id_column,

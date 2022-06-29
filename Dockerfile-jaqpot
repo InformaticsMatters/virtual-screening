@@ -1,4 +1,4 @@
-FROM euclia/jaqpotpy:1.0.3
+FROM euclia/jaqpotpy:1.0.5
 
 RUN apt-get -y update &&\
   apt-get -y install procps &&\
