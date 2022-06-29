@@ -10,15 +10,16 @@ repository-tag: '1.0.0'
 
 jobs:
   jaqpot-covid-19-activity:
-    name: 3D shape alignment with shape-it
+    name: Covid-19 MPro activity prediction
     description: >-
-      Perform a shape alignment of a set of 3D molecules to a reference 3D molecule using Silicos-it's shape-it tool.
+      Predicted inhibition of Covid-19 Mpro activity using Jaqpot predictive model
     version: '1.0.0'
-    category: virtual screening
+    category: predictive models
     keywords:
     - jaqpot
     - predictive model
     - covid-19
+    - mpro
     image:
       name: informaticsmatters/vs-jaqpot
       tag: 'latest'
@@ -35,6 +36,7 @@ jobs:
       /code/jaqpot_model_exec.py --model 'K1J1JzuZJxjY1q8YCD3h'
       --input '{{ inputFile }}'
       --output '{{ outputFile }}'
+      {% if apiKey is defined %}--api-key '{{ apiKey }}'{% endif %}
       {% if filter is defined and filter %}--filter{% endif %}
       {% if threshold is defined %}--threshold '{{ threshold }}'{% endif %}
       {% if delimiter is defined %}--delimiter {{ delimiter }}{% endif %}
@@ -46,6 +48,7 @@ jobs:
       order:
         options:
         - outputFile
+        - apiKey
         - filter
         - threshold
         - delimiter
@@ -80,6 +83,7 @@ jobs:
         type: object
         required:
         - outputFile
+        - apiKey
         - filter
         - delimiter
         - readHeader
@@ -89,6 +93,9 @@ jobs:
             title: Output file name
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          apiKey:
+            title: Jaqpot API key
+            type: string
           filter:
             title: Only output actives
             type: boolean
