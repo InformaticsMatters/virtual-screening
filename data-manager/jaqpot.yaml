@@ -30,7 +30,6 @@ jobs:
           api-token:
             roles: []
       memory: 2Gi
-      cores: '4'
       fix-permissions: true
     command: >-
       /code/jaqpot_model_exec.py --model 'K1J1JzuZJxjY1q8YCD3h'
