@@ -5,15 +5,15 @@ This describes how to run the `rdk-molprops` job from the `comp chem` category i
 ## What the job does
 
 This job calculates a range of molecular properties using RDKit. These properties (with the corresponding field names in brackets) are:
-- Heavy atom count (hac)
-- Number of rotatable bonds (num_rot_bonds)
-- Number of rings (num_rings)
-- Number of aromatic rings (num_aro_rings)
-- Number of chiral centres (num_cc)
-- Number of undefined chiral centres (num_undef_cc)
-- Number of SP3 hybridised carbon atoms (num_sp3)
-- Crippen LogP (logp)
-- Topological polar surface area (tpsa)
+- Heavy atom count (RDK_hac)
+- Number of rotatable bonds (RDK_numRotBonds)
+- Number of rings (RDK_numRings)
+- Number of aromatic rings (RDK_numAroRings)
+- Number of chiral centres (RDK_numChiralCentres)
+- Number of undefined chiral centres (RDK_numUndefChiralCentres)
+- Number of SP3 hybridised carbon atoms (RDK_numSP3)
+- Crippen LogP (RDK_logp)
+- Topological polar surface area (RDK_tpsa)
 
 The jobs can handle SD files or delimited text files (e.g. tab separated) as input and output.
 When using delimited text files tab separation is recommended, though other separators are supported.
@@ -33,6 +33,7 @@ When using delimited text files the molecules are read and written as SMILES.
 ### Options
 
 * **Output file name**: The name of the output file. The format to output is determined using the file extension, `.sdf` for a SD file, otherwise delimited text.
+* **Properties**: A checkbox for each property. Uncheck if you don't want that property calculated.
 * **Input has header line**: when reading delimited text files read the first line as a header line containing the field names.
 * **Output file name**: The name of the output file. The format to output is determined using the file extension, `.sdf` for a SD file, otherwise delimited text.
 * **Output has header line**: when writing delimited text files writer the first line as a header line containing the field names (1, 2).

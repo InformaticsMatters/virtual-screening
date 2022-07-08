@@ -40,9 +40,8 @@ class SdfWriter:
 
         self.writer.write(mol)
 
-    @staticmethod
     def write_header(self, values):
-        utils.log("WARNING: asked to write header for an SDF. No action will be taken.")
+        utils.log("INFO: asked to write header for an SDF. No action will be taken.")
 
     def close(self):
         self.writer.close()
@@ -82,6 +81,7 @@ class SmilesWriter:
 
     def close(self):
         self.writer.close()
+
 
 class SdfReader:
 
@@ -218,12 +218,12 @@ class SmilesReader:
     def close(self):
         self.reader.close()
 
-def generate_header_values(extra_field_names, calc_prop_names):
+def generate_header_values(extra_field_names, num_orig_props, calc_prop_names):
     headers = ['smiles']
     if extra_field_names:
         headers.extend(extra_field_names)
     else:
-        for i, prop in enumerate(calc_prop_names):
+        for i in range(num_orig_props):
             headers.append('field' + str(i + 2))
     headers.extend(calc_prop_names)
     return headers

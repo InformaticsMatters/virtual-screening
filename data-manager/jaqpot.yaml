@@ -83,7 +83,6 @@ jobs:
         type: object
         required:
         - outputFile
-        - apiKey
         - filter
         - delimiter
         - readHeader

@@ -48,10 +48,7 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
     utils.expand_path(output)
     writer = rdkit_utils.create_writer(output, extra_field_names=extra_field_names, calc_prop_names=calc_prop_names,
                                        delimiter=delimiter)
-    if write_header:
-        headers = rdkit_utils.generate_header_values(extra_field_names, calc_prop_names)
-        print('HEADERS', headers)
-        writer.write_header(headers)
+
 
     num_actives = 0
     count = 0
@@ -62,6 +59,10 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
             break
         count += 1
         mol, smi, id, props = t
+
+        if count == 1 and write_header:
+            headers = rdkit_utils.generate_header_values(extra_field_names, len(props), calc_prop_names)
+            writer.write_header(headers)
 
         if interval and count % interval == 0:
             DmLog.emit_event("Processed {} records".format(count))
