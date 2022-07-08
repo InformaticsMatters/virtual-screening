@@ -422,7 +422,7 @@ jobs:
         - numChiralCentres
         - numUndefChiralCentres
         - numSP3
-        - log
+        - logp
         - tpsa
         - readHeader
         - writeHeader
