@@ -109,7 +109,10 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
                 else:
                     values.append(None)
             if 'tpsa' in calcs:
-                values.append(rdMolDescriptors.CalcTPSA(mol))
+                tpsa = rdMolDescriptors.CalcTPSA(mol)
+                # tpsa values have a silly number of decimal places
+                if tpsa is not None:
+                    values.append("%.2f" % tpsa)
 
         except:
             errors += 1
