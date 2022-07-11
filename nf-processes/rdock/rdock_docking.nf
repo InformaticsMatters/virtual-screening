@@ -26,6 +26,7 @@ process rdock_docking {
     output:
     path 'docked_*.sdf' optional true // e.g. docked_mols_part_0019.sdf
     path 'failed_*.sdf' optional true
+    env COUNT
 
     """
     set -e
@@ -56,5 +57,8 @@ process rdock_docking {
 
     # combine the results
     cat rdock_*.sd > 'docked_${part.name}'
+
+    # count the number of outputs
+    COUNT=\$(fgrep -c '\$\$\$\$' 'docked_${part.name}')
     """
 }

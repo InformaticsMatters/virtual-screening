@@ -69,6 +69,19 @@ workflow rdock_docking {
     collect_results(rdock.out[0].collect())
     collect_failed(rdock.out[1].collect())
 
+    def cost = new java.util.concurrent.atomic.AtomicInteger(0)
+    def count = new java.util.concurrent.atomic.AtomicInteger(0)
+    // COST events need to be formatted like this:
+    //   2022-07-11T14:14:26+00:00 # INFO -COST- 10000 1
+    def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+    rdock.out[2].subscribe {
+        cost.addAndGet(new Integer(it))
+        count += 1
+        now = dateFormat.format(new java.util.Date())
+        println("$now # INFO -COST- $cost $count")
+    }
+
     emit:
     collect_results.out
     collect_failed.out
