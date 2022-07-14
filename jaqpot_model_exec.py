@@ -22,7 +22,7 @@ from dm_job_utilities.dm_log import DmLog
 from jaqpotpy import Jaqpot
 
 
-def execute_jaqpot_model(input, output, model_id, api_key, filter=False, threshold=None, delimiter=None,
+def execute_jaqpot_model(input, output, model_id, api_key, filter=False, threshold=None, descending=False, delimiter=None,
                          id_column=None, read_header=False, write_header=False, sdf_read_records=100, interval=0):
 
     from jaqpotpy.cfg import config
@@ -36,21 +36,23 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
         DmLog.emit_event(msg)
         raise ValueError(msg)
 
-    model_name = molmod.Y.replace(' ', '_')
-    DmLog.emit_event("Model is", model_name)
+    model_name = molmod.Y.replace(' ', '_').replace('__', '_')
+    model_type = molmod.modeling_task
+    DmLog.emit_event("Model is", model_name, model_type)
 
     reader = rdkit_utils.create_reader(input, delimiter=delimiter, read_header=read_header,
                                        id_column=id_column, sdf_read_records=sdf_read_records)
     extra_field_names = reader.get_extra_field_names()
 
-    calc_prop_names = [model_name + '_Inactive', model_name + '_Active']
+    calc_prop_names = get_calc_prop_names(molmod, model_name)
 
-    utils.expand_path(output)
-    writer = rdkit_utils.create_writer(output, extra_field_names=extra_field_names, calc_prop_names=calc_prop_names,
-                                       delimiter=delimiter)
+    if output:
+        utils.expand_path(output)
+        writer = rdkit_utils.create_writer(output, extra_field_names=extra_field_names, calc_prop_names=calc_prop_names,
+                                           delimiter=delimiter)
 
 
-    num_actives = 0
+    num_outputs = 0
     count = 0
     while True:
         t = reader.read()
@@ -62,7 +64,10 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
 
         if count == 1 and write_header:
             headers = rdkit_utils.generate_header_values(extra_field_names, len(props), calc_prop_names)
-            writer.write_header(headers)
+            if output:
+                writer.write_header(headers)
+            else:
+                print(" ".join(headers))
 
         if interval and count % interval == 0:
             DmLog.emit_event("Processed {} records".format(count))
@@ -71,18 +76,90 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
             DmLog.emit_cost(count)
 
         molmod(mol)
-        if filter:
-            if threshold and threshold > molmod.probability[0][1]:
-                continue
-            elif not molmod.prediction[0]:
-                continue
-        # utils.log("mol:", count, molmod.prediction, molmod.probability)
-        writer.write(smi, mol, id, props, (molmod.probability[0]))
-        if molmod.prediction[0]:
-            num_actives += 1
 
-    DmLog.emit_event("Found", num_actives, "actives among", count, "molecules")
+        if filter and filter_molecule(molmod, threshold, descending):
+            continue
+
+        num_outputs += 1
+
+        values = get_calc_values(molmod)
+        if output:
+            writer.write(smi, mol, id, props, values)
+        else:
+            print(smi, *values)
+
+    DmLog.emit_event(num_outputs, "outputs among", count, "molecules")
     DmLog.emit_cost(count)
+
+
+def get_calc_prop_names(molmod, prefix):
+    """
+    Get the names of the properties that will be output.
+    These will be used as the field names of the values obtained from the get_calc_values method.
+    :param molmod: The Jaqpot model to get the data from
+    :param prefix: The prefix for the field names
+    :return: List of names
+    """
+    model_type = molmod.modeling_task
+    names = []
+    if model_type == 'classification':
+        names.append(prefix + '_Prediction')  # 0 or 1
+        names.append(prefix + '_Inactive')    # probability of being inactive
+        names.append(prefix + '_Active')      # probability of being active
+        if molmod.doa:
+            names.append(prefix + '_DOA')     # True or False
+    elif model_type == 'regression':
+        names.append(prefix + '_Prediction')  # regression score
+
+    return names
+
+
+def get_calc_values(molmod):
+    """
+    Get the values that should be output.
+    This depends on the type of the model.
+    :param molmod: The Jaqpot model
+    :return: List of values
+    """
+    model_type = molmod.modeling_task
+    values = []
+    if model_type == 'classification':
+        values.append(molmod.prediction[0])
+        values.append(molmod.probability[0][0])
+        values.append(molmod.probability[0][1])
+        if molmod.doa:
+            values.append(molmod.doa.IN[0])
+    elif model_type == 'regression':
+        values.append(molmod.prediction[0][0])
+
+    return values
+
+
+def filter_molecule(molmod, threshold, descending):
+    """
+    Whether to filter this record out
+    :param molmod: The Jaqpot model
+    :param threshold: Filter threshold
+    :param descending: Smaller regression numbers are better
+    :return: If True then the molecule should be excluded
+    """
+    model_type = molmod.modeling_task
+    if model_type == 'classification':
+        if threshold is not None:
+            if threshold >= molmod.probability[0][1]:
+                return True
+        elif not molmod.prediction[0]:
+            return True
+    elif model_type == 'regression' and threshold is not None:
+        if threshold is not None:
+            if descending:
+                if threshold <= molmod.prediction[0][0]:
+                    return True
+            else:
+                if threshold >= molmod.prediction[0][0]:
+                    return True
+
+    return False
 
 
 def main():
@@ -91,11 +168,13 @@ def main():
     parser = argparse.ArgumentParser(description='Jaqpot Model Execution')
     parser.add_argument('-m', '--model-id', required=True, help="Jaqpot model ID") # e.g. qbqUnF08SU1MhVnj3Bwd
     parser.add_argument('-i', '--input', required=True, help="Molecules to predict (.sdf or .smi)")
-    parser.add_argument('-o', '--output', required=True, help="Output file (.sdf or .smi)")
+    parser.add_argument('-o', '--output', help="Output file (.sdf or .smi)")
     parser.add_argument('-k', "--api-key", help="Jaqpot API key")
     parser.add_argument('-f', "--filter", action='store_true', help="Only include actives in the output")
     parser.add_argument('-t', "--threshold", type=float,
                         help="Filtering threshold. If not specified then active category is used.")
+    parser.add_argument('-a', "--descending", action='store_true',
+                        help="Lower regression scores are better. If not set then assumed to be ascending.")
     # to pass tab as delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
     parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
     parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
@@ -122,7 +201,8 @@ def main():
 
     print('API KEY:', api_key)
 
-    execute_jaqpot_model(args.input, args.output, args.model_id, api_key, filter=args.filter, threshold=args.threshold,
+    execute_jaqpot_model(args.input, args.output, args.model_id, api_key,
+                         filter=args.filter, threshold=args.threshold, descending=args.descending,
                          delimiter=delimiter, id_column=args.id_column,
                          read_header=args.read_header, write_header=args.write_header,
                          sdf_read_records=args.sdf_read_records, interval=args.interval)
