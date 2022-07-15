@@ -73,7 +73,7 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
 
         if interval and count % interval == 0:
             DmLog.emit_event("Processed {} records".format(count))
-        if count % 10000 == 0:
+        if count % 50000 == 0:
             # Emit a 'total' cost, replacing all prior costs
             DmLog.emit_cost(count)
 
@@ -160,8 +160,7 @@ def main():
     else:
         calcs_to_use = []
         for key in calc_props:
-            h_key = key.replace('_', '-')
-            if hasattr(args, h_key) and getattr(args, h_key):
+            if hasattr(args, key) and getattr(args, key):
                 calcs_to_use.append(key)
 
     # special processing of delimiter to allow it to be set as a name
