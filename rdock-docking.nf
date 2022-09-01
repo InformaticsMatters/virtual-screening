@@ -41,7 +41,6 @@ protein_mol2 = file(params.protein)
 prmfile = file(params.prmfile)
 asfile = file(params.asfile)
 
-
 // includes
 include { split_sdf } from './nf-processes/file/split_sdf.nf'
 include { rdock_docking as rdock } from './nf-processes/rdock/rdock_docking.nf'
@@ -53,6 +52,40 @@ include { concatenate_files as collect_failed } from './nf-processes/file/concat
     glob: 'failed_*.sdf',
     optional: true)
 
+/* COST events need to be formatted like this:
+     2022-07-11T14:14:26+00:00 # INFO -COST- 10000 1
+ PROGRESS events like this:
+     2022-07-11T14:14:26+00:00 # PROGRESS -START- rdock_docking:rdock 10
+     2022-07-11T14:14:26+00:00 # PROGRESS -DONE- rdock_docking:rdock 5
+*/
+
+
+def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+int splits = 0
+
+def now = dateFormat.format(new java.util.Date())
+def wrkflw = 'rdock_docking'
+log.info("$now # PROGRESS -START- $wrkflw:split_sdf 1")
+
+/* this process sits between the splitter and the rdock processes and allows to determine the number of parallel
+rdock processes that will be run
+*/
+process reporter {
+
+    input:
+    val f
+
+    output:
+    val f
+
+    exec:
+    splits = f.size()
+    now = dateFormat.format(new java.util.Date())
+    log.info("$now # PROGRESS -DONE- $wrkflw:split_sdf 1")
+    log.info("$now # PROGRESS -START- $wrkflw:rdock $splits")
+    log.info("$now # PROGRESS -START- $wrkflw:collect_results 1")
+}
 
 // workflows
 workflow rdock_docking {
@@ -65,22 +98,29 @@ workflow rdock_docking {
 
     main:
     split_sdf(ligands_sdf)
-    rdock(split_sdf.out.flatten(), protein_mol2, docking_prm, docking_as)
+    reporter(split_sdf.out)
+    rdock(reporter.out.flatten(), protein_mol2, docking_prm, docking_as)
     collect_results(rdock.out[0].collect())
     collect_failed(rdock.out[1].collect())
 
-    def cost = new java.util.concurrent.atomic.AtomicInteger(0)
-    def count = new java.util.concurrent.atomic.AtomicInteger(0)
-    // COST events need to be formatted like this:
-    //   2022-07-11T14:14:26+00:00 # INFO -COST- 10000 1
-    def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
-    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+    int cost = 0
+    int count = 0
+
     rdock.out[2].subscribe {
-        cost.addAndGet(new Integer(it))
+        cost += new Integer(it)
         count += 1
         now = dateFormat.format(new java.util.Date())
-        println("$now # INFO -COST- $cost $count")
+        log.info("$now # INFO -COST- $cost $count")
+        log.info("$now # PROGRESS -DONE- $wrkflw:rdock $count")
     }
+    collect_results.out.subscribe {
+        now = dateFormat.format(new java.util.Date())
+        log.info("$now # PROGRESS -DONE- $wrkflw:collect_results 1")
+    }
+    collect_failed.out.subscribe {
+            now = dateFormat.format(new java.util.Date())
+            log.info("$now # PROGRESS -DONE- $wrkflw:collect_failed 1")
+        }
 
     emit:
     collect_results.out
