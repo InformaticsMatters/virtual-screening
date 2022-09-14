@@ -1,0 +1,12 @@
+name: moldb
+channels:
+- conda-forge
+dependencies:
+- python=3.9
+- pip=21.1
+- sqlalchemy=1.4
+- psycopg2=2.9
+- rdkit=2021.03.5
+- pip:
+  - im-standardize-molecule==0.1.0
+  - im-data-manager-job-utilities==1.1.0

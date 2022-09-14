@@ -1,6 +1,7 @@
 molecules
 misc
 work
+outputs
 **.pyc
 __pycache__
 .idea

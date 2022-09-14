@@ -1,19 +1,26 @@
-params.interval = 1000
+params.publish_dir = ''
+params.publish_dir_mode = 'move'
+params.interval = 10000
 params.num_charges = 2
 params.try_embedding = true
-params.add_hydrogens = true
+params.add_hydrogens = false
 params.max_tautomers = 25
+params.output_format = 'sdf'
 
 process enumerate {
 
     container 'informaticsmatters/vs-prep:latest'
+    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:
     file inputs
-    file data_dir
+
+    output:
+    file "enumerated-*.${params.output_format}"
 
     """
-    /code/enumerate.py -i $inputs --data-dir $data_dir --interval $params.interval\
+    export PYTHONPATH=/code
+    python -m moldb.enumerate -i $inputs -o enumerated-${inputs.name}.${params.output_format} --interval $params.interval\
       --enumerate-tautomers --enumerate-chirals --enumerate-charges\
       ${params.num_charges ? '--num-charges ' + params.num_charges : ''}\
       ${params.try_embedding ? '--try-embedding' : ''}\
