@@ -36,9 +36,11 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
         DmLog.emit_event(msg)
         raise ValueError(msg)
 
+    # molmod.Y can be an array in multi prediction
     model_name = molmod.Y.replace(' ', '_').replace('__', '_')
+    model_title = molmod.model_title
     model_type = molmod.modeling_task
-    DmLog.emit_event("Model is", model_name, model_type)
+    DmLog.emit_event("Model title:", model_title, ", property name", model_name, ", type:", model_type)
 
     reader = rdkit_utils.create_reader(input, delimiter=delimiter, read_header=read_header,
                                        id_column=id_column, sdf_read_records=sdf_read_records)
@@ -86,7 +88,7 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
         if output:
             writer.write(smi, mol, id, props, values)
         else:
-            print(smi, *values)
+            print(smi, id, *values)
 
     DmLog.emit_event(num_outputs, "outputs among", count, "molecules")
     DmLog.emit_cost(count)
@@ -110,6 +112,8 @@ def get_calc_prop_names(molmod, prefix):
             names.append(prefix + '_DOA')     # True or False
     elif model_type == 'regression':
         names.append(prefix + '_Prediction')  # regression score
+        if molmod.doa:
+            names.append(prefix + '_DOA')     # True or False
 
     return names
 
@@ -131,6 +135,8 @@ def get_calc_values(molmod):
             values.append(molmod.doa.IN[0])
     elif model_type == 'regression':
         values.append(molmod.prediction[0][0])
+        if molmod.doa:
+            values.append(molmod.doa.IN[0])
 
     return values
 
