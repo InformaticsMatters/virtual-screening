@@ -23,6 +23,10 @@ from sqlalchemy.orm import Session
 
 from . import models
 
+import rdkit_utils
+
+from rdkit import Chem
+
 from dm_job_utilities.dm_log import DmLog
 
 
@@ -166,18 +170,16 @@ def filter_need_enum(output_file, dry_run=False,
                min_tpsa=min_tpsa, max_tpsa=max_tpsa)
 
 
-def filter_enumerated(output_file, dry_run=False, codes=None,
-                     min_hac=None, max_hac=None,
-                     min_rotb=None, max_rotb=None,
-                     min_rings=None, max_rings=None,
-                     min_aro_rings=None, max_aro_rings=None,
-                     min_chiral_centres=None, max_chiral_centres=None,
-                     min_undefined_chiral_centres=None, max_undefined_chiral_centres=None,
-                     min_sp3=None, max_sp3=None,
-                     min_logp=None, max_logp=None,
-                     min_tpsa=None, max_tpsa=None):
-
-    utils.expand_path(output_file)
+def _gen_enumerated_query(codes=None,
+                          min_hac=None, max_hac=None,
+                          min_rotb=None, max_rotb=None,
+                          min_rings=None, max_rings=None,
+                          min_aro_rings=None, max_aro_rings=None,
+                          min_chiral_centres=None, max_chiral_centres=None,
+                          min_undefined_chiral_centres=None, max_undefined_chiral_centres=None,
+                          min_sp3=None, max_sp3=None,
+                          min_logp=None, max_logp=None,
+                          min_tpsa=None, max_tpsa=None):
 
     filters = _gen_filters(min_hac=min_hac, max_hac=max_hac,
                            min_rotb=min_rotb, max_rotb=max_rotb,
@@ -190,35 +192,110 @@ def filter_enumerated(output_file, dry_run=False, codes=None,
                            min_tpsa=min_tpsa, max_tpsa=max_tpsa,
                            prefix='m.')
 
-    sql = 'SELECT e.molecule_id, e.sdf FROM enumeration e JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
+    sql = 'SELECT e.molecule_id, e.smiles, e.code, m.smiles FROM enumeration e JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
     if codes:
         sql = sql + " AND e.code IN ('" + "','".join(codes) + "')"
+
     DmLog.emit_event('Query SQL:\n', sql)
+    return sql
 
-    if not dry_run:
-        count = 0
-        t0 = time.time()
-        with open(output_file, 'wt') as writer:
-            with engine.connect() as conn:
-                results = conn.execute(text(sql))
-                for result in results:
-                    count += 1
-                    writer.write(result[1])
-        t1 = time.time()
-        DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
 
+def filter_enumerated_cxsmi(output_file, codes=None,
+                     min_hac=None, max_hac=None,
+                     min_rotb=None, max_rotb=None,
+                     min_rings=None, max_rings=None,
+                     min_aro_rings=None, max_aro_rings=None,
+                     min_chiral_centres=None, max_chiral_centres=None,
+                     min_undefined_chiral_centres=None, max_undefined_chiral_centres=None,
+                     min_sp3=None, max_sp3=None,
+                     min_logp=None, max_logp=None,
+                     min_tpsa=None, max_tpsa=None):
+
+    utils.expand_path(output_file)
+
+    sql = _gen_enumerated_query(codes=codes,
+                                min_hac=min_hac, max_hac=max_hac,
+                                min_rotb=min_rotb, max_rotb=max_rotb,
+                                min_rings=min_rings, max_rings=max_rings,
+                                min_aro_rings=min_aro_rings, max_aro_rings=max_aro_rings,
+                                min_chiral_centres=min_chiral_centres, max_chiral_centres=max_chiral_centres,
+                                min_undefined_chiral_centres=min_undefined_chiral_centres, max_undefined_chiral_centres=max_undefined_chiral_centres,
+                                min_sp3=min_sp3, max_sp3=max_sp3,
+                                min_logp=min_logp, max_logp=max_logp,
+                                min_tpsa=min_tpsa, max_tpsa=max_tpsa)
+
+    count = 0
+    t0 = time.time()
+    with open(output_file, 'wt') as writer:
+        with engine.connect() as conn:
+            results = conn.execute(text(sql))
+            for result in results:
+                count += 1
+                line = "{}\t{}\t{}\t{}\n".format(result[1], str(result[0]), result[2], result[3])
+                writer.write(line)
+    t1 = time.time()
+    DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
+
+
+def filter_enumerated_sdf(output_file, codes=None,
+                            min_hac=None, max_hac=None,
+                            min_rotb=None, max_rotb=None,
+                            min_rings=None, max_rings=None,
+                            min_aro_rings=None, max_aro_rings=None,
+                            min_chiral_centres=None, max_chiral_centres=None,
+                            min_undefined_chiral_centres=None, max_undefined_chiral_centres=None,
+                            min_sp3=None, max_sp3=None,
+                            min_logp=None, max_logp=None,
+                            min_tpsa=None, max_tpsa=None):
+
+    utils.expand_path(output_file)
+
+    sql = _gen_enumerated_query(codes=codes,
+                                min_hac=min_hac, max_hac=max_hac,
+                                min_rotb=min_rotb, max_rotb=max_rotb,
+                                min_rings=min_rings, max_rings=max_rings,
+                                min_aro_rings=min_aro_rings, max_aro_rings=max_aro_rings,
+                                min_chiral_centres=min_chiral_centres, max_chiral_centres=max_chiral_centres,
+                                min_undefined_chiral_centres=min_undefined_chiral_centres, max_undefined_chiral_centres=max_undefined_chiral_centres,
+                                min_sp3=min_sp3, max_sp3=max_sp3,
+                                min_logp=min_logp, max_logp=max_logp,
+                                min_tpsa=min_tpsa, max_tpsa=max_tpsa)
+
+    count = 0
+    t0 = time.time()
+    with open(output_file, 'wt') as writer:
+        with engine.connect() as conn:
+            results = conn.execute(text(sql))
+            for result in results:
+                count += 1
+                mol = Chem.MolFromSmiles(result[1])
+                enum_smi = result[1].split(' ')[0]
+                if mol.HasProp('_CXSMILES_Data'):
+                    mol.ClearProp('_CXSMILES_Data')
+                mol.SetProp('_Name', str(result[0]))
+                mol.SetProp('enum_smi', enum_smi)
+                mol.SetProp('std_smi', result[3])
+                mol.SetProp('enum_code', result[2])
+
+                sdf_block = Chem.SDWriter.GetText(mol)
+                chg_block = rdkit_utils.updateChargeFlagInAtomBlock(sdf_block)
+                writer.write(chg_block)
+    t1 = time.time()
+    DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
 
 def main():
 
     # Example:
-    #   python -m moldb.filter --output-smiles filtered.smi --output-need-enum need-enum.smi --min-hac 16 --max-hac 24 --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0
+    #   python -m moldb.filter --output-smiles filtered.smi --output-need-enum need-enum.smi --min-hac 16 --max-hac 24 \
+    #     --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Filter')
     parser.add_argument('--output-smiles', help="Output file for SMILES")
     parser.add_argument('--output-need-enum', help="Output file for SMILES needing enumeration")
-    parser.add_argument('--output-enumerated', help="Output file for SMILES that have been enumerated")
+    parser.add_argument('--output-enumerated-cxsmi', help="Output CXSMILES file for molecules that have been enumerated")
+    parser.add_argument('--output-enumerated-sdf', help="Output SDF file for molecules that have been enumerated")
 
     parser.add_argument('--min-hac', type=int, help="Min value for heavy atom count")
     parser.add_argument('--max-hac', type=int, help="Max value for heavy atom count")
@@ -272,8 +349,8 @@ def main():
                           min_logp=args.min_logp, max_logp=args.max_logp,
                           min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
 
-    if args.output_enumerated:
-        filter_enumerated(args.output_enumerated, dry_run=args.dry_run, codes=args.enum_codes,
+    if args.output_enumerated_cxsmi:
+        filter_enumerated_cxsmi(args.output_enumerated_cxsmi, codes=args.enum_codes,
                       min_hac=args.min_hac, max_hac=args.max_hac,
                       min_rotb=args.min_rotb, max_rotb=args.max_rotb,
                       min_rings=args.min_rings, max_rings=args.max_rings,
@@ -283,6 +360,18 @@ def main():
                       min_sp3=args.min_sp3, max_sp3=args.max_sp3,
                       min_logp=args.min_logp, max_logp=args.max_logp,
                       min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
+
+    if args.output_enumerated_sdf:
+        filter_enumerated_sdf(args.output_enumerated_sdf, codes=args.enum_codes,
+                                min_hac=args.min_hac, max_hac=args.max_hac,
+                                min_rotb=args.min_rotb, max_rotb=args.max_rotb,
+                                min_rings=args.min_rings, max_rings=args.max_rings,
+                                min_aro_rings=args.min_aro_rings, max_aro_rings=args.max_aro_rings,
+                                min_chiral_centres=args.min_chiral_centres, max_chiral_centres=args.max_chiral_centres,
+                                min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
+                                min_sp3=args.min_sp3, max_sp3=args.max_sp3,
+                                min_logp=args.min_logp, max_logp=args.max_logp,
+                                min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright 2022 Informatics Matters Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,10 +36,8 @@ import argparse
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from rdkit import Chem
-
-import models
-from models import Enumeration
+from . import models
+from . models import Enumeration
 
 from dm_job_utilities.dm_log import DmLog
 
@@ -52,12 +48,10 @@ engine = models.get_engine(echo=False)
 def _load_mols(session, moldata):
     items = []
     for data in moldata:
-        mol = data[0]
-        sdf = data[1]
-        id = mol.GetProp('_Name')
-        code = mol.GetProp('enum_code')
-        esmiles = mol.GetProp('enum_smi')
-        items.append(Enumeration(molecule_id=id, code=code, smiles=esmiles, sdf=sdf))
+        id = data[0]
+        smiles = data[1]
+        code = data[2]
+        items.append(Enumeration(molecule_id=id, code=code, smiles=smiles))
 
     session.bulk_save_objects(items)
 
@@ -66,33 +60,34 @@ def load_data(inputs, chunk_size=100, interval=None):
     """
     Loads enumerated 3D molecules from a SD-file into the enumeration table.
 
-    :param input: SDF file name to load
+    :param input: file name to load (contents: cxsmi\tid\tcode
     :param chunk_size: Bulk insert chunk size
     :param interval: Reporting interval
     :return:
     """
 
     count = 0
-    errors = 0
-
     chunk = []
-
     current_id = None
     num_ids = 0
 
-    for input in inputs:
-        recordno = 0
-        DmLog.emit_event("Handling", input)
-        with Chem.SDMolSupplier(input) as supplr:
-            with Session(engine) as session:
-                for mol in supplr:
+    with Session(engine) as session:
+        for input in inputs:
+            recordno = 0
+            DmLog.emit_event("Handling", input)
 
-                    if not mol:
-                        errors += 1
-                        print('Failed to read molecule {}'.format(recordno))
-                        continue
+            with open(input) as f:
+                for line in f:
+                    if not line:
+                        break
+                    t = line.split('\t')
+                    smi = t[0].strip()
+                    id = t[1].strip()
+                    code = t[2].strip()
 
-                    id = mol.GetProp('_Name')
+                    count += 1
+                    recordno += 1
+
                     # if it's a new id then wipe all existing rows with that id from the db
                     if id != current_id:
                         current_id = id
@@ -100,15 +95,10 @@ def load_data(inputs, chunk_size=100, interval=None):
                         stmt = delete(Enumeration).where(Enumeration.molecule_id == id)
                         session.execute(stmt)
 
-                    sdf = supplr.GetItemText(recordno)
-
-                    count += 1
-                    recordno += 1
-
                     if interval and recordno % interval == 0:
                         DmLog.emit_event("Processed {} records".format(recordno))
 
-                    chunk.append((mol, sdf))
+                    chunk.append((id, smi, code))
                     # if chunk has got to the right size then do a bulk insert into the db
                     if len(chunk) == chunk_size:
                         _load_mols(session, chunk)
@@ -119,7 +109,7 @@ def load_data(inputs, chunk_size=100, interval=None):
                     _load_mols(session, chunk)
                     chunk = []
 
-                session.commit()
+                    session.commit()
 
     DmLog.emit_event("Total of {} records loaded, {} distinct IDs".format(count, num_ids))
     return count
@@ -128,12 +118,13 @@ def load_data(inputs, chunk_size=100, interval=None):
 def main():
 
     # Example:
-    # ./load_enums.py -i enumerations.sdf --interval 10000
+    #   python -m moldb.load_enums -i enumerations.sdf --interval 10000
+    #   python -m moldb.load_enums -i enumerations.cxsmi --interval 10000
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='load_enums')
-    parser.add_argument('-i', '--input', nargs='+', help="Input SDF file")
+    parser.add_argument('-i', '--input', nargs='+', help="Input file (.cxsmi")
     parser.add_argument("--chunk-size", type=int, default=100, help="Bulk insert chunk size")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 

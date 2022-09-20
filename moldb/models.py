@@ -56,7 +56,6 @@ class Enumeration(TimestampMixin, Base):
     molecule_id = Column(BigInteger, ForeignKey('molecule.id'), nullable=False, index=True)
     code = Column(CHAR(1), nullable=False)
     smiles = Column(Text, nullable=False)
-    sdf = Column(Text, nullable=False)
 
 
 class Supply(TimestampMixin, Base):

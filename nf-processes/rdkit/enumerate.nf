@@ -5,7 +5,7 @@ params.num_charges = 2
 params.try_embedding = true
 params.add_hydrogens = false
 params.max_tautomers = 25
-params.output_format = 'sdf'
+params.output_format = 'cxsmi' // or sdf
 
 process enumerate {
 
