@@ -13,6 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/* Example usage:
+   nextflow run enumerate-mols.nf -with-trace -with-report --publish_dir outputs/enumerated
+*/
+
 nextflow.enable.dsl=2
 
 

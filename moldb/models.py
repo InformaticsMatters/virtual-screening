@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from sqlalchemy import Column, PrimaryKeyConstraint, ForeignKey, Index, UniqueConstraint, func
 from sqlalchemy import MetaData, Table, Column, Integer, BigInteger, SmallInteger, String, DateTime, Text, Float, CHAR
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, declarative_mixin, relationship, sessionmaker
 
 import sqlalchemy
+
 print('sqlalchemy version:', sqlalchemy.__version__)
 
 
@@ -56,6 +59,19 @@ class Enumeration(TimestampMixin, Base):
     molecule_id = Column(BigInteger, ForeignKey('molecule.id'), nullable=False, index=True)
     code = Column(CHAR(1), nullable=False)
     smiles = Column(Text, nullable=False)
+    coords = Column(Text, nullable=False)
+
+
+class Conformer(TimestampMixin, Base):
+
+    __tablename__ = 'conformer'
+
+    id = Column(BigInteger, primary_key=True)
+
+    enumeration_id = Column(BigInteger, ForeignKey('enumeration.id'), nullable=False, index=True)
+    coords = Column(Text, nullable=False)
+    energy = Column(Float)
+    energy_delta = Column(Float)
 
 
 class Supply(TimestampMixin, Base):
@@ -108,7 +124,14 @@ class Library(TimestampMixin, Base):
 _engine = None
 
 def get_engine(echo=True):
+
+    pg_server = os.getenv('POSTGRES_SERVER', default='localhost')
+    pg_database = os.getenv('POSTGRES_DATABASE', default='postgres')
+    pg_username = os.getenv('POSTGRES_USERNAME', default='postgres')
+    pg_password = os.getenv('POSTGRES_PASSWORD', default='squonk')
+
     global _engine
     if _engine is None:
-        _engine = create_engine("postgresql://postgres:squonk@localhost/postgres", echo=echo, future=True)
+        url = 'postgresql://{}:{}@{}/{}'.format(pg_username, pg_password, pg_server, pg_database)
+        _engine = create_engine(url, echo=echo, future=True)
     return _engine

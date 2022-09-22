@@ -13,22 +13,22 @@
 # limitations under the License.
 
 """
-Loads enumerated 3D molecules from a file of cxsmiles into the enumeration table.
-The input data should be generated with the enumerate.py script.
-It will be in the form of a tab delineated file that has a single 3D conformer of each enumerated state.
+Loads 3D conformers from a file into the enumeration table.
+The input data should be generated with the conformers.py script.
+It will be in the form of a tab delineated file that has a multiple 3D conformers for each enumerated state.
 The file should contain these fields:
 
-* cxsmiles (with 3D coordinates)
-* molecule ID
-* enumeration code (B=base structure, T=tautomer, M=microstate, C=stereoisomer)
+* the 3D coordinates section from the cxmiles
+* enumerated ID
+* energy
+* energy delta (difference to lowest energy conformer)
 
-For each molecule ID all enumerated molecules are first deleted from the DB before
-the new data is loaded. This means it is important to be consistent about which forms are being
-enumerated or the db will contain inconsistent enumerated forms. Unless you have particular
-reasons otherwise, you should use enumerate.py with the --enumerate-charges, --enumerate-chirals
-and --enumerate-tautomers options but not the --combinatorial option.
+The coordinates bit must be the coordiantes section of the cxsmiles extension. e.g if the cxsmiles looked like this:
+  CCO |(2.84126,-0.0586636,2.68552;3.04156,1.20289,1.86426;3.754,0.913667,0.663692)|
+then the first field must be like this:
+  2.84126,-0.0586636,2.68552;3.04156,1.20289,1.86426;3.754,0.913667,0.663692
 
-For a particular db apply the same enumeration settings to all uses of enumerate.py.
+Generate data like this using the conformers.py module with the -coords-only option.
 """
 
 import argparse
@@ -37,7 +37,7 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from . import models
-from . models import Enumeration
+from . models import Enumeration, Conformer
 
 from dm_job_utilities.dm_log import DmLog
 
@@ -45,10 +45,15 @@ from dm_job_utilities.dm_log import DmLog
 engine = models.get_engine(echo=False)
 
 
-def _load_mols(session, moldata):
+def _load_confs(session, moldata):
     items = []
     for data in moldata:
-        items.append(Enumeration(molecule_id=data[0], smiles=data[1], coords=data[2], code=data[3]))
+        id = data[0]
+        coords = data[1]
+        energy = float(data[2])
+        energy_delta = float(data[3])
+        print('loading', data)
+        items.append(Conformer(enumeration_id=id, coords=coords, energy=energy, energy_delta=energy_delta))
 
     session.bulk_save_objects(items)
 
@@ -57,7 +62,7 @@ def load_data(inputs, chunk_size=100, interval=None):
     """
     Loads enumerated 3D molecules from a SD-file into the enumeration table.
 
-    :param input: file name to load (contents: cxsmi\tid\tcode
+    :param input: file name to load (contents: cords\tid)
     :param chunk_size: Bulk insert chunk size
     :param interval: Reporting interval
     :return:
@@ -78,13 +83,10 @@ def load_data(inputs, chunk_size=100, interval=None):
                     if not line:
                         break
                     t = line.split('\t')
-                    cxsmi = t[0].strip()
+                    coords = t[0].strip()
                     id = t[1].strip()
-                    code = t[2].strip()
-
-                    parts = cxsmi.split(' ')
-                    smi = parts[0]
-                    coords = parts[1][1:-1]
+                    energy = t[3].strip()
+                    energy_delta = t[4].strip()
 
                     count += 1
                     recordno += 1
@@ -93,21 +95,21 @@ def load_data(inputs, chunk_size=100, interval=None):
                     if id != current_id:
                         current_id = id
                         num_ids += 1
-                        stmt = delete(Enumeration).where(Enumeration.molecule_id == id)
+                        stmt = delete(Conformer).where(Conformer.enumeration_id == id)
                         session.execute(stmt)
 
                     if interval and recordno % interval == 0:
                         DmLog.emit_event("Processed {} records".format(recordno))
 
-                    chunk.append((id, smi, coords, code))
+                    chunk.append((id, coords, energy, energy_delta))
                     # if chunk has got to the right size then do a bulk insert into the db
                     if len(chunk) == chunk_size:
-                        _load_mols(session, chunk)
+                        _load_confs(session, chunk)
                         chunk = []
 
                 # load any dangling chunk
                 if len(chunk) > 0:
-                    _load_mols(session, chunk)
+                    _load_confs(session, chunk)
                     chunk = []
 
                     session.commit()
@@ -130,7 +132,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    DmLog.emit_event("load_enums: ", args)
+    DmLog.emit_event("load_confs: ", args)
 
     load_data(args.input, interval=args.interval)
 

@@ -40,7 +40,6 @@ def run2(count=None, interval=None):
     _load_molprops(output_file)
 
 
-
 def _extract_mols(count=None):
 
     path = ['outputs', 'calculate']
