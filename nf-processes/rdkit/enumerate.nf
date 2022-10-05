@@ -19,7 +19,6 @@ process enumerate {
     file "enumerated-*.${params.output_format}"
 
     """
-    export PYTHONPATH=/code
     python -m moldb.enumerate -i $inputs -o enumerated-${inputs.name}.${params.output_format} --interval $params.interval\
       --enumerate-tautomers --enumerate-chirals --enumerate-charges\
       ${params.num_charges ? '--num-charges ' + params.num_charges : ''}\

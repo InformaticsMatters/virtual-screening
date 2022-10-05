@@ -14,36 +14,31 @@ limitations under the License.
 */
 
 /* Example usage:
-   nextflow run conformers.nf -with-trace -with-report --publish_dir outputs/conformers
+   nextflow run moldb/enumerate_mols.nf -with-trace --min_hac 16 --max_hac 20 --min_rings 2 --min_aro_rings 1
 */
 
 nextflow.enable.dsl=2
 
 
-params.inputs = 'need-conf.smi'
-params.chunk_size = 10000
-
-// files
-inputs_smi = file(params.inputs) // smiles with molecules to enumerate
+params.file = 'need-enum.smi'
+params.chunk_size = 1000
 
 // includes
-include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
-include { gen_conformers } from './nf-processes/rdkit/gen_conformers.nf'
+include { extract_need_enum } from '../nf-processes/moldb/filter.nf' addParams(output: params.file)
+include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { enumerate } from '../nf-processes/rdkit/enumerate.nf'
+include { load_enum } from '../nf-processes/moldb/db_load.nf'
 
 // workflow definitions
-workflow generate_confs {
-
-    take:
-    inputs_smi
+workflow enumerate_forms {
 
     main:
-    split_txt(inputs_smi)
-    gen_conformers(split_txt.out.flatten())
-
-    emit:
-    gen_conformers.out
+    extract_need_enum()
+    split_txt(extract_need_enum.out)
+    enumerate(split_txt.out.flatten())
+    load_enum(enumerate.out)
 }
 
 workflow {
-    generate_confs(inputs_smi)
+    enumerate_forms()
 }

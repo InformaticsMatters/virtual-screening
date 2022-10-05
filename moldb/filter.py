@@ -21,7 +21,7 @@ import utils
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from . import models
+from . import models, moldb_utils
 
 import rdkit_utils
 
@@ -129,7 +129,7 @@ def _do_filter(sql, output_file, dry_run=False, prefix='', suffix='',
             session.commit()
 
 
-def filter_smiles(output_file, dry_run=False,
+def filter_smiles(output_file, count, dry_run=False,
            min_hac=None, max_hac=None,
            min_rotb=None, max_rotb=None,
            min_rings=None, max_rings=None,
@@ -142,7 +142,12 @@ def filter_smiles(output_file, dry_run=False,
 
 
     sql = "COPY (SELECT smiles, id FROM molecule WHERE "
-    _do_filter(sql, output_file, dry_run=dry_run, suffix=') TO STDOUT',
+    if count:
+        suffix = ' LIMIT ' + str(int(count)) + ') TO STDOUT'
+    else:
+        suffix = ') TO STDOUT'
+
+    _do_filter(sql, output_file, dry_run=dry_run, suffix=suffix,
                min_hac=min_hac, max_hac=max_hac,
                min_rotb=min_rotb, max_rotb=max_rotb,
                min_rings=min_rings, max_rings=max_rings,
@@ -154,7 +159,7 @@ def filter_smiles(output_file, dry_run=False,
                min_tpsa=min_tpsa, max_tpsa=max_tpsa)
 
 
-def filter_need_enum(output_file, dry_run=False,
+def filter_need_enum(output_file, count, dry_run=False,
                      min_hac=None, max_hac=None,
                      min_rotb=None, max_rotb=None,
                      min_rings=None, max_rings=None,
@@ -168,7 +173,12 @@ def filter_need_enum(output_file, dry_run=False,
     utils.expand_path(output_file)
 
     sql = "COPY (SELECT smiles, id FROM molecule m WHERE"
-    _do_filter(sql, output_file, dry_run=dry_run, suffix=' AND id NOT IN (SELECT DISTINCT molecule_id FROM enumeration)) TO STDOUT',
+    if count:
+        suffix = ' AND id NOT IN (SELECT DISTINCT molecule_id FROM enumeration) LIMIT ' + str(int(count)) + ') TO STDOUT'
+    else:
+        suffix = ' AND id NOT IN (SELECT DISTINCT molecule_id FROM enumeration)) TO STDOUT'
+
+    _do_filter(sql, output_file, dry_run=dry_run, suffix=suffix,
                min_hac=min_hac, max_hac=max_hac,
                min_rotb=min_rotb, max_rotb=max_rotb,
                min_rings=min_rings, max_rings=max_rings,
@@ -180,7 +190,7 @@ def filter_need_enum(output_file, dry_run=False,
                min_tpsa=min_tpsa, max_tpsa=max_tpsa)
 
 
-def filter_need_conf(output_file, dry_run=False,
+def filter_need_conf(output_file, count, dry_run=False,
                      min_hac=None, max_hac=None,
                      min_rotb=None, max_rotb=None,
                      min_rings=None, max_rings=None,
@@ -196,7 +206,12 @@ def filter_need_conf(output_file, dry_run=False,
     sql = "COPY (SELECT e.smiles, e.id, e.code FROM enumeration e " + \
         "WHERE e.molecule_id NOT IN " + \
           "(SELECT DISTINCT e.id FROM enumeration e JOIN molecule m ON e.molecule_id = m.id WHERE"
-    _do_filter(sql, output_file, dry_run=dry_run, prefix='m.', suffix=')) TO STDOUT',
+    if count:
+        suffix = ') LIMIT ' + str(int(count)) + ') TO STDOUT'
+    else:
+        suffix = ')) TO STDOUT'
+
+    _do_filter(sql, output_file, dry_run=dry_run, prefix='m.', suffix=suffix,
                min_hac=min_hac, max_hac=max_hac,
                min_rotb=min_rotb, max_rotb=max_rotb,
                min_rings=min_rings, max_rings=max_rings,
@@ -209,7 +224,7 @@ def filter_need_conf(output_file, dry_run=False,
                )
 
 
-def _gen_enumerated_query(codes=None,
+def _gen_enumerated_query(codes=None, count=None,
                           min_hac=None, max_hac=None,
                           min_rotb=None, max_rotb=None,
                           min_rings=None, max_rings=None,
@@ -234,12 +249,14 @@ def _gen_enumerated_query(codes=None,
     sql = 'SELECT e.molecule_id, e.smiles, e.code, m.smiles FROM enumeration e JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
     if codes:
         sql = sql + " AND e.code IN ('" + "','".join(codes) + "')"
+    if count:
+        sql = sql + " LIMIT " + str(int(count))
 
     DmLog.emit_event('Query SQL:\n', sql)
     return sql
 
 
-def filter_enumerated_cxsmi(output_file, codes=None,
+def filter_enumerated_cxsmi(output_file, count, codes=None,
                      min_hac=None, max_hac=None,
                      min_rotb=None, max_rotb=None,
                      min_rings=None, max_rings=None,
@@ -252,7 +269,7 @@ def filter_enumerated_cxsmi(output_file, codes=None,
 
     utils.expand_path(output_file)
 
-    sql = _gen_enumerated_query(codes=codes,
+    sql = _gen_enumerated_query(codes=codes, count=count,
                                 min_hac=min_hac, max_hac=max_hac,
                                 min_rotb=min_rotb, max_rotb=max_rotb,
                                 min_rings=min_rings, max_rings=max_rings,
@@ -276,7 +293,7 @@ def filter_enumerated_cxsmi(output_file, codes=None,
     DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
 
 
-def filter_enumerated_sdf(output_file, codes=None,
+def filter_enumerated_sdf(output_file, count, codes=None,
                             min_hac=None, max_hac=None,
                             min_rotb=None, max_rotb=None,
                             min_rings=None, max_rings=None,
@@ -289,7 +306,7 @@ def filter_enumerated_sdf(output_file, codes=None,
 
     utils.expand_path(output_file)
 
-    sql = _gen_enumerated_query(codes=codes,
+    sql = _gen_enumerated_query(codes=codes, count=count,
                                 min_hac=min_hac, max_hac=max_hac,
                                 min_rotb=min_rotb, max_rotb=max_rotb,
                                 min_rings=min_rings, max_rings=max_rings,
@@ -337,93 +354,79 @@ def main():
     parser.add_argument('--output-enumerated-cxsmi', help="Output CXSMILES file for molecules that have been enumerated")
     parser.add_argument('--output-enumerated-sdf', help="Output SDF file for molecules that have been enumerated")
 
-    parser.add_argument('--min-hac', type=int, help="Min value for heavy atom count")
-    parser.add_argument('--max-hac', type=int, help="Max value for heavy atom count")
-    parser.add_argument('--min-rotb', type=int, help="Min value for rotatable bond count")
-    parser.add_argument('--max-rotb', type=int, help="Max value for rotatable bond count")
-    parser.add_argument('--min-rings', type=int, help="Min value for ring count")
-    parser.add_argument('--max-rings', type=int, help="Max value for ring count")
-    parser.add_argument('--min-aro-rings', type=int, help="Min value for aromatic ring count")
-    parser.add_argument('--max-aro-rings', type=int, help="Max value for aromatic ring count")
-    parser.add_argument('--min-chiral-centres', type=int, help="Min value for number of tetrahedral chiral centres")
-    parser.add_argument('--max-chiral-centres', type=int, help="Max value for number of tetrahedral chiral centres")
-    parser.add_argument('--min-undefined-chiral-centres', type=int,
-                        help="Min value for number of undefined tetrahedral chiral centres")
-    parser.add_argument('--max-undefined-chiral-centres', type=int,
-                        help="Max value for number of undefined tetrahedral chiral centres")
-    parser.add_argument('--min-sp3', type=int, help="Min value for SP3 count")
-    parser.add_argument('--max-sp3', type=int, help="Max value for SP3 count")
-    parser.add_argument('--min-logp', type=float, help="Min value for logP")
-    parser.add_argument('--max-logp', type=float, help="Max value for logP")
-    parser.add_argument('--min-tpsa', type=float, help="Min value for tpsa")
-    parser.add_argument('--max-tpsa', type=float, help="Max value for tpsa")
+    moldb_utils.add_filter_args(parser)
 
     parser.add_argument('-m', '--enum-codes', nargs='+', help="Enumerated types (B, C, T, M)")
-
+    parser.add_argument('-c', '--count', type=int, help='Max number of molecules to extract')
     parser.add_argument('--dry-run', action='store_true', help="Generate SQL but don't execute")
 
     args = parser.parse_args()
     DmLog.emit_event("filter: ", args)
 
     if args.output_smiles:
-        filter_smiles(args.output_smiles, dry_run=args.dry_run,
+        filter_smiles(args.output_smiles, args.count, dry_run=args.dry_run,
             min_hac=args.min_hac, max_hac=args.max_hac,
             min_rotb=args.min_rotb, max_rotb=args.max_rotb,
             min_rings=args.min_rings, max_rings=args.max_rings,
             min_aro_rings=args.min_aro_rings, max_aro_rings=args.max_aro_rings,
             min_chiral_centres=args.min_chiral_centres, max_chiral_centres=args.max_chiral_centres,
-            min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
+            min_undefined_chiral_centres=args.min_undefined_chiral_centres,
+                      max_undefined_chiral_centres=args.max_undefined_chiral_centres,
             min_sp3=args.min_sp3, max_sp3=args.max_sp3,
             min_logp=args.min_logp, max_logp=args.max_logp,
             min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
 
     if args.output_need_enum:
-        filter_need_enum(args.output_need_enum, dry_run=args.dry_run,
+        filter_need_enum(args.output_need_enum, args.count, dry_run=args.dry_run,
                           min_hac=args.min_hac, max_hac=args.max_hac,
                           min_rotb=args.min_rotb, max_rotb=args.max_rotb,
                           min_rings=args.min_rings, max_rings=args.max_rings,
                           min_aro_rings=args.min_aro_rings, max_aro_rings=args.max_aro_rings,
                           min_chiral_centres=args.min_chiral_centres, max_chiral_centres=args.max_chiral_centres,
-                          min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
+                          min_undefined_chiral_centres=args.min_undefined_chiral_centres,
+                         max_undefined_chiral_centres=args.max_undefined_chiral_centres,
                           min_sp3=args.min_sp3, max_sp3=args.max_sp3,
                           min_logp=args.min_logp, max_logp=args.max_logp,
                           min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
 
     if args.output_need_conf:
-        filter_need_conf(args.output_need_conf, dry_run=args.dry_run,
+        filter_need_conf(args.output_need_conf, args.count, dry_run=args.dry_run,
                          min_hac=args.min_hac, max_hac=args.max_hac,
                          min_rotb=args.min_rotb, max_rotb=args.max_rotb,
                          min_rings=args.min_rings, max_rings=args.max_rings,
                          min_aro_rings=args.min_aro_rings, max_aro_rings=args.max_aro_rings,
                          min_chiral_centres=args.min_chiral_centres, max_chiral_centres=args.max_chiral_centres,
-                         min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
+                         min_undefined_chiral_centres=args.min_undefined_chiral_centres,
+                         max_undefined_chiral_centres=args.max_undefined_chiral_centres,
                          min_sp3=args.min_sp3, max_sp3=args.max_sp3,
                          min_logp=args.min_logp, max_logp=args.max_logp,
                          min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
 
     if args.output_enumerated_cxsmi:
-        filter_enumerated_cxsmi(args.output_enumerated_cxsmi, codes=args.enum_codes,
-                      min_hac=args.min_hac, max_hac=args.max_hac,
-                      min_rotb=args.min_rotb, max_rotb=args.max_rotb,
-                      min_rings=args.min_rings, max_rings=args.max_rings,
-                      min_aro_rings=args.min_aro_rings, max_aro_rings=args.max_aro_rings,
-                      min_chiral_centres=args.min_chiral_centres, max_chiral_centres=args.max_chiral_centres,
-                      min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
-                      min_sp3=args.min_sp3, max_sp3=args.max_sp3,
-                      min_logp=args.min_logp, max_logp=args.max_logp,
-                      min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
-
-    if args.output_enumerated_sdf:
-        filter_enumerated_sdf(args.output_enumerated_sdf, codes=args.enum_codes,
+        filter_enumerated_cxsmi(args.output_enumerated_cxsmi, args.count, codes=args.enum_codes,
                                 min_hac=args.min_hac, max_hac=args.max_hac,
                                 min_rotb=args.min_rotb, max_rotb=args.max_rotb,
                                 min_rings=args.min_rings, max_rings=args.max_rings,
                                 min_aro_rings=args.min_aro_rings, max_aro_rings=args.max_aro_rings,
                                 min_chiral_centres=args.min_chiral_centres, max_chiral_centres=args.max_chiral_centres,
-                                min_undefined_chiral_centres=args.min_undefined_chiral_centres, max_undefined_chiral_centres=args.max_undefined_chiral_centres,
+                                min_undefined_chiral_centres=args.min_undefined_chiral_centres,
+                                max_undefined_chiral_centres=args.max_undefined_chiral_centres,
                                 min_sp3=args.min_sp3, max_sp3=args.max_sp3,
                                 min_logp=args.min_logp, max_logp=args.max_logp,
                                 min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
+
+    if args.output_enumerated_sdf:
+        filter_enumerated_sdf(args.output_enumerated_sdf, args.count, codes=args.enum_codes,
+                              min_hac=args.min_hac, max_hac=args.max_hac,
+                              min_rotb=args.min_rotb, max_rotb=args.max_rotb,
+                              min_rings=args.min_rings, max_rings=args.max_rings,
+                              min_aro_rings=args.min_aro_rings, max_aro_rings=args.max_aro_rings,
+                              min_chiral_centres=args.min_chiral_centres, max_chiral_centres=args.max_chiral_centres,
+                              min_undefined_chiral_centres=args.min_undefined_chiral_centres,
+                              max_undefined_chiral_centres=args.max_undefined_chiral_centres,
+                              min_sp3=args.min_sp3, max_sp3=args.max_sp3,
+                              min_logp=args.min_logp, max_logp=args.max_logp,
+                              min_tpsa=args.min_tpsa, max_tpsa=args.max_tpsa)
 
 
 if __name__ == "__main__":

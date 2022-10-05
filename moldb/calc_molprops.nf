@@ -14,36 +14,32 @@ limitations under the License.
 */
 
 /* Example usage:
-   nextflow run conformers.nf -with-trace -with-report --publish_dir outputs/conformers
+    nextflow run moldb/calc_molprops.nf --chunk_size 1000 -with-trace
 */
 
 nextflow.enable.dsl=2
 
 
-params.inputs = 'need-conf.smi'
 params.chunk_size = 10000
-
-// files
-inputs_smi = file(params.inputs) // smiles with molecules to enumerate
+// other props used by modules
+// params.count = 10000 // number of molecules to extract and calculate
 
 // includes
-include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
-include { gen_conformers } from './nf-processes/rdkit/gen_conformers.nf'
+include { extract_molprops } from '../nf-processes/moldb/db_extract.nf'
+include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { calc_molprops } from '../nf-processes/moldb/calc_molprops.nf'
+include { load_molprops } from '../nf-processes/moldb/db_load.nf'
 
 // workflow definitions
-workflow generate_confs {
-
-    take:
-    inputs_smi
+workflow molprops {
 
     main:
-    split_txt(inputs_smi)
-    gen_conformers(split_txt.out.flatten())
-
-    emit:
-    gen_conformers.out
+    extract_molprops()
+    split_txt(extract_molprops.out)
+    calc_molprops(split_txt.out.flatten())
+    load_molprops(calc_molprops.out.collect())
 }
 
 workflow {
-    generate_confs(inputs_smi)
+    molprops()
 }

@@ -1,6 +1,4 @@
 ---
-# Tools from Silicos-it
-# See http://silicos-it.be.s3-website-eu-west-1.amazonaws.com/
 kind: DataManagerJobDefinition
 kind-version: '2021.1'
 name: Jaqpot predictive models
@@ -48,7 +46,6 @@ jobs:
       order:
         options:
         - outputFile
-        - apiKey
         - filter
         - threshold
         - delimiter

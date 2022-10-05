@@ -53,7 +53,7 @@ def _load_mols(session, moldata):
     session.bulk_save_objects(items)
 
 
-def load_data(inputs, chunk_size=100, interval=None):
+def load_data(inputs, chunk_size=100, purge=False, interval=None):
     """
     Loads enumerated 3D molecules from a SD-file into the enumeration table.
 
@@ -89,12 +89,13 @@ def load_data(inputs, chunk_size=100, interval=None):
                     count += 1
                     recordno += 1
 
-                    # if it's a new id then wipe all existing rows with that id from the db
                     if id != current_id:
                         current_id = id
                         num_ids += 1
-                        stmt = delete(Enumeration).where(Enumeration.molecule_id == id)
-                        session.execute(stmt)
+                        # if purge then wipe all existing rows with that id from the db
+                        if purge:
+                            stmt = delete(Enumeration).where(Enumeration.molecule_id == id)
+                            session.execute(stmt)
 
                     if interval and recordno % interval == 0:
                         DmLog.emit_event("Processed {} records".format(recordno))
@@ -119,20 +120,20 @@ def load_data(inputs, chunk_size=100, interval=None):
 def main():
 
     # Example:
-    #   python -m moldb.load_enums -i enumerations.sdf --interval 10000
     #   python -m moldb.load_enums -i enumerations.cxsmi --interval 10000
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='load_enums')
-    parser.add_argument('-i', '--input', nargs='+', help="Input file (.cxsmi")
-    parser.add_argument("--chunk-size", type=int, default=100, help="Bulk insert chunk size")
-    parser.add_argument("--interval", type=int, help="Reporting interval")
+    parser.add_argument('-i', '--input', nargs='+', help='Input file (.cxsmi)')
+    parser.add_argument('-c', '--chunk-size', type=int, default=100, help='Bulk insert chunk size')
+    parser.add_argument('-p', '--purge', action='store_true', help='Purge data before loading')
+    parser.add_argument('--interval', type=int, help='Reporting interval')
 
     args = parser.parse_args()
     DmLog.emit_event("load_enums: ", args)
 
-    load_data(args.input, interval=args.interval)
+    load_data(args.input, purge=args.purge, interval=args.interval)
 
 
 if __name__ == "__main__":

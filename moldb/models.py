@@ -49,6 +49,10 @@ class Molecule(TimestampMixin, Base):
     logp = Column(Float())
     tpsa = Column(Float())
 
+    def __repr__(self):
+        return "<Molecule(id=%s, smiles='%s', created_at='%s')>" \
+               % (self.id, self.smiles, self.created_at)
+
 
 class Enumeration(TimestampMixin, Base):
 
@@ -61,6 +65,10 @@ class Enumeration(TimestampMixin, Base):
     smiles = Column(Text, nullable=False)
     coords = Column(Text, nullable=False)
 
+    def __repr__(self):
+        return "<Enumeration(id=%s, molecule_id='%s', code='%s', smiles='%s', created_at='%s')>"\
+               % (self.id, self.molecule_id, self.code, self.smiles, self.created_at)
+
 
 class Conformer(TimestampMixin, Base):
 
@@ -72,6 +80,10 @@ class Conformer(TimestampMixin, Base):
     coords = Column(Text, nullable=False)
     energy = Column(Float)
     energy_delta = Column(Float)
+
+    def __repr__(self):
+        return "<Conformer(id=%s, enumeration_id='%s', coords='%s', created_at='%s')>" \
+               % (self.id, self.enumeration_id, self.coords, self.created_at)
 
 
 class Supply(TimestampMixin, Base):
@@ -86,6 +98,10 @@ class Supply(TimestampMixin, Base):
     file_id = Column(Integer, ForeignKey('file.id', ondelete="CASCADE"), nullable=False, index=True)
 
     file = relationship("File", back_populates="supplies")
+
+    def __repr__(self):
+        return "<Supply(id=%s, smiles='%s', code='%s', created_at='%s')>" % (self.id, self.smiles, self.code, self.created_at)
+
 
 
 class File(TimestampMixin, Base):
@@ -129,6 +145,8 @@ def get_engine(echo=True):
     pg_database = os.getenv('POSTGRES_DATABASE', default='postgres')
     pg_username = os.getenv('POSTGRES_USERNAME', default='postgres')
     pg_password = os.getenv('POSTGRES_PASSWORD', default='squonk')
+
+    print('Using database {} at {} with user {}'.format(pg_database, pg_server, pg_username))
 
     global _engine
     if _engine is None:

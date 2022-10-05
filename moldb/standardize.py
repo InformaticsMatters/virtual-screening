@@ -113,8 +113,10 @@ def main():
     args = parser.parse_args()
     DmLog.emit_event("shard: ", args)
 
+    delimiter = utils.read_delimiter(args.delimiter)
+
     t0 = time.time()
-    count, errors = standardize(args.input, args.outfile, args.delimiter, name_column=args.name_column,
+    count, errors = standardize(args.input, args.outfile, delimiter, name_column=args.name_column,
                                       interval=args.interval, skip_lines=args.skip_lines, errors_file=args.errors_file)
     t1 = time.time()
     # Duration? No less than 1 second?
@@ -124,6 +126,7 @@ def main():
 
     DmLog.emit_event('Processed {} records in {} seconds., {} errors.'.format(count, duration_s, errors))
     DmLog.emit_cost(count)
+
 
 if __name__ == "__main__":
     main()

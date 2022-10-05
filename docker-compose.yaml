@@ -56,3 +56,9 @@ services:
       dockerfile: Dockerfile-jaqpot
     image: informaticsmatters/vs-jaqpot:${IMAGE_TAG:-latest}
 
+  moldb:
+    build:
+      context: .
+      dockerfile: Dockerfile-moldb
+    image: informaticsmatters/vs-moldb:${IMAGE_TAG:-latest}
+

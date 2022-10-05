@@ -14,36 +14,34 @@ limitations under the License.
 */
 
 /* Example usage:
-   nextflow run conformers.nf -with-trace -with-report --publish_dir outputs/conformers
+    nextflow run moldb/load_library.nf --inputs data/10000.smi --library_name test123 --chunk_size 1000 -with-trace
 */
 
 nextflow.enable.dsl=2
 
 
-params.inputs = 'need-conf.smi'
+params.inputs = 'inputs.smi'
 params.chunk_size = 10000
 
-// files
-inputs_smi = file(params.inputs) // smiles with molecules to enumerate
+inputs = file(params.inputs)
 
 // includes
-include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
-include { gen_conformers } from './nf-processes/rdkit/gen_conformers.nf'
+include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { standardize } from '../nf-processes/rdkit/standardize.nf'
+include { load_standardized } from '../nf-processes/moldb/db_load.nf'
 
 // workflow definitions
-workflow generate_confs {
+workflow load_library {
 
     take:
-    inputs_smi
+    inputs
 
     main:
-    split_txt(inputs_smi)
-    gen_conformers(split_txt.out.flatten())
-
-    emit:
-    gen_conformers.out
+    split_txt(inputs)
+    standardize(split_txt.out.flatten())
+    load_standardized(standardize.out.collect())
 }
 
 workflow {
-    generate_confs(inputs_smi)
+    load_library(inputs)
 }

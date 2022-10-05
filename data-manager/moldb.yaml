@@ -1,0 +1,183 @@
+---
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: MolDB tools
+collection: moldb
+repository-url: https://github.com/InformaticsMatters/virtual-screening/moldb.yaml
+repository-tag: '1.0.0'
+
+jobs:
+  moldb-load-library:
+    name: MolDB load library
+    description: >-
+      Load compound library into MolDB, calculating molecular properties
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - library
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      python -m moldb.run1_load_library
+      -i '{{ input }}' -l '{{ library }}' -n {{ id_col }}
+      {% if skip_lines is defined %}--skip-lines {{ skip_lines }}{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - library
+        - id_col
+        - delimiter
+        - skip_lines
+      inputs:
+        type: object
+        required:
+        - input
+        properties:
+          input:
+            title: Molecules to load (.smi)
+            mime-types:
+            - squonk/x-smiles
+            - chemical/x-daylight-smiles
+            type: file
+      # no outputs
+      options:
+        type: object
+        required:
+        - library
+        - id_col
+        - delimiter
+        properties:
+          library:
+            title: Library name
+            type: string
+            pattern: "^[A-Za-z0-9][A-Za-z0-9_/\\- ]+$"
+          id_col:
+            title: Index of ID field (zero based)
+            type: integer
+            default: 1
+          delimiter:
+            title: Delimiter
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          skip_lines:
+            title: Skip this many lines e.g. 1 to ignore header
+            type: integer
+            default: 0
+            minValue: 0
+    tests:
+      simple-load:
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        inputs:
+          input: data/1000.smi
+        options:
+          library: test
+          id_col: 1
+          delimiter: tab
+          skip_lines: 0
+        checks:
+          exitCode: 0
+
+  moldb-calc-molprops:
+    name: MolDB caclulate molecular properties
+    description: >-
+      Calculate molecular properties and load into database
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - library
+    - molecular properties
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      python -m moldb.run2_calc_molprops
+      --count '{{ count }}'
+      --interval 10000
+    variables:
+      # no inputs
+      # no outputs
+      options:
+        type: object
+        required:
+        - count
+        properties:
+          count:
+            title: Number of molecules to process
+            type: integer
+            default: 100000
+            minValue: 0
+            maxValue: 10000000
+    tests:
+      simple-calc:
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          count: 100
+        checks:
+          exitCode: 0

@@ -8,7 +8,7 @@ services:
     postgres:
         image: informaticsmatters/rdkit-cartridge-debian:Release_2021_03
         volumes:
-        - /data/moldb/pgdata:/var/lib/postgresql/data:Z
+        - /work/moldb/pgdata:/var/lib/postgresql/data:Z
         environment:
             POSTGRES_PASSWORD: squonk
         ports:
