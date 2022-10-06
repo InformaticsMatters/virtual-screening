@@ -82,7 +82,8 @@ def load_data(inputs, chunk_size=100, purge=False, interval=None):
                     if not line:
                         break
                     t = line.split('\t')
-                    coords = t[0].strip()
+                    cxsmi = t[0].strip()
+                    coords = cxsmi[cxsmi.index('|'):]
                     id = t[1].strip()
                     energy = t[3].strip()
                     energy_delta = t[4].strip()

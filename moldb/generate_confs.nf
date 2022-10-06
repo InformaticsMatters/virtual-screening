@@ -14,7 +14,7 @@ limitations under the License.
 */
 
 /* Example usage:
-   nextflow run moldb/enumerate_mols.nf -with-trace --min_hac 16 --max_hac 20 --min_rings 2 --min_aro_rings 1
+   nextflow run moldb/generate_confs.nf -with-trace --min_hac 16 --max_hac 18 --min_rings 2 --min_aro_rings 1 --count 1000 --chunk_size 25
 */
 
 nextflow.enable.dsl=2
@@ -22,6 +22,10 @@ nextflow.enable.dsl=2
 
 params.file = 'need-enum.smi'
 params.chunk_size = 1000
+
+// filter options:
+// params.count = 10000
+// all the mol prop filters e.g. --min_hac 16
 
 // includes
 include { extract_need_conf } from '../nf-processes/moldb/filter.nf' addParams(output: params.file)

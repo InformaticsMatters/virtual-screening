@@ -32,7 +32,7 @@ def write_error(line, file):
         file.flush()
 
 
-def standardize(inputs, output_file, delimiter, name_column=None, skip_lines=0, interval=0, errors_file=None):
+def standardize(inputs, output_file, delimiter, name_column=None, skip_lines=0, interval=0, write_header=False, errors_file=None):
 
     count = 0
     errors = 0
@@ -45,7 +45,8 @@ def standardize(inputs, output_file, delimiter, name_column=None, skip_lines=0, 
 
     utils.expand_path(output_file)
     with open(output_file, 'w') as outfile:
-        outfile.write('smiles\torig_smiles\tid\n')
+        if write_header:
+            outfile.write('smiles\torig_smiles\tid\n')
 
         for input in inputs:
             DmLog.emit_event("Processing", input)
@@ -107,17 +108,19 @@ def main():
     parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter")
     parser.add_argument('-n', '--name-column', required=True, type=int, help="Column for name field (zero based)")
     parser.add_argument('--skip-lines', default=0, type=int, help="Skip this many lines e.g. use 1 to skip header line")
+    parser.add_argument('--write-header', action='store_true', help="Write a header line")
     parser.add_argument('-e', '--errors-file', help="Optional file to write bad lines to")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    DmLog.emit_event("shard: ", args)
+    DmLog.emit_event("standardize: ", args)
 
     delimiter = utils.read_delimiter(args.delimiter)
 
     t0 = time.time()
     count, errors = standardize(args.input, args.outfile, delimiter, name_column=args.name_column,
-                                      interval=args.interval, skip_lines=args.skip_lines, errors_file=args.errors_file)
+                                write_header=args.write_header, interval=args.interval, skip_lines=args.skip_lines,
+                                errors_file=args.errors_file)
     t1 = time.time()
     # Duration? No less than 1 second?
     duration_s = int(t1 - t0)

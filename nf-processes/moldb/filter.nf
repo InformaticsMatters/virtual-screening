@@ -1,5 +1,5 @@
 params.publish_dir = ''
-params.publish_dir_mode = 'move'
+params.publish_dir_mode = 'copy'
 params.output = 'need-enum.smi'
 params.count = 10000
 

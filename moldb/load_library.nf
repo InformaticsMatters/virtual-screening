@@ -28,6 +28,9 @@ inputs = file(params.inputs)
 // includes
 include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
 include { standardize } from '../nf-processes/rdkit/standardize.nf'
+include { concatenate_files} from '../nf-processes/file/concatenate_files.nf' addParams(
+    outputfile: inputs.getName(),
+    glob: '*.smi')
 include { load_standardized } from '../nf-processes/moldb/db_load.nf'
 
 // workflow definitions
@@ -39,7 +42,8 @@ workflow load_library {
     main:
     split_txt(inputs)
     standardize(split_txt.out.flatten())
-    load_standardized(standardize.out.collect())
+    concatenate_files(standardize.out.collect())
+    load_standardized(concatenate_files.out)
 }
 
 workflow {

@@ -6,6 +6,7 @@ params.library_name = 'no_name'
 process load_standardized {
 
     container 'informaticsmatters/vs-moldb:latest'
+    maxForks 1
 
     input:
     file inputs
@@ -18,6 +19,7 @@ process load_standardized {
 process load_molprops {
 
     container 'informaticsmatters/vs-moldb:latest'
+    maxForks 1
 
     input:
     file inputs
@@ -30,6 +32,7 @@ process load_molprops {
 process load_enum {
 
     container 'informaticsmatters/vs-moldb:latest'
+    maxForks 1
 
     input:
     file inputs
@@ -43,6 +46,7 @@ process load_enum {
 process load_conf {
 
     container 'informaticsmatters/vs-moldb:latest'
+    maxForks 1
 
     input:
     file inputs

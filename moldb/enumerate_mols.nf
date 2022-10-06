@@ -19,9 +19,14 @@ limitations under the License.
 
 nextflow.enable.dsl=2
 
-
+// filter options
 params.file = 'need-enum.smi'
+// params.count = 10000
+// all the mol prop filters e.g. --min_hac 16
+
+// split options
 params.chunk_size = 1000
+
 
 // includes
 include { extract_need_enum } from '../nf-processes/moldb/filter.nf' addParams(output: params.file)

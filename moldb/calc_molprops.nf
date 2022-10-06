@@ -37,7 +37,7 @@ workflow molprops {
     extract_molprops()
     split_txt(extract_molprops.out)
     calc_molprops(split_txt.out.flatten())
-    load_molprops(calc_molprops.out.collect())
+    load_molprops(calc_molprops.out)
 }
 
 workflow {
