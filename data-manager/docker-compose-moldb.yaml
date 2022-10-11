@@ -1,12 +1,14 @@
-version: '2.1'
+---
+version: '2.4'
 
+networks:
+  jote:
 services:
-
-    ################# PostgreSQL container ############################################
-    #
-    postgres:
-        image: informaticsmatters/rdkit-cartridge-debian:Release_2021_03
-        environment:
-            POSTGRES_PASSWORD: squonk
-        ports:
-        - "5432:5432"
+  postgres:
+    image: informaticsmatters/rdkit-cartridge-debian:Release_2021_03
+    networks:
+    - jote
+    environment:
+      POSTGRES_PASSWORD: squonk
+    ports:
+    - "5432:5432"
