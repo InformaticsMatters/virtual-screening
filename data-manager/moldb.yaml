@@ -6,6 +6,10 @@ collection: moldb
 repository-url: https://github.com/InformaticsMatters/virtual-screening/moldb.yaml
 repository-tag: '1.0.0'
 
+test-groups:
+- name: experiment-a
+  compose-file: docker-compose-moldb.yaml
+
 jobs:
   moldb-create-tables:
     name: Create MolDB database tables
@@ -58,6 +62,9 @@ jobs:
             type: string
     tests:
       create:
+        run-groups:
+        - name: experiment-a
+          ordinal: 1
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD
@@ -174,6 +181,9 @@ jobs:
             maxValue: 1000000
     tests:
       simple-load:
+        run-groups:
+        - name: experiment-a
+          ordinal: 2
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD
