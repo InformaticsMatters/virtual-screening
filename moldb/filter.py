@@ -453,9 +453,9 @@ def filter_conformers_sdf(output_file, count, codes=None,
                 mol.SetProp('enum_smi', result[3])
                 mol.SetProp('std_smi', result[6])
                 mol.SetProp('enum_code', result[5])
-                mol.SetProp('m_id', str(result[2]))
-                mol.SetProp('e_id', str(result[1]))
-                mol.SetProp('c_id', str(result[0]))
+                mol.SetIntProp('m_id', result[2])
+                mol.SetIntProp('e_id', result[1])
+                mol.SetIntProp('c_id', result[0])
 
                 sdf_block = Chem.SDWriter.GetText(mol)
                 chg_block = rdkit_utils.updateChargeFlagInAtomBlock(sdf_block)

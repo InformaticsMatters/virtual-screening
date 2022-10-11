@@ -23,6 +23,7 @@ ENV HOME=/code
 WORKDIR ${HOME}
 
 COPY *.nf ./
+COPY moldb/*.nf ./moldb/
 
 COPY nf-processes ./nf-processes
 

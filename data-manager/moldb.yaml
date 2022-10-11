@@ -7,21 +7,21 @@ repository-url: https://github.com/InformaticsMatters/virtual-screening/moldb.ya
 repository-tag: '1.0.0'
 
 jobs:
-  moldb-load-library:
-    name: MolDB load library
+  moldb-create-tables:
+    name: Create MolDB database tables
     description: >-
-      Load compound library into MolDB, calculating molecular properties
+      Create MolDB database tables
     version: '1.0.0'
     category: ligand preparation
     keywords:
     - moldb
     - database
-    - library
     image:
       name: informaticsmatters/vs-moldb
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      type: nextflow
       environment:
       - name: POSTGRES_USERNAME
         value-from:
@@ -45,17 +45,87 @@ jobs:
             key: database
       fix-permissions: true
     command: >-
-      python -m moldb.run1_load_library
-      -i '{{ input }}' -l '{{ library }}' -n {{ id_col }}
-      {% if skip_lines is defined %}--skip-lines {{ skip_lines }}{% endif %}
+      python -m moldb.create_db
+    variables:
+      # no inputs
+      # no outputs
+      # no options
+      options:
+        type: object
+        properties:
+          dummy:
+            title: Dummy option
+            type: string
+    tests:
+      create:
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          dummy: test
+        checks:
+          exitCode: 0
+
+  moldb-load-library:
+    name: MolDB load library
+    description: >-
+      Load compound library into MolDB, calculating molecular properties
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - library
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/moldb/load_library.nf
+      -i '{{ input }}'
+      --library_name '{{ library }}'
+      --name_col {{ id_col }}
+      {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
+      {% if header is defined and header %}--header{% endif %}
+      --delimiter '{{ delimiter }}'
       --interval 10000
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
       order:
         options:
         - library
         - id_col
         - delimiter
-        - skip_lines
+        - header
+        - chunk_size
       inputs:
         type: object
         required:
@@ -92,11 +162,16 @@ jobs:
             - comma
             - space
             - pipe
-          skip_lines:
-            title: Skip this many lines e.g. 1 to ignore header
+          header:
+            title: Skip header line
+            type: boolean
+            default: false
+          chunk_size:
+            title: Chunk size for splitting
             type: integer
-            default: 0
-            minValue: 0
+            default: 100000
+            minValue: 10000
+            maxValue: 1000000
     tests:
       simple-load:
         environment:
@@ -105,79 +180,12 @@ jobs:
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
         inputs:
-          input: data/1000.smi
+          input: data/10000.smi
         options:
           library: test
           id_col: 1
           delimiter: tab
-          skip_lines: 0
-        checks:
-          exitCode: 0
-
-  moldb-calc-molprops:
-    name: MolDB caclulate molecular properties
-    description: >-
-      Calculate molecular properties and load into database
-    version: '1.0.0'
-    category: ligand preparation
-    keywords:
-    - moldb
-    - database
-    - library
-    - molecular properties
-    image:
-      name: informaticsmatters/vs-moldb
-      tag: 'latest'
-      project-directory: /data
-      working-directory: /data
-      environment:
-      - name: POSTGRES_USERNAME
-        value-from:
-          secret:
-            name: im-moldb
-            key: username
-      - name: POSTGRES_PASSWORD
-        value-from:
-          secret:
-            name: im-moldb
-            key: password
-      - name: POSTGRES_SERVER
-        value-from:
-          secret:
-            name: im-moldb
-            key: server
-      - name: POSTGRES_DATABASE
-        value-from:
-          secret:
-            name: im-moldb
-            key: database
-      fix-permissions: true
-    command: >-
-      python -m moldb.run2_calc_molprops
-      --count '{{ count }}'
-      --interval 10000
-    variables:
-      # no inputs
-      # no outputs
-      options:
-        type: object
-        required:
-        - count
-        properties:
-          count:
-            title: Number of molecules to process
-            type: integer
-            default: 100000
-            minValue: 0
-            maxValue: 10000000
-    tests:
-      simple-calc:
-        environment:
-        - POSTGRES_USERNAME
-        - POSTGRES_PASSWORD
-        - POSTGRES_SERVER
-        - POSTGRES_DATABASE
-        options:
-          count: 100
+          header: false
+          chunk_size: 1000
         checks:
           exitCode: 0
