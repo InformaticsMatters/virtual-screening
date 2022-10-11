@@ -8,7 +8,9 @@ repository-tag: '1.0.0'
 
 test-groups:
 - name: experiment-a
-  compose-file: docker-compose-moldb.yaml
+  compose:
+    file: docker-compose-moldb.yaml
+    delay-seconds: 10
 
 jobs:
   moldb-create-tables:
@@ -25,7 +27,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
-      type: nextflow
+      type: simple
       environment:
       - name: POSTGRES_USERNAME
         value-from:
@@ -116,7 +118,7 @@ jobs:
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/load_library.nf
-      -i '{{ input }}'
+      --inputs '{{ input }}'
       --library_name '{{ library }}'
       --name_col {{ id_col }}
       {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
@@ -181,6 +183,7 @@ jobs:
             maxValue: 1000000
     tests:
       simple-load:
+        nextflow-config-file: nextflow-moldb.config
         run-groups:
         - name: experiment-a
           ordinal: 2
