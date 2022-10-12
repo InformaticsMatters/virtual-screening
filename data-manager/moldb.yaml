@@ -52,16 +52,6 @@ jobs:
       fix-permissions: true
     command: >-
       python -m moldb.create_db
-    variables:
-      # no inputs
-      # no outputs
-      # no options
-      options:
-        type: object
-        properties:
-          dummy:
-            title: Dummy option
-            type: string
     tests:
       create:
         run-groups:
@@ -72,8 +62,6 @@ jobs:
         - POSTGRES_PASSWORD
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
-        options:
-          dummy: test
         checks:
           exitCode: 0
 
