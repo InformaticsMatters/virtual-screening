@@ -146,10 +146,11 @@ def get_engine(echo=True):
     pg_username = os.getenv('POSTGRES_USERNAME', default='postgres')
     pg_password = os.getenv('POSTGRES_PASSWORD', default='squonk')
 
-    print('Using database {} at {} with user {}'.format(pg_database, pg_server, pg_username))
+    templ = 'postgresql://{}:{}@{}/{}'
+    print('Using database ' + templ.format(pg_username, '********', pg_server, pg_database))
 
     global _engine
     if _engine is None:
-        url = 'postgresql://{}:{}@{}/{}'.format(pg_username, pg_password, pg_server, pg_database)
+        url = templ.format(pg_username, pg_password, pg_server, pg_database)
         _engine = create_engine(url, echo=echo, future=True)
     return _engine

@@ -36,7 +36,7 @@ def load_molprops(input_files):
         for input_file in input_files:
             letters = string.ascii_lowercase
             table_name = 'props_' + ''.join(random.choice(letters) for i in range(16))
-            sql = "COPY {}(smiles, id, hac, rot_bonds, ring_count, aromatic_ring_count, chiral_centres, undef_chiral_centres, num_sp3, logp, tpsa) FROM STDIN DELIMITER E'\t' CSV HEADER;".format(table_name)
+            sql = "COPY {}(smiles, id, hac, rot_bonds, ring_count, aromatic_ring_count, chiral_centres, undef_chiral_centres, num_sp3, logp, tpsa) FROM STDIN DELIMITER E'\t' CSV;".format(table_name)
             DmLog.emit_event('Copying properties using:\n', sql)
 
             metadata_obj = MetaData()

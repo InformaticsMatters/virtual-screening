@@ -56,7 +56,7 @@ def load_data(inputs, library_name):
 
         letters = string.ascii_lowercase
         table_name = 'std_' + ''.join(random.choice(letters) for i in range(16))
-        sql = "COPY {}(smiles, orig_smiles, id) FROM STDIN DELIMITER E'\t' CSV HEADER;".format(table_name)
+        sql = "COPY {}(smiles, orig_smiles, id) FROM STDIN DELIMITER E'\t' CSV;".format(table_name)
 
         metadata_obj = MetaData()
         tmp_table = Table(table_name, metadata_obj,

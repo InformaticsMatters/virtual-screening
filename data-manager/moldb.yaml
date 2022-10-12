@@ -7,10 +7,10 @@ repository-url: https://github.com/InformaticsMatters/virtual-screening/moldb.ya
 repository-tag: '1.0.0'
 
 test-groups:
-- name: experiment-a
+- name: moldb
   compose:
     file: docker-compose-moldb.yaml
-    delay-seconds: 10
+    delay-seconds: 5
 
 jobs:
   moldb-create-tables:
@@ -18,7 +18,7 @@ jobs:
     description: >-
       Create MolDB database tables
     version: '1.0.0'
-    category: ligand preparation
+    # no category as this is only used as part of testing
     keywords:
     - moldb
     - database
@@ -49,13 +49,12 @@ jobs:
           secret:
             name: im-moldb
             key: database
-      fix-permissions: true
     command: >-
       python -m moldb.create_db
     tests:
       create:
         run-groups:
-        - name: experiment-a
+        - name: moldb
           ordinal: 1
         environment:
         - POSTGRES_USERNAME
@@ -65,10 +64,104 @@ jobs:
         checks:
           exitCode: 0
 
+  moldb-count-rows:
+    name: MolDB count rows
+    description: >-
+      Verify there are the expected number of rows in a database table
+    version: '1.0.0'
+    # no category as this is only used as part of testing
+    keywords:
+    - moldb
+    - database
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: simple
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+    command: >-
+      python -m moldb.count_rows --table-name '{{ table }}' --expected-rows {{ count }}
+    options:
+      type: object
+      required:
+      - table
+      - count
+      properties:
+        table:
+          title: Table name
+          pattern: "^[A-Za-z0-9_\\.\\-]+$"
+        count:
+          title: Expected row count
+          type: integer
+    tests:
+      supply:
+        run-groups:
+        - name: moldb
+          ordinal: 3
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          table: supply
+          count: 1000
+        checks:
+          exitCode: 0
+      enumeration:
+        run-groups:
+        - name: moldb
+          ordinal: 6
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          table: enumeration
+          count: 3260
+        checks:
+          exitCode: 0
+      conformer:
+        run-groups:
+        - name: moldb
+          ordinal: 10
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          table: conformer
+          count: 2088
+        checks:
+          exitCode: 0
+
   moldb-load-library:
     name: MolDB load library
     description: >-
-      Load compound library into MolDB, calculating molecular properties
+      Load compound library into MolDB
     version: '1.0.0'
     category: ligand preparation
     keywords:
@@ -173,7 +266,7 @@ jobs:
       simple-load:
         nextflow-config-file: nextflow-moldb.config
         run-groups:
-        - name: experiment-a
+        - name: moldb
           ordinal: 2
         environment:
         - POSTGRES_USERNAME
@@ -181,12 +274,942 @@ jobs:
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
         inputs:
-          input: data/10000.smi
+          input: data/1000.smi
         options:
           library: test
           id_col: 1
           delimiter: tab
           header: false
-          chunk_size: 1000
+          chunk_size: 250
         checks:
           exitCode: 0
+
+  moldb-calc-props:
+    name: MolDB molecular properties
+    description: >-
+      Calculate molecular properties and load into MolDB
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - molecular properties
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/moldb/calc_molprops.nf
+      {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
+      --count {{ count }}
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+    variables:
+      # no inputs
+      # no outputs
+      options:
+        type: object
+        required:
+        - count
+        properties:
+          count:
+            title: Max number of molecules to process
+            type: integer
+            default: 1000000
+            maxValue: 5000000
+          chunk_size:
+            title: Chunk size for splitting
+            type: integer
+            default: 50000
+            minValue: 10000
+            maxValue: 1000000
+    tests:
+      simple-calc:
+        nextflow-config-file: nextflow-moldb.config
+        run-groups:
+        - name: moldb
+          ordinal: 4
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          count: 1000
+          chunk_size: 25
+        checks:
+          exitCode: 0
+
+  moldb-enumerate-mols:
+    name: MolDB enumerate forms
+    description: >-
+      Enumerate tautomers, microstates and stereoisomers
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - enumerate
+    - microstates
+    - tautomers
+    - stereoisomers
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/moldb/enumerate_mols.nf
+      {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
+      {% if min_hac is defined %}--min_hac {{ min_hac }}{% endif %}
+      {% if max_hac is defined %}--max_hac {{ max_hac }}{% endif %}
+      {% if min_rotb is defined %}--min_rotb {{ min_rotb }}{% endif %}
+      {% if max_rotb is defined %}--max_rotb {{ max_rotb }}{% endif %}
+      {% if min_rings is defined %}--min_rings {{ min_rings }}{% endif %}
+      {% if max_rings is defined %}--max_rings {{ max_rings }}{% endif %}
+      {% if min_aro_rings is defined %}--min_aro_rings {{ min_aro_rings }}{% endif %}
+      {% if max_aro_rings is defined %}--max_aro_rings {{ max_aro_rings }}{% endif %}
+      {% if min_chiral_centres is defined %}--min_chiral_centres {{ min_chiral_centres }}{% endif %}
+      {% if max_chiral_centres is defined %}--max_chiral_centres {{ max_chiral_centres }}{% endif %}
+      {% if min_undefined_chiral_centres is defined %}--min_undefined_chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
+      {% if max_undefined_chiral_centres is defined %}--max_undefined_chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
+      {% if min_sp3 is defined %}--min_sp3 {{ min_sp3 }}{% endif %}
+      {% if max_sp3 is defined %}--max_sp3 {{ max_sp3 }}{% endif %}
+      {% if min_logp is defined %}--min_logp {{ min_logp }}{% endif %}
+      {% if max_logp is defined %}--max_logp {{ max_logp }}{% endif %}
+      {% if min_tpsa is defined %}--min_tpsa {{ min_tpsa }}{% endif %}
+      {% if max_tpsa is defined %}--max_tpsa {{ max_tpsa }}{% endif %}
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+    variables:
+      order:
+        options:
+        - count
+        - min_hac
+        - max_hac
+        - min_rotb
+        - max_rotb
+        - min_rings
+        - max_rings
+        - min_aro_rings
+        - max_aro_rings
+        - min_chiral_centres
+        - max_chiral_centres
+        - min_undef_chiral_centres
+        - max_undef_chiral_centres
+        - min_sp3
+        - max_sp3
+        - min_logp
+        - max_logp
+        - min_tpsa
+        - max_tpsa
+      # no inputs
+      # no outputs
+      options:
+        type: object
+        required:
+        - count
+        - chunk_size
+        properties:
+          count:
+            title: Max number of molecules to process
+            type: integer
+            default: 100000
+            maxValue: 5000000
+          chunk_size:
+            title: Chunk size for splitting
+            type: integer
+            default: 10000
+            minValue: 10000
+            maxValue: 1000000
+          min_hac:
+            title: Minimum Heavy Atom Count
+            type: integer
+            minimum: 0
+          max_hac:
+            title: Maximum Heavy Atom Count
+            type: integer
+            minimum: 0
+          min_rotb:
+            title: Minimum number of rotatable bonds
+            type: integer
+            minimum: 0
+          max_rotb:
+            title: Maximum number of rotatable bonds
+            type: integer
+            minimum: 0
+          min_rings:
+            title: Minimum number of rings
+            type: integer
+            minimum: 0
+          max_rings:
+            title: Maximum number of rings
+            type: integer
+            minimum: 0
+          min_aro_rings:
+            title: Minimum number of aromatic rings
+            type: integer
+            minim: 0
+          max_aro_rings:
+            title: Maximum number of aromatic rings
+            type: integer
+            minim: 0
+          min_chiral_centres:
+            title: Minimum number of chiral centres
+            type: integer
+            minimum: 0
+          max_chiral_centres:
+            title: Maximum number of chiral centres
+            type: integer
+            minimum: 0
+          min_undef_chiral_centres:
+            title: Minimum number of undefined chiral centres
+            type: integer
+            minimum: 0
+          max_undef_chiral_centres:
+            title: Maximum number of undefined chiral centres
+            type: integer
+            minimum: 0
+          min_sp3:
+            title: Minimum sp3
+            type: integer
+            minimum: 0
+          max_sp3:
+            title: Maximum sp3
+            type: number
+            minimum: 0
+          min_logp:
+            title: Minimum logP
+            type: number
+          max_logp:
+            title: Maximum logP
+            type: number
+          min_tpsa:
+            title: Minimum TPSA
+            type: number
+            minimum: 0
+          max_tpsa:
+            title: Maximum TPSA
+            type: number
+            minimum: 0
+    tests:
+      simple-enum:
+        nextflow-config-file: nextflow-moldb.config
+        run-groups:
+        - name: moldb
+          ordinal: 5
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          count: 100
+          chunk_size: 25
+          min_hac: 14
+          max_hac: 18
+        checks:
+          exitCode: 0
+
+  moldb-gen-confs:
+    name: MolDB generate conformers
+    description: >-
+      Generate multiple low energy conformers
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - conformers
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/moldb/generate_confs.nf
+      {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
+      --count {{ count }}
+      {% if min_hac is defined %}--min_hac {{ min_hac }}{% endif %}
+      {% if max_hac is defined %}--max_hac {{ max_hac }}{% endif %}
+      {% if min_rotb is defined %}--min_rotb {{ min_rotb }}{% endif %}
+      {% if max_rotb is defined %}--max_rotb {{ max_rotb }}{% endif %}
+      {% if min_rings is defined %}--min_rings {{ min_rings }}{% endif %}
+      {% if max_rings is defined %}--max_rings {{ max_rings }}{% endif %}
+      {% if min_aro_rings is defined %}--min_aro_rings {{ min_aro_rings }}{% endif %}
+      {% if max_aro_rings is defined %}--max_aro_rings {{ max_aro_rings }}{% endif %}
+      {% if min_chiral_centres is defined %}--min_chiral_centres {{ min_chiral_centres }}{% endif %}
+      {% if max_chiral_centres is defined %}--max_chiral_centres {{ max_chiral_centres }}{% endif %}
+      {% if min_undefined_chiral_centres is defined %}--min_undefined_chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
+      {% if max_undefined_chiral_centres is defined %}--max_undefined_chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
+      {% if min_sp3 is defined %}--min_sp3 {{ min_sp3 }}{% endif %}
+      {% if max_sp3 is defined %}--max_sp3 {{ max_sp3 }}{% endif %}
+      {% if min_logp is defined %}--min_logp {{ min_logp }}{% endif %}
+      {% if max_logp is defined %}--max_logp {{ max_logp }}{% endif %}
+      {% if min_tpsa is defined %}--min_tpsa {{ min_tpsa }}{% endif %}
+      {% if max_tpsa is defined %}--max_tpsa {{ max_tpsa }}{% endif %}
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+    variables:
+      order:
+        options:
+        - count
+        - chunk_size
+        - min_hac
+        - max_hac
+        - min_rotb
+        - max_rotb
+        - min_rings
+        - max_rings
+        - min_aro_rings
+        - max_aro_rings
+        - min_chiral_centres
+        - max_chiral_centres
+        - min_undef_chiral_centres
+        - max_undef_chiral_centres
+        - min_sp3
+        - max_sp3
+        - min_logp
+        - max_logp
+        - min_tpsa
+        - max_tpsa
+      # no inputs
+      # no outputs
+      options:
+        type: object
+        required:
+        - count
+        - chunk_size
+        properties:
+          count:
+            title: Max number of molecules to process
+            type: integer
+            default: 100000
+            maxValue: 5000000
+          chunk_size:
+            title: Chunk size for splitting
+            type: integer
+            default: 10000
+            minValue: 10000
+            maxValue: 1000000
+          min_hac:
+            title: Minimum Heavy Atom Count
+            type: integer
+            minimum: 0
+          max_hac:
+            title: Maximum Heavy Atom Count
+            type: integer
+            minimum: 0
+          min_rotb:
+            title: Minimum number of rotatable bonds
+            type: integer
+            minimum: 0
+          max_rotb:
+            title: Maximum number of rotatable bonds
+            type: integer
+            minimum: 0
+          min_rings:
+            title: Minimum number of rings
+            type: integer
+            minimum: 0
+          max_rings:
+            title: Maximum number of rings
+            type: integer
+            minimum: 0
+          min_aro_rings:
+            title: Minimum number of aromatic rings
+            type: integer
+            minim: 0
+          max_aro_rings:
+            title: Maximum number of aromatic rings
+            type: integer
+            minim: 0
+          min_chiral_centres:
+            title: Minimum number of chiral centres
+            type: integer
+            minimum: 0
+          max_chiral_centres:
+            title: Maximum number of chiral centres
+            type: integer
+            minimum: 0
+          min_undef_chiral_centres:
+            title: Minimum number of undefined chiral centres
+            type: integer
+            minimum: 0
+          max_undef_chiral_centres:
+            title: Maximum number of undefined chiral centres
+            type: integer
+            minimum: 0
+          min_sp3:
+            title: Minimum sp3
+            type: integer
+            minimum: 0
+          max_sp3:
+            title: Maximum sp3
+            type: number
+            minimum: 0
+          min_logp:
+            title: Minimum logP
+            type: number
+          max_logp:
+            title: Maximum logP
+            type: number
+          min_tpsa:
+            title: Minimum TPSA
+            type: number
+            minimum: 0
+          max_tpsa:
+            title: Maximum TPSA
+            type: number
+            minimum: 0
+    tests:
+      simple-confs:
+        nextflow-config-file: nextflow-moldb.config
+        run-groups:
+        - name: moldb
+          ordinal: 7
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          count: 100
+          chunk_size: 25
+          min_hac: 14
+          max_hac: 18
+        checks:
+          exitCode: 0
+
+  moldb-extract-enums:
+    name: MolDB extract enumerated forms
+    description: >-
+      Extract enumerated tautomers, microstates and stereoisomers
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - enumerate
+    - microstates
+    - tautomers
+    - stereoisomers
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: simple
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      python -m moldb.filter --output-enumerated {{ outfile }}
+      --count {{ count }}
+      {% if enum_types is defined %}--enum-codes
+        {% if 'Base' in enum_types %}B{% endif %}
+        {% if 'Tautomer' in enum_types %}T{% endif %}
+        {% if 'Microstate' in enum_types %}M{% endif %}
+        {% if 'Stereoisomer' in enum_types %}C{% endif %}
+      {% endif %}
+      {% if min_hac is defined %}--min-hac {{ min_hac }}{% endif %}
+      {% if max_hac is defined %}--max-hac {{ max_hac }}{% endif %}
+      {% if min_rotb is defined %}--min-rotb {{ min_rotb }}{% endif %}
+      {% if max_rotb is defined %}--max-rotb {{ max_rotb }}{% endif %}
+      {% if min_rings is defined %}--min-rings {{ min_rings }}{% endif %}
+      {% if max_rings is defined %}--max-rings {{ max_rings }}{% endif %}
+      {% if min_aro_rings is defined %}--min-aro-rings {{ min_aro_rings }}{% endif %}
+      {% if max_aro_rings is defined %}--max-aro-rings {{ max_aro_rings }}{% endif %}
+      {% if min_chiral_centres is defined %}--min-chiral-centres {{ min_chiral_centres }}{% endif %}
+      {% if max_chiral_centres is defined %}--max-chiral-centres {{ max_chiral_centres }}{% endif %}
+      {% if min_undefined_chiral_centres is defined %}--min-undefined-chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
+      {% if max_undefined_chiral_centres is defined %}--max-undefined-chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
+      {% if min_sp3 is defined %}--min-sp3 {{ min_sp3 }}{% endif %}
+      {% if max_sp3 is defined %}--max-sp3 {{ max_sp3 }}{% endif %}
+      {% if min_logp is defined %}--min-logp {{ min_logp }}{% endif %}
+      {% if max_logp is defined %}--max-logp {{ max_logp }}{% endif %}
+      {% if min_tpsa is defined %}--min-tpsa {{ min_tpsa }}{% endif %}
+      {% if max_tpsa is defined %}--max-tpsa {{ max_tpsa }}{% endif %}
+    variables:
+      order:
+        options:
+        - outfile
+        - count
+        - enum_types
+        - min_hac
+        - max_hac
+        - min_rotb
+        - max_rotb
+        - min_rings
+        - max_rings
+        - min_aro_rings
+        - max_aro_rings
+        - min_chiral_centres
+        - max_chiral_centres
+        - min_undef_chiral_centres
+        - max_undef_chiral_centres
+        - min_sp3
+        - max_sp3
+        - min_logp
+        - max_logp
+        - min_tpsa
+        - max_tpsa
+    outputs:
+      type: object
+      properties:
+        outputFile:
+          title: Output file
+          mime-types:
+          - chemical/x-cxsmiles
+          - chemical/x-mdl-sdfile
+          creates: '{{ outputFile }}'
+          type: file
+    options:
+      type: object
+      required:
+      - outfile
+      - count
+      - enum_types
+      properties:
+        outfile:
+          title: Output file name (.cxsmi or .sdf)
+          default: enumerated.cxsmi
+          pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+        count:
+          title: Max number of molecules to extract
+          type: integer
+          default: 100000
+          maxValue: 5000000
+        enum_types:
+          title: Delimiter
+          type: array
+          items:
+            type: string
+            enum:
+            - Base
+            - Microstate
+            - Tautomer
+            - Stereoisomer
+            default:
+            - Base
+            - Microstate
+            - Tautomer
+            - Stereoisomer
+        min_hac:
+          title: Minimum Heavy Atom Count
+          type: integer
+          minimum: 0
+        max_hac:
+          title: Maximum Heavy Atom Count
+          type: integer
+          minimum: 0
+        min_rotb:
+          title: Minimum number of rotatable bonds
+          type: integer
+          minimum: 0
+        max_rotb:
+          title: Maximum number of rotatable bonds
+          type: integer
+          minimum: 0
+        min_rings:
+          title: Minimum number of rings
+          type: integer
+          minimum: 0
+        max_rings:
+          title: Maximum number of rings
+          type: integer
+          minimum: 0
+        min_aro_rings:
+          title: Minimum number of aromatic rings
+          type: integer
+          minim: 0
+        max_aro_rings:
+          title: Maximum number of aromatic rings
+          type: integer
+          minim: 0
+        min_chiral_centres:
+          title: Minimum number of chiral centres
+          type: integer
+          minimum: 0
+        max_chiral_centres:
+          title: Maximum number of chiral centres
+          type: integer
+          minimum: 0
+        min_undef_chiral_centres:
+          title: Minimum number of undefined chiral centres
+          type: integer
+          minimum: 0
+        max_undef_chiral_centres:
+          title: Maximum number of undefined chiral centres
+          type: integer
+          minimum: 0
+        min_sp3:
+          title: Minimum sp3
+          type: integer
+          minimum: 0
+        max_sp3:
+          title: Maximum sp3
+          type: number
+          minimum: 0
+        min_logp:
+          title: Minimum logP
+          type: number
+        max_logp:
+          title: Maximum logP
+          type: number
+        min_tpsa:
+          title: Minimum TPSA
+          type: number
+          minimum: 0
+        max_tpsa:
+          title: Maximum TPSA
+          type: number
+          minimum: 0
+    tests:
+      create:
+        run-groups:
+        - name: moldb
+          ordinal: 8
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          outfile: enumerated.cxsmi
+          count: 10
+          min_hac: 14
+          max_hac: 18
+          enum_types:
+          - Base
+          - Microstate
+          - Tautomer
+          - Stereoisomer
+        checks:
+          exitCode: 0
+          outputs:
+          - name: enumerated.cxsmi
+            checks:
+            - exists: true
+            - lineCount: 10
+
+  moldb-extract-confs:
+    name: MolDB extract low energy conformers
+    description: >-
+      Extract extract low energy conformers
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    - conformer
+    - 3d
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: simple
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: im-moldb
+            key: username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: im-moldb
+            key: password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: im-moldb
+            key: server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: im-moldb
+            key: database
+      fix-permissions: true
+    command: >-
+      python -m moldb.filter --output-conformer {{ outfile }}
+      --count {{ count }}
+      {% if enum_types is defined %}--enum-codes
+        {% if 'Base' in enum_types %}B{% endif %}
+        {% if 'Tautomer' in enum_types %}T{% endif %}
+        {% if 'Microstate' in enum_types %}M{% endif %}
+        {% if 'Stereoisomer' in enum_types %}C{% endif %}
+      {% endif %}
+      {% if min_hac is defined %}--min-hac {{ min_hac }}{% endif %}
+      {% if max_hac is defined %}--max-hac {{ max_hac }}{% endif %}
+      {% if min_rotb is defined %}--min-rotb {{ min_rotb }}{% endif %}
+      {% if max_rotb is defined %}--max-rotb {{ max_rotb }}{% endif %}
+      {% if min_rings is defined %}--min-rings {{ min_rings }}{% endif %}
+      {% if max_rings is defined %}--max-rings {{ max_rings }}{% endif %}
+      {% if min_aro_rings is defined %}--min-aro-rings {{ min_aro_rings }}{% endif %}
+      {% if max_aro_rings is defined %}--max-aro-rings {{ max_aro_rings }}{% endif %}
+      {% if min_chiral_centres is defined %}--min-chiral-centres {{ min_chiral_centres }}{% endif %}
+      {% if max_chiral_centres is defined %}--max-chiral-centres {{ max_chiral_centres }}{% endif %}
+      {% if min_undefined_chiral_centres is defined %}--min-undefined-chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
+      {% if max_undefined_chiral_centres is defined %}--max-undefined-chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
+      {% if min_sp3 is defined %}--min-sp3 {{ min_sp3 }}{% endif %}
+      {% if max_sp3 is defined %}--max-sp3 {{ max_sp3 }}{% endif %}
+      {% if min_logp is defined %}--min-logp {{ min_logp }}{% endif %}
+      {% if max_logp is defined %}--max-logp {{ max_logp }}{% endif %}
+      {% if min_tpsa is defined %}--min-tpsa {{ min_tpsa }}{% endif %}
+      {% if max_tpsa is defined %}--max-tpsa {{ max_tpsa }}{% endif %}
+    variables:
+      order:
+        options:
+        - outfile
+        - count
+        - enum_types
+        - min_hac
+        - max_hac
+        - min_rotb
+        - max_rotb
+        - min_rings
+        - max_rings
+        - min_aro_rings
+        - max_aro_rings
+        - min_chiral_centres
+        - max_chiral_centres
+        - min_undef_chiral_centres
+        - max_undef_chiral_centres
+        - min_sp3
+        - max_sp3
+        - min_logp
+        - max_logp
+        - min_tpsa
+        - max_tpsa
+    outputs:
+      type: object
+      properties:
+        outputFile:
+          title: Output file
+          mime-types:
+          - chemical/x-cxsmiles
+          - chemical/x-mdl-sdfile
+          creates: '{{ outputFile }}'
+          type: file
+    options:
+      type: object
+      required:
+      - outfile
+      - count
+      - enum_types
+      properties:
+        outfile:
+          title: Output file name (.cxsmi or .sdf)
+          default: conformers.cxsmi
+          pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+        count:
+          title: Max number of molecules to extract
+          type: integer
+          default: 100000
+          maxValue: 5000000
+        enum_types:
+          title: Delimiter
+          type: array
+          items:
+            type: string
+            enum:
+            - Base
+            - Microstate
+            - Tautomer
+            - Stereoisomer
+            default:
+            - Base
+            - Microstate
+            - Tautomer
+            - Stereoisomer
+        min_hac:
+          title: Minimum Heavy Atom Count
+          type: integer
+          minimum: 0
+        max_hac:
+          title: Maximum Heavy Atom Count
+          type: integer
+          minimum: 0
+        min_rotb:
+          title: Minimum number of rotatable bonds
+          type: integer
+          minimum: 0
+        max_rotb:
+          title: Maximum number of rotatable bonds
+          type: integer
+          minimum: 0
+        min_rings:
+          title: Minimum number of rings
+          type: integer
+          minimum: 0
+        max_rings:
+          title: Maximum number of rings
+          type: integer
+          minimum: 0
+        min_aro_rings:
+          title: Minimum number of aromatic rings
+          type: integer
+          minim: 0
+        max_aro_rings:
+          title: Maximum number of aromatic rings
+          type: integer
+          minim: 0
+        min_chiral_centres:
+          title: Minimum number of chiral centres
+          type: integer
+          minimum: 0
+        max_chiral_centres:
+          title: Maximum number of chiral centres
+          type: integer
+          minimum: 0
+        min_undef_chiral_centres:
+          title: Minimum number of undefined chiral centres
+          type: integer
+          minimum: 0
+        max_undef_chiral_centres:
+          title: Maximum number of undefined chiral centres
+          type: integer
+          minimum: 0
+        min_sp3:
+          title: Minimum sp3
+          type: integer
+          minimum: 0
+        max_sp3:
+          title: Maximum sp3
+          type: number
+          minimum: 0
+        min_logp:
+          title: Minimum logP
+          type: number
+        max_logp:
+          title: Maximum logP
+          type: number
+        min_tpsa:
+          title: Minimum TPSA
+          type: number
+          minimum: 0
+        max_tpsa:
+          title: Maximum TPSA
+          type: number
+          minimum: 0
+    tests:
+      create:
+        run-groups:
+        - name: moldb
+          ordinal: 9
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        options:
+          outfile: conformers.cxsmi
+          count: 10
+          min_hac: 14
+          max_hac: 18
+          enum_types:
+          - Base
+          - Microstate
+          - Tautomer
+          - Stereoisomer
+        checks:
+          exitCode: 0
+          outputs:
+          - name: conformers.cxsmi
+            checks:
+            - exists: true
+            - lineCount: 10

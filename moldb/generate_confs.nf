@@ -20,7 +20,7 @@ limitations under the License.
 nextflow.enable.dsl=2
 
 
-params.file = 'need-enum.smi'
+params.file = 'need-confs.smi'
 params.chunk_size = 1000
 
 // filter options:

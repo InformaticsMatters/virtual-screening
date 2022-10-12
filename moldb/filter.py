@@ -203,13 +203,12 @@ def filter_need_conf(output_file, count, dry_run=False,
 
     utils.expand_path(output_file)
 
-    sql = "COPY (SELECT e.smiles, e.id, e.code FROM enumeration e " + \
-        "WHERE e.molecule_id NOT IN " + \
-          "(SELECT DISTINCT e.id FROM enumeration e JOIN molecule m ON e.molecule_id = m.id WHERE"
+    sql = "COPY (SELECT e.smiles, e.id, e.code FROM enumeration e JOIN molecule m ON e.molecule_id = m.id " + \
+        "WHERE e.id NOT IN (SELECT DISTINCT enumeration_id FROM conformer) AND"
     if count:
-        suffix = ') LIMIT ' + str(int(count)) + ') TO STDOUT'
+        suffix = ' LIMIT ' + str(int(count)) + ') TO STDOUT'
     else:
-        suffix = ')) TO STDOUT'
+        suffix = ') TO STDOUT'
 
     _do_filter(sql, output_file, dry_run=dry_run, prefix='m.', suffix=suffix,
                min_hac=min_hac, max_hac=max_hac,
