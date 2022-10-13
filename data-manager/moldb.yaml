@@ -101,12 +101,17 @@ jobs:
             name: im-moldb
             key: database
     command: >-
-      python -m moldb.count_rows --table-name '{{ table }}' --expected-rows {{ count }}
+      python -m moldb.count_rows --table-name '{{ table }}'
+      {% if count is defined %}--expected-rows {{ count }}{% endif %}
+      {% if min_rows is defined %}--min-rows {{ min_rows }}{% endif %}
+      {% if max_rows is defined %}--max-rows {{ max_rows }}{% endif %}
     options:
       type: object
       required:
       - table
       - count
+      - min_rows
+      - max_rows
       properties:
         table:
           title: Table name
@@ -140,13 +145,13 @@ jobs:
         - POSTGRES_DATABASE
         options:
           table: enumeration
-          count: 3260
+          count: 523
         checks:
           exitCode: 0
       conformer:
         run-groups:
         - name: moldb
-          ordinal: 10
+          ordinal: 8
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD
@@ -154,7 +159,8 @@ jobs:
         - POSTGRES_DATABASE
         options:
           table: conformer
-          count: 2088
+          min_rows: 9000
+          max_rows: 11000
         checks:
           exitCode: 0
 
@@ -553,10 +559,11 @@ jobs:
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
         options:
-          count: 100
+          count: 10000000
           chunk_size: 25
           min_hac: 14
-          max_hac: 18
+          max_hac: 14
+          max_rotb: 4
         checks:
           exitCode: 0
 
@@ -747,10 +754,11 @@ jobs:
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
         options:
-          count: 100
+          count: 100000
           chunk_size: 25
           min_hac: 14
-          max_hac: 18
+          max_hac: 14
+          max_rotb: 4
         checks:
           exitCode: 0
 
@@ -961,7 +969,7 @@ jobs:
       create:
         run-groups:
         - name: moldb
-          ordinal: 8
+          ordinal: 9
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD
@@ -1190,7 +1198,7 @@ jobs:
       create:
         run-groups:
         - name: moldb
-          ordinal: 9
+          ordinal: 10
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD
