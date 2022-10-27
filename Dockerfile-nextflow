@@ -23,7 +23,7 @@ RUN apt-get update &&\
  apt-get clean -y
  
 # Install nextflow. Releases are here: https://github.com/nextflow-io/nextflow/releases
-RUN curl -Ls -o nextflow https://github.com/nextflow-io/nextflow/releases/download/v22.04.4/nextflow-22.04.4-all && \
+RUN curl -Ls -o nextflow https://github.com/nextflow-io/nextflow/releases/download/v22.10.0/nextflow-22.10.0-all && \
     chmod 755 nextflow && \
     mv nextflow /usr/local/bin/
 
