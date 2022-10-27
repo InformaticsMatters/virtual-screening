@@ -881,7 +881,7 @@ jobs:
           default: 100000
           maxValue: 5000000
         enum_types:
-          title: Delimiter
+          title: Enumerated types
           type: array
           items:
             type: string
@@ -1110,7 +1110,7 @@ jobs:
           default: 100000
           maxValue: 5000000
         enum_types:
-          title: Delimiter
+          title: Enumerated types
           type: array
           items:
             type: string

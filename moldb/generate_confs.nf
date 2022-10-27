@@ -30,7 +30,7 @@ params.chunk_size = 1000
 // includes
 include { extract_need_conf } from '../nf-processes/moldb/filter.nf' addParams(output: params.file)
 include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
-include { gen_conformers } from '../nf-processes/rdkit/gen_conformers.nf'
+include { gen_conformers } from '../nf-processes/moldb/gen_conformers.nf'
 include { load_conf } from '../nf-processes/moldb/db_load.nf'
 
 // workflow definitions
