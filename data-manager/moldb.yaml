@@ -201,7 +201,7 @@ jobs:
           secret:
             name: moldb-database
             key: moldb_database
-      fix-permissions: true
+      fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/load_library.nf
@@ -327,7 +327,7 @@ jobs:
           secret:
             name: moldb-database
             key: moldb_database
-      fix-permissions: true
+      fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/calc_molprops.nf
@@ -411,7 +411,7 @@ jobs:
           secret:
             name: moldb-database
             key: moldb_database
-      fix-permissions: true
+      fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/enumerate_mols.nf
@@ -604,7 +604,7 @@ jobs:
           secret:
             name: moldb-database
             key: moldb_database
-      fix-permissions: true
+      fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/generate_confs.nf
