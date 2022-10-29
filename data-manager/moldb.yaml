@@ -175,7 +175,7 @@ jobs:
     - database
     - library
     image:
-      name: informaticsmatters/vs-moldb
+      name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
@@ -301,7 +301,7 @@ jobs:
     - database
     - molecular properties
     image:
-      name: informaticsmatters/vs-moldb
+      name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
@@ -385,7 +385,7 @@ jobs:
     - tautomers
     - stereoisomers
     image:
-      name: informaticsmatters/vs-moldb
+      name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
@@ -578,7 +578,7 @@ jobs:
     - database
     - conformers
     image:
-      name: informaticsmatters/vs-moldb
+      name: informaticsmatters/vs-nextflow
       tag: 'latest'
       project-directory: /data
       working-directory: /data
