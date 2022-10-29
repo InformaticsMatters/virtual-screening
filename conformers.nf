@@ -13,19 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/* Example usage:
+   nextflow run conformers.nf -with-trace -with-report --publish_dir outputs/conformers
+*/
+
 nextflow.enable.dsl=2
 
-params.inputs = 'need-confs.smi'
-params.data_dir = 'molecules/sha256'
 
-inputs_smi = file(params.inputs)
+params.inputs = 'need-conf.smi'
+params.chunk_size = 10000
+
+// files
+inputs_smi = file(params.inputs) // smiles with molecules to enumerate
 
 // includes
 include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
 include { gen_conformers } from './nf-processes/rdkit/gen_conformers.nf'
 
 // workflow definitions
-workflow generate_conformers {
+workflow generate_confs {
 
     take:
     inputs_smi
@@ -33,8 +39,11 @@ workflow generate_conformers {
     main:
     split_txt(inputs_smi)
     gen_conformers(split_txt.out.flatten())
+
+    emit:
+    gen_conformers.out
 }
 
 workflow {
-    generate_conformers(inputs_smi)
+    generate_confs(inputs_smi)
 }

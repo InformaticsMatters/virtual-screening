@@ -1,0 +1,16 @@
+
+version: '2.4'
+
+
+services:
+
+    ################# PostgreSQL container ############################################
+    #
+    postgres:
+        image: informaticsmatters/rdkit-cartridge-debian:Release_2021_03
+        volumes:
+        - /work/moldb/pgdata:/var/lib/postgresql/data:Z
+        environment:
+            POSTGRES_PASSWORD: squonk
+        ports:
+        - "5432:5432"

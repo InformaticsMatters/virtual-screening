@@ -1,10 +1,13 @@
 molecules
 misc
 work
+outputs
 **.pyc
 __pycache__
 .idea
 .nextflow*
+trace.txt*
+report.html*
 results*
 .ipynb_checkpoints
 

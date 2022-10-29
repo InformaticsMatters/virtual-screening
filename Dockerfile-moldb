@@ -16,8 +16,8 @@ ENV PYTHONPATH=/code
 ENV HOME=/code
 WORKDIR ${HOME}
 
-# conda install our requirements, including RDKit and OpenBabel
-RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 openbabel=3.1.1 pdb2pqr=3.2.0 scikit-learn=0.24.2 &&\
+# conda install our requirements, including RDKit and SQLAlchemy
+RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 sqlalchemy=1.4 psycopg2=2.9 &&\
   pip install im-standardize-molecule==0.1.0 &&\
   pip install im-data-manager-job-utilities==1.0.1 &&\
   conda init bash

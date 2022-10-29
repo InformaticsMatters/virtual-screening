@@ -29,9 +29,13 @@ class SdfWriter:
             self.writer = Chem.SDWriter(outfile)
         self.prop_names = prop_names
 
-    def write(self, smi, mol, id, existing_props, new_props):
+    def write(self, smi, mol, id, existing_props, new_props, smiles_prop_name=None):
+        if not mol:
+            mol = Chem.MolFromSmiles(smi)
         if id is not None:
             mol.SetProp('_Name', id)
+        if smiles_prop_name is not None:
+            mol.SetProp(smiles_prop_name, smi)
 
         for i, prop_name in enumerate(self.prop_names):
             value = new_props[i]
@@ -63,7 +67,7 @@ class SmilesWriter:
         line = self.sep.join(values)
         self.writer.write(line + "\n")
 
-    def write(self, smi, mol, id, existing_props, new_props):
+    def write(self, smi, mol, id, existing_props, new_props, smiles_prop_name=None):
         values = [smi]
         for prop in existing_props:
             if prop is not None:

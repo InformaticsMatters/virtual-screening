@@ -6,14 +6,6 @@ LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 #           for execution, and so we must ensure the code runs
 #           as any user.
 
-
-ENV HOME=/code
-WORKDIR ${HOME}
-
-COPY *.nf *.py site_substructures.smarts ./
-COPY nf-processes ./nf-processes
-
-
 RUN apt-get update &&\
  apt-get install -y --no-install-recommends\
  openjdk-11-jre-headless\
@@ -26,6 +18,14 @@ RUN apt-get update &&\
 RUN curl -Ls -o nextflow https://github.com/nextflow-io/nextflow/releases/download/v22.10.0/nextflow-22.10.0-all && \
     chmod 755 nextflow && \
     mv nextflow /usr/local/bin/
+
+ENV HOME=/code
+WORKDIR ${HOME}
+
+COPY *.nf ./
+COPY moldb/*.nf ./moldb/
+
+COPY nf-processes ./nf-processes
 
 # Adjust permissions for RunAsAnyUser
 RUN chmod 777 ${HOME}

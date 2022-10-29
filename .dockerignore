@@ -1,16 +1,16 @@
 data
-frag-merge
 misc
 molecules*
-mpro
-notebooks
 outputs
 results*
+data-manager
 test
 tmp
 work
+outputs
 *.sdf
 *.smi
+need-*
 [0-9]*
 
 .github
