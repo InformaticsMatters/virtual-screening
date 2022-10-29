@@ -33,22 +33,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
     command: >-
       python -m moldb.create_db
     tests:
@@ -84,22 +84,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
     command: >-
       python -m moldb.count_rows --table-name '{{ table }}'
       {% if count is defined %}--expected-rows {{ count }}{% endif %}
@@ -185,22 +185,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_useranme
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
@@ -311,22 +311,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
@@ -395,22 +395,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
@@ -588,22 +588,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
@@ -786,22 +786,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
       fix-permissions: true
     command: >-
       python -m moldb.filter --output-enumerated {{ outfile }}
@@ -1015,22 +1015,22 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_USERNAME
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_PASSWORD
+            key: moldb_password
       - name: POSTGRES_SERVER
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_SERVER
+            key: moldb_server
       - name: POSTGRES_DATABASE
         value-from:
           secret:
             name: moldb-database
-            key: MOLDB_DATABASE
+            key: moldb_database
       fix-permissions: true
     command: >-
       python -m moldb.filter --output-conformer {{ outfile }}
