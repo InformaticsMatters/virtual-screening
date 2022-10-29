@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: moldb-create-tables
+  namespace: data-manager-api-test
+spec:
+  containers:
+  - name: moldb-create-tables
+    image: informaticsmatters/vs-moldb:latest
+    command: [ 'python', '-m', 'moldb.create_db' ]
+    env:
+    - name: POSTGRES_SERVER
+      valueFrom:
+        secretKeyRef:
+          name: moldb-database
+          key: moldb_server
+    - name: POSTGRES_DATABASE
+      valueFrom:
+        secretKeyRef:
+          name: moldb-database
+          key: moldb_database
+    - name: POSTGRES_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: moldb-database
+          key: moldb_username
+    - name: POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: moldb-database
+          key: moldb_password
+  restartPolicy: Never
+

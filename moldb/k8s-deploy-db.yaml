@@ -1,0 +1,257 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: moldb-database
+  namespace: data-manager-api-test
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: '250Gi'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: moldb-psp-unrestricted
+  namespace: data-manager-api-test
+rules:
+- verbs:
+  - use
+  apiGroups:
+  - policy
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - im-core-unrestricted
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: moldb-database
+  namespace: data-manager-api-test
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: moldb-sa
+  namespace: data-manager-api-test
+subjects:
+- kind: ServiceAccount
+  name: moldb-database
+  namespace: data-manager-api-test
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: moldb-psp-unrestricted
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: moldb-database
+  namespace: data-manager-api-test
+type: Opaque
+data:
+  postgres_password: TGlMVlpIUVNvYg==
+  moldb_username: bW9sZGI=
+  moldb_password: bW9sZGI=
+  moldb_server: bW9sZGItZGF0YWJhc2U=
+  moldb_database: bW9sZGI=
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moldb-init
+  namespace: data-manager-api-test
+data:
+  01-init.sh: |
+    #!/bin/bash
+    set -e
+    moldb_user=$MOLDB_USERNAME
+    moldb_pw=$MOLDB_PASSWORD
+    moldb_db=$MOLDB_DATABASE
+    psql -v ON_ERROR_STOP=1 --username "admin" --dbname "admin" <<-EOSQL
+        -- Configure a user and database
+        CREATE USER $moldb_user;
+        ALTER USER $moldb_user WITH PASSWORD '$moldb_pw';
+        CREATE DATABASE $moldb_db;
+        ALTER ROLE $moldb_user SET client_encoding TO 'utf8';
+        ALTER ROLE $moldb_user SET default_transaction_isolation TO 'read committed';
+        ALTER ROLE $moldb_user SET timezone TO 'UTC';
+        GRANT ALL PRIVILEGES ON DATABASE $moldb_db TO $moldb_user;
+    EOSQL
+binaryData: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moldb-conf
+  namespace: data-manager-api-test
+data:
+  postgresql.conf: |
+    #--------------------------------------------------------------------------
+    # CONNECTIONS AND AUTHENTICATION
+    #--------------------------------------------------------------------------
+    listen_addresses = '*'
+    shared_buffers = 1GB
+binaryData: {}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: moldb-database
+  namespace: data-manager-api-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: moldb-database
+  template:
+    metadata:
+      name: moldb-database
+      labels:
+        name: moldb-database
+    spec:
+      volumes:
+      - name: moldb-init
+        configMap:
+          name: moldb-init
+          defaultMode: 420
+      - name: moldb-conf
+        configMap:
+          name: moldb-conf
+          defaultMode: 420
+      - name: moldb-data
+        persistentVolumeClaim:
+          claimName: moldb-database
+      containers:
+      - name: database
+        image: informaticsmatters/rdkit-cartridge-debian:Release_2021_03
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: moldb-database
+              key: postgres_password
+        - name: MOLDB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: moldb-database
+              key: moldb_username
+        - name: MOLDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: moldb-database
+              key: moldb_password
+        - name: MOLDB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: moldb-database
+              key: moldb_database
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+          requests:
+            cpu: 100m
+            memory: 2Gi
+        volumeMounts:
+        - name: moldb-init
+          readOnly: true
+          mountPath: /docker-entrypoint-initdb.d/01-init.sh
+          subPath: 01-init.sh
+        - name: moldb-conf
+          readOnly: true
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        - name: moldb-data
+          mountPath: /var/lib/postgresql/data
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - '-i'
+            - '-c'
+            - pg_isready -h 127.0.0.1 -p 5432 -U admin -q
+          initialDelaySeconds: 30
+          timeoutSeconds: 2
+          periodSeconds: 15
+          successThreshold: 1
+          failureThreshold: 9
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - '-i'
+            - '-c'
+            - pg_isready -h 127.0.0.1 -p 5432 -U admin -q
+          initialDelaySeconds: 30
+          timeoutSeconds: 2
+          periodSeconds: 15
+          successThreshold: 1
+          failureThreshold: 9
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: moldb-database
+      serviceAccount: moldb-database
+      securityContext:
+        fsGroup: 26
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 40
+            preference:
+              matchExpressions:
+              - key: informaticsmatters.com/purpose-core
+                operator: Exists
+          - weight: 30
+            preference:
+              matchExpressions:
+              - key: informaticsmatters.com/purpose-application
+                operator: Exists
+          - weight: 20
+            preference:
+              matchExpressions:
+              - key: informaticsmatters.com/purpose-worker
+                operator: DoesNotExist
+          - weight: 10
+            preference:
+              matchExpressions:
+              - key: informaticsmatters.com/purpose-worker
+                operator: Exists
+      schedulerName: default-scheduler
+  serviceName: moldb-database
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  revisionHistoryLimit: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moldb-database
+  namespace: data-manager-api-test
+spec:
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+  selector:
+    name: moldb-database
+  type: ClusterIP
+  sessionAffinity: None
