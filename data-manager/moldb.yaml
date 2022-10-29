@@ -185,7 +185,7 @@ jobs:
         value-from:
           secret:
             name: moldb-database
-            key: moldb_useranme
+            key: moldb_username
       - name: POSTGRES_PASSWORD
         value-from:
           secret:
