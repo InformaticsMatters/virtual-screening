@@ -440,6 +440,7 @@ jobs:
       order:
         options:
         - count
+        - chunk_size
         - min_hac
         - max_hac
         - min_rotb
