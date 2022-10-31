@@ -12,7 +12,7 @@ process load_standardized {
     file inputs
 
     """
-    python -m moldb.load_standardized --input $inputs --library-name $params.library_name
+    python -m moldb.load_standardized --input '$inputs' --library-name '$params.library_name'
     """
 }
 
@@ -25,7 +25,7 @@ process load_molprops {
     file inputs
 
     """
-    python -m moldb.load_molprops --input $inputs
+    python -m moldb.load_molprops --input '$inputs'
     """
 }
 
@@ -38,7 +38,7 @@ process load_enum {
     file inputs
 
     """
-    python -m moldb.load_enums --input $inputs --interval $params.interval\
+    python -m moldb.load_enums --input '$inputs' --interval $params.interval\
       ${params.purge ? '--purge' : ''}
     """
 }
@@ -52,7 +52,7 @@ process load_conf {
     file inputs
 
     """
-    python -m moldb.load_confs --input $inputs --interval $params.interval\
+    python -m moldb.load_confs --input '$inputs' --interval $params.interval\
       ${params.purge ? '--purge' : ''}
     """
 }
