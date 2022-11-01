@@ -11,6 +11,11 @@ test-groups:
   compose:
     file: docker-compose-moldb.yaml
     delay-seconds: 5
+  environment:
+  - POSTGRES_SERVER: postgres
+  - POSTGRES_DATABASE: postgres
+  - POSTGRES_USERNAME: postgres
+  - POSTGRES_PASSWORD: squonk
 
 jobs:
   moldb-create-tables:
@@ -415,7 +420,8 @@ jobs:
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/enumerate_mols.nf
-      {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
+      --count {{ count }}
+      --chunk_size {{ chunk_size }}
       {% if min_hac is defined %}--min_hac {{ min_hac }}{% endif %}
       {% if max_hac is defined %}--max_hac {{ max_hac }}{% endif %}
       {% if min_rotb is defined %}--min_rotb {{ min_rotb }}{% endif %}
