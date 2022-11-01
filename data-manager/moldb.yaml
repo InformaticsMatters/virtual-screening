@@ -420,26 +420,9 @@ jobs:
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/enumerate_mols.nf
+      --specification '{{ specification }}'
       --count {{ count }}
       --chunk_size {{ chunk_size }}
-      {% if min_hac is defined %}--min_hac {{ min_hac }}{% endif %}
-      {% if max_hac is defined %}--max_hac {{ max_hac }}{% endif %}
-      {% if min_rotb is defined %}--min_rotb {{ min_rotb }}{% endif %}
-      {% if max_rotb is defined %}--max_rotb {{ max_rotb }}{% endif %}
-      {% if min_rings is defined %}--min_rings {{ min_rings }}{% endif %}
-      {% if max_rings is defined %}--max_rings {{ max_rings }}{% endif %}
-      {% if min_aro_rings is defined %}--min_aro_rings {{ min_aro_rings }}{% endif %}
-      {% if max_aro_rings is defined %}--max_aro_rings {{ max_aro_rings }}{% endif %}
-      {% if min_chiral_centres is defined %}--min_chiral_centres {{ min_chiral_centres }}{% endif %}
-      {% if max_chiral_centres is defined %}--max_chiral_centres {{ max_chiral_centres }}{% endif %}
-      {% if min_undefined_chiral_centres is defined %}--min_undefined_chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
-      {% if max_undefined_chiral_centres is defined %}--max_undefined_chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
-      {% if min_sp3 is defined %}--min_sp3 {{ min_sp3 }}{% endif %}
-      {% if max_sp3 is defined %}--max_sp3 {{ max_sp3 }}{% endif %}
-      {% if min_logp is defined %}--min_logp {{ min_logp }}{% endif %}
-      {% if max_logp is defined %}--max_logp {{ max_logp }}{% endif %}
-      {% if min_tpsa is defined %}--min_tpsa {{ min_tpsa }}{% endif %}
-      {% if max_tpsa is defined %}--max_tpsa {{ max_tpsa }}{% endif %}
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
       -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
@@ -447,25 +430,16 @@ jobs:
         options:
         - count
         - chunk_size
-        - min_hac
-        - max_hac
-        - min_rotb
-        - max_rotb
-        - min_rings
-        - max_rings
-        - min_aro_rings
-        - max_aro_rings
-        - min_chiral_centres
-        - max_chiral_centres
-        - min_undef_chiral_centres
-        - max_undef_chiral_centres
-        - min_sp3
-        - max_sp3
-        - min_logp
-        - max_logp
-        - min_tpsa
-        - max_tpsa
-      # no inputs
+      inputs:
+        type: object
+        required:
+        - specification
+        properties:
+          specification:
+            title: Filter specification file
+            mime-types:
+            - text/plain
+            type: file
       # no outputs
       options:
         type: object
@@ -484,76 +458,6 @@ jobs:
             default: 10000
             minValue: 10000
             maxValue: 1000000
-          min_hac:
-            title: Minimum Heavy Atom Count
-            type: integer
-            minimum: 0
-          max_hac:
-            title: Maximum Heavy Atom Count
-            type: integer
-            minimum: 0
-          min_rotb:
-            title: Minimum number of rotatable bonds
-            type: integer
-            minimum: 0
-          max_rotb:
-            title: Maximum number of rotatable bonds
-            type: integer
-            minimum: 0
-          min_rings:
-            title: Minimum number of rings
-            type: integer
-            minimum: 0
-          max_rings:
-            title: Maximum number of rings
-            type: integer
-            minimum: 0
-          min_aro_rings:
-            title: Minimum number of aromatic rings
-            type: integer
-            minim: 0
-          max_aro_rings:
-            title: Maximum number of aromatic rings
-            type: integer
-            minim: 0
-          min_chiral_centres:
-            title: Minimum number of chiral centres
-            type: integer
-            minimum: 0
-          max_chiral_centres:
-            title: Maximum number of chiral centres
-            type: integer
-            minimum: 0
-          min_undef_chiral_centres:
-            title: Minimum number of undefined chiral centres
-            type: integer
-            minimum: 0
-          max_undef_chiral_centres:
-            title: Maximum number of undefined chiral centres
-            type: integer
-            minimum: 0
-          min_sp3:
-            title: Minimum sp3
-            type: integer
-            minimum: 0
-          max_sp3:
-            title: Maximum sp3
-            type: number
-            minimum: 0
-          min_logp:
-            title: Minimum logP
-            type: number
-          max_logp:
-            title: Maximum logP
-            type: number
-          min_tpsa:
-            title: Minimum TPSA
-            type: number
-            minimum: 0
-          max_tpsa:
-            title: Maximum TPSA
-            type: number
-            minimum: 0
     tests:
       simple-enum:
         nextflow-config-file: nextflow-moldb.config
@@ -565,12 +469,11 @@ jobs:
         - POSTGRES_PASSWORD
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
+        inputs:
+          specification: data/14-14-4.spec
         options:
           count: 10000000
           chunk_size: 25
-          min_hac: 14
-          max_hac: 14
-          max_rotb: 4
         checks:
           exitCode: 0
 
@@ -615,26 +518,9 @@ jobs:
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
       run {{ CODE_DIRECTORY|default('/code') }}/moldb/generate_confs.nf
+      --specification {{ specification }}
       {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
       --count {{ count }}
-      {% if min_hac is defined %}--min_hac {{ min_hac }}{% endif %}
-      {% if max_hac is defined %}--max_hac {{ max_hac }}{% endif %}
-      {% if min_rotb is defined %}--min_rotb {{ min_rotb }}{% endif %}
-      {% if max_rotb is defined %}--max_rotb {{ max_rotb }}{% endif %}
-      {% if min_rings is defined %}--min_rings {{ min_rings }}{% endif %}
-      {% if max_rings is defined %}--max_rings {{ max_rings }}{% endif %}
-      {% if min_aro_rings is defined %}--min_aro_rings {{ min_aro_rings }}{% endif %}
-      {% if max_aro_rings is defined %}--max_aro_rings {{ max_aro_rings }}{% endif %}
-      {% if min_chiral_centres is defined %}--min_chiral_centres {{ min_chiral_centres }}{% endif %}
-      {% if max_chiral_centres is defined %}--max_chiral_centres {{ max_chiral_centres }}{% endif %}
-      {% if min_undefined_chiral_centres is defined %}--min_undefined_chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
-      {% if max_undefined_chiral_centres is defined %}--max_undefined_chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
-      {% if min_sp3 is defined %}--min_sp3 {{ min_sp3 }}{% endif %}
-      {% if max_sp3 is defined %}--max_sp3 {{ max_sp3 }}{% endif %}
-      {% if min_logp is defined %}--min_logp {{ min_logp }}{% endif %}
-      {% if max_logp is defined %}--max_logp {{ max_logp }}{% endif %}
-      {% if min_tpsa is defined %}--min_tpsa {{ min_tpsa }}{% endif %}
-      {% if max_tpsa is defined %}--max_tpsa {{ max_tpsa }}{% endif %}
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
       -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
@@ -642,25 +528,16 @@ jobs:
         options:
         - count
         - chunk_size
-        - min_hac
-        - max_hac
-        - min_rotb
-        - max_rotb
-        - min_rings
-        - max_rings
-        - min_aro_rings
-        - max_aro_rings
-        - min_chiral_centres
-        - max_chiral_centres
-        - min_undef_chiral_centres
-        - max_undef_chiral_centres
-        - min_sp3
-        - max_sp3
-        - min_logp
-        - max_logp
-        - min_tpsa
-        - max_tpsa
-      # no inputs
+      inputs:
+        type: object
+        required:
+        - specification
+        properties:
+          specification:
+            title: Filter specification file
+            mime-types:
+            - text/plain
+            type: file
       # no outputs
       options:
         type: object
@@ -679,76 +556,6 @@ jobs:
             default: 10000
             minValue: 10000
             maxValue: 1000000
-          min_hac:
-            title: Minimum Heavy Atom Count
-            type: integer
-            minimum: 0
-          max_hac:
-            title: Maximum Heavy Atom Count
-            type: integer
-            minimum: 0
-          min_rotb:
-            title: Minimum number of rotatable bonds
-            type: integer
-            minimum: 0
-          max_rotb:
-            title: Maximum number of rotatable bonds
-            type: integer
-            minimum: 0
-          min_rings:
-            title: Minimum number of rings
-            type: integer
-            minimum: 0
-          max_rings:
-            title: Maximum number of rings
-            type: integer
-            minimum: 0
-          min_aro_rings:
-            title: Minimum number of aromatic rings
-            type: integer
-            minim: 0
-          max_aro_rings:
-            title: Maximum number of aromatic rings
-            type: integer
-            minim: 0
-          min_chiral_centres:
-            title: Minimum number of chiral centres
-            type: integer
-            minimum: 0
-          max_chiral_centres:
-            title: Maximum number of chiral centres
-            type: integer
-            minimum: 0
-          min_undef_chiral_centres:
-            title: Minimum number of undefined chiral centres
-            type: integer
-            minimum: 0
-          max_undef_chiral_centres:
-            title: Maximum number of undefined chiral centres
-            type: integer
-            minimum: 0
-          min_sp3:
-            title: Minimum sp3
-            type: integer
-            minimum: 0
-          max_sp3:
-            title: Maximum sp3
-            type: number
-            minimum: 0
-          min_logp:
-            title: Minimum logP
-            type: number
-          max_logp:
-            title: Maximum logP
-            type: number
-          min_tpsa:
-            title: Minimum TPSA
-            type: number
-            minimum: 0
-          max_tpsa:
-            title: Maximum TPSA
-            type: number
-            minimum: 0
     tests:
       simple-confs:
         nextflow-config-file: nextflow-moldb.config
@@ -760,12 +567,11 @@ jobs:
         - POSTGRES_PASSWORD
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
+        inputs:
+          specification: data/14-14-4.spec
         options:
           count: 100000
           chunk_size: 25
-          min_hac: 14
-          max_hac: 14
-          max_rotb: 4
         checks:
           exitCode: 0
 
@@ -812,6 +618,7 @@ jobs:
       fix-permissions: true
     command: >-
       python -m moldb.filter --output-enumerated {{ outfile }}
+      --specification {{ specification }}
       --count {{ count }}
       {% if enum_types is defined %}--enum-codes
         {% if 'Base' in enum_types %}B{% endif %}
@@ -819,159 +626,63 @@ jobs:
         {% if 'Microstate' in enum_types %}M{% endif %}
         {% if 'Stereoisomer' in enum_types %}C{% endif %}
       {% endif %}
-      {% if min_hac is defined %}--min-hac {{ min_hac }}{% endif %}
-      {% if max_hac is defined %}--max-hac {{ max_hac }}{% endif %}
-      {% if min_rotb is defined %}--min-rotb {{ min_rotb }}{% endif %}
-      {% if max_rotb is defined %}--max-rotb {{ max_rotb }}{% endif %}
-      {% if min_rings is defined %}--min-rings {{ min_rings }}{% endif %}
-      {% if max_rings is defined %}--max-rings {{ max_rings }}{% endif %}
-      {% if min_aro_rings is defined %}--min-aro-rings {{ min_aro_rings }}{% endif %}
-      {% if max_aro_rings is defined %}--max-aro-rings {{ max_aro_rings }}{% endif %}
-      {% if min_chiral_centres is defined %}--min-chiral-centres {{ min_chiral_centres }}{% endif %}
-      {% if max_chiral_centres is defined %}--max-chiral-centres {{ max_chiral_centres }}{% endif %}
-      {% if min_undefined_chiral_centres is defined %}--min-undefined-chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
-      {% if max_undefined_chiral_centres is defined %}--max-undefined-chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
-      {% if min_sp3 is defined %}--min-sp3 {{ min_sp3 }}{% endif %}
-      {% if max_sp3 is defined %}--max-sp3 {{ max_sp3 }}{% endif %}
-      {% if min_logp is defined %}--min-logp {{ min_logp }}{% endif %}
-      {% if max_logp is defined %}--max-logp {{ max_logp }}{% endif %}
-      {% if min_tpsa is defined %}--min-tpsa {{ min_tpsa }}{% endif %}
-      {% if max_tpsa is defined %}--max-tpsa {{ max_tpsa }}{% endif %}
     variables:
       order:
         options:
         - outfile
         - count
         - enum_types
-        - min_hac
-        - max_hac
-        - min_rotb
-        - max_rotb
-        - min_rings
-        - max_rings
-        - min_aro_rings
-        - max_aro_rings
-        - min_chiral_centres
-        - max_chiral_centres
-        - min_undef_chiral_centres
-        - max_undef_chiral_centres
-        - min_sp3
-        - max_sp3
-        - min_logp
-        - max_logp
-        - min_tpsa
-        - max_tpsa
-    outputs:
-      type: object
-      properties:
-        outputFile:
-          title: Output file
-          mime-types:
-          - chemical/x-cxsmiles
-          - chemical/x-mdl-sdfile
-          creates: '{{ outputFile }}'
-          type: file
-    options:
-      type: object
-      required:
-      - outfile
-      - count
-      - enum_types
-      properties:
-        outfile:
-          title: Output file name (.cxsmi or .sdf)
-          default: enumerated.cxsmi
-          pattern: "^[A-Za-z0-9_/\\.\\-]+$"
-        count:
-          title: Max number of molecules to extract
-          type: integer
-          default: 100000
-          maxValue: 5000000
-        enum_types:
-          title: Enumerated types
-          type: array
-          items:
-            type: string
-            enum:
-            - Base
-            - Microstate
-            - Tautomer
-            - Stereoisomer
-            default:
-            - Base
-            - Microstate
-            - Tautomer
-            - Stereoisomer
-        min_hac:
-          title: Minimum Heavy Atom Count
-          type: integer
-          minimum: 0
-        max_hac:
-          title: Maximum Heavy Atom Count
-          type: integer
-          minimum: 0
-        min_rotb:
-          title: Minimum number of rotatable bonds
-          type: integer
-          minimum: 0
-        max_rotb:
-          title: Maximum number of rotatable bonds
-          type: integer
-          minimum: 0
-        min_rings:
-          title: Minimum number of rings
-          type: integer
-          minimum: 0
-        max_rings:
-          title: Maximum number of rings
-          type: integer
-          minimum: 0
-        min_aro_rings:
-          title: Minimum number of aromatic rings
-          type: integer
-          minim: 0
-        max_aro_rings:
-          title: Maximum number of aromatic rings
-          type: integer
-          minim: 0
-        min_chiral_centres:
-          title: Minimum number of chiral centres
-          type: integer
-          minimum: 0
-        max_chiral_centres:
-          title: Maximum number of chiral centres
-          type: integer
-          minimum: 0
-        min_undef_chiral_centres:
-          title: Minimum number of undefined chiral centres
-          type: integer
-          minimum: 0
-        max_undef_chiral_centres:
-          title: Maximum number of undefined chiral centres
-          type: integer
-          minimum: 0
-        min_sp3:
-          title: Minimum sp3
-          type: integer
-          minimum: 0
-        max_sp3:
-          title: Maximum sp3
-          type: number
-          minimum: 0
-        min_logp:
-          title: Minimum logP
-          type: number
-        max_logp:
-          title: Maximum logP
-          type: number
-        min_tpsa:
-          title: Minimum TPSA
-          type: number
-          minimum: 0
-        max_tpsa:
-          title: Maximum TPSA
-          type: number
-          minimum: 0
+      inputs:
+        type: object
+        required:
+        - specification
+        properties:
+          specification:
+            title: Filter specification file
+            mime-types:
+            - text/plain
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-cxsmiles
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outfile
+        - count
+        - enum_types
+        properties:
+          outfile:
+            title: Output file name (.cxsmi or .sdf)
+            default: enumerated.cxsmi
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          count:
+            title: Max number of molecules to extract
+            type: integer
+            default: 100000
+            maxValue: 5000000
+          enum_types:
+            title: Enumerated types
+            type: array
+            items:
+              type: string
+              enum:
+              - Base
+              - Microstate
+              - Tautomer
+              - Stereoisomer
+              default:
+              - Base
+              - Microstate
+              - Tautomer
+              - Stereoisomer
     tests:
       create:
         run-groups:
@@ -982,11 +693,11 @@ jobs:
         - POSTGRES_PASSWORD
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
+        inputs:
+          specification: data/14-14-4.spec
         options:
           outfile: enumerated.cxsmi
           count: 10
-          min_hac: 14
-          max_hac: 18
           enum_types:
           - Base
           - Microstate
@@ -1041,6 +752,7 @@ jobs:
       fix-permissions: true
     command: >-
       python -m moldb.filter --output-conformer {{ outfile }}
+      --specification {{ specification }}
       --count {{ count }}
       {% if enum_types is defined %}--enum-codes
         {% if 'Base' in enum_types %}B{% endif %}
@@ -1048,159 +760,63 @@ jobs:
         {% if 'Microstate' in enum_types %}M{% endif %}
         {% if 'Stereoisomer' in enum_types %}C{% endif %}
       {% endif %}
-      {% if min_hac is defined %}--min-hac {{ min_hac }}{% endif %}
-      {% if max_hac is defined %}--max-hac {{ max_hac }}{% endif %}
-      {% if min_rotb is defined %}--min-rotb {{ min_rotb }}{% endif %}
-      {% if max_rotb is defined %}--max-rotb {{ max_rotb }}{% endif %}
-      {% if min_rings is defined %}--min-rings {{ min_rings }}{% endif %}
-      {% if max_rings is defined %}--max-rings {{ max_rings }}{% endif %}
-      {% if min_aro_rings is defined %}--min-aro-rings {{ min_aro_rings }}{% endif %}
-      {% if max_aro_rings is defined %}--max-aro-rings {{ max_aro_rings }}{% endif %}
-      {% if min_chiral_centres is defined %}--min-chiral-centres {{ min_chiral_centres }}{% endif %}
-      {% if max_chiral_centres is defined %}--max-chiral-centres {{ max_chiral_centres }}{% endif %}
-      {% if min_undefined_chiral_centres is defined %}--min-undefined-chiral_centres {{ min_undefined_chiral_centres }}{% endif %}
-      {% if max_undefined_chiral_centres is defined %}--max-undefined-chiral_centres {{ max_undefined_chiral_centres }}{% endif %}
-      {% if min_sp3 is defined %}--min-sp3 {{ min_sp3 }}{% endif %}
-      {% if max_sp3 is defined %}--max-sp3 {{ max_sp3 }}{% endif %}
-      {% if min_logp is defined %}--min-logp {{ min_logp }}{% endif %}
-      {% if max_logp is defined %}--max-logp {{ max_logp }}{% endif %}
-      {% if min_tpsa is defined %}--min-tpsa {{ min_tpsa }}{% endif %}
-      {% if max_tpsa is defined %}--max-tpsa {{ max_tpsa }}{% endif %}
     variables:
       order:
         options:
         - outfile
         - count
         - enum_types
-        - min_hac
-        - max_hac
-        - min_rotb
-        - max_rotb
-        - min_rings
-        - max_rings
-        - min_aro_rings
-        - max_aro_rings
-        - min_chiral_centres
-        - max_chiral_centres
-        - min_undef_chiral_centres
-        - max_undef_chiral_centres
-        - min_sp3
-        - max_sp3
-        - min_logp
-        - max_logp
-        - min_tpsa
-        - max_tpsa
-    outputs:
-      type: object
-      properties:
-        outputFile:
-          title: Output file
-          mime-types:
-          - chemical/x-cxsmiles
-          - chemical/x-mdl-sdfile
-          creates: '{{ outputFile }}'
-          type: file
-    options:
-      type: object
-      required:
-      - outfile
-      - count
-      - enum_types
-      properties:
-        outfile:
-          title: Output file name (.cxsmi or .sdf)
-          default: conformers.cxsmi
-          pattern: "^[A-Za-z0-9_/\\.\\-]+$"
-        count:
-          title: Max number of molecules to extract
-          type: integer
-          default: 100000
-          maxValue: 5000000
-        enum_types:
-          title: Enumerated types
-          type: array
-          items:
-            type: string
-            enum:
-            - Base
-            - Microstate
-            - Tautomer
-            - Stereoisomer
-            default:
-            - Base
-            - Microstate
-            - Tautomer
-            - Stereoisomer
-        min_hac:
-          title: Minimum Heavy Atom Count
-          type: integer
-          minimum: 0
-        max_hac:
-          title: Maximum Heavy Atom Count
-          type: integer
-          minimum: 0
-        min_rotb:
-          title: Minimum number of rotatable bonds
-          type: integer
-          minimum: 0
-        max_rotb:
-          title: Maximum number of rotatable bonds
-          type: integer
-          minimum: 0
-        min_rings:
-          title: Minimum number of rings
-          type: integer
-          minimum: 0
-        max_rings:
-          title: Maximum number of rings
-          type: integer
-          minimum: 0
-        min_aro_rings:
-          title: Minimum number of aromatic rings
-          type: integer
-          minim: 0
-        max_aro_rings:
-          title: Maximum number of aromatic rings
-          type: integer
-          minim: 0
-        min_chiral_centres:
-          title: Minimum number of chiral centres
-          type: integer
-          minimum: 0
-        max_chiral_centres:
-          title: Maximum number of chiral centres
-          type: integer
-          minimum: 0
-        min_undef_chiral_centres:
-          title: Minimum number of undefined chiral centres
-          type: integer
-          minimum: 0
-        max_undef_chiral_centres:
-          title: Maximum number of undefined chiral centres
-          type: integer
-          minimum: 0
-        min_sp3:
-          title: Minimum sp3
-          type: integer
-          minimum: 0
-        max_sp3:
-          title: Maximum sp3
-          type: number
-          minimum: 0
-        min_logp:
-          title: Minimum logP
-          type: number
-        max_logp:
-          title: Maximum logP
-          type: number
-        min_tpsa:
-          title: Minimum TPSA
-          type: number
-          minimum: 0
-        max_tpsa:
-          title: Maximum TPSA
-          type: number
-          minimum: 0
+      inputs:
+        type: object
+        required:
+        - specification
+        properties:
+          specification:
+            title: Filter specification file
+            mime-types:
+            - text/plain
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-cxsmiles
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outfile
+        - count
+        - enum_types
+        properties:
+          outfile:
+            title: Output file name (.cxsmi or .sdf)
+            default: conformers.cxsmi
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          count:
+            title: Max number of molecules to extract
+            type: integer
+            default: 100000
+            maxValue: 5000000
+          enum_types:
+            title: Enumerated types
+            type: array
+            items:
+              type: string
+              enum:
+              - Base
+              - Microstate
+              - Tautomer
+              - Stereoisomer
+              default:
+              - Base
+              - Microstate
+              - Tautomer
+              - Stereoisomer
     tests:
       create:
         run-groups:
@@ -1211,11 +827,11 @@ jobs:
         - POSTGRES_PASSWORD
         - POSTGRES_SERVER
         - POSTGRES_DATABASE
+        inputs:
+          specification: data/14-14-4.spec
         options:
           outfile: conformers.cxsmi
           count: 10
-          min_hac: 14
-          max_hac: 18
           enum_types:
           - Base
           - Microstate

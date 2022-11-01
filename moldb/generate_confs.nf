@@ -14,11 +14,13 @@ limitations under the License.
 */
 
 /* Example usage:
-   nextflow run moldb/generate_confs.nf -with-trace --min_hac 16 --max_hac 18 --min_rings 2 --min_aro_rings 1 --count 1000 --chunk_size 25
+   nextflow run moldb/generate_confs.nf -with-trace --specification specification.txt --count 1000 --chunk_size 25
 */
 
 nextflow.enable.dsl=2
 
+// inputs
+params.specification
 
 params.file = 'need-confs.smi'
 params.chunk_size = 1000
@@ -26,6 +28,8 @@ params.chunk_size = 1000
 // filter options:
 // params.count = 10000
 // all the mol prop filters e.g. --min_hac 16
+
+specification = file(params.specification)
 
 // includes
 include { extract_need_conf } from '../nf-processes/moldb/filter.nf' addParams(output: params.file)
@@ -36,13 +40,16 @@ include { load_conf } from '../nf-processes/moldb/db_load.nf'
 // workflow definitions
 workflow gen_confs {
 
+    take:
+    specification
+
     main:
-    extract_need_conf()
+    extract_need_conf(specification)
     split_txt(extract_need_conf.out)
     gen_conformers(split_txt.out.flatten())
     load_conf(gen_conformers.out)
 }
 
 workflow {
-    gen_confs()
+    gen_confs(specification)
 }

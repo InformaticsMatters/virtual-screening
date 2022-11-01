@@ -141,16 +141,24 @@ _engine = None
 
 def get_engine(echo=True):
 
+    print('Using database ' + gen_url(obscure_password=True))
+
+    global _engine
+    if _engine is None:
+        url = gen_url(obscure_password=False)
+        _engine = create_engine(url, echo=echo, future=True)
+    return _engine
+
+
+def gen_url(obscure_password=True):
     pg_server = os.getenv('POSTGRES_SERVER', default='localhost')
     pg_database = os.getenv('POSTGRES_DATABASE', default='postgres')
     pg_username = os.getenv('POSTGRES_USERNAME', default='postgres')
     pg_password = os.getenv('POSTGRES_PASSWORD', default='squonk')
 
     templ = 'postgresql://{}:{}@{}/{}'
-    print('Using database ' + templ.format(pg_username, '********', pg_server, pg_database))
-
-    global _engine
-    if _engine is None:
+    if obscure_password:
+        url = templ.format(pg_username, '********', pg_server, pg_database)
+    else:
         url = templ.format(pg_username, pg_password, pg_server, pg_database)
-        _engine = create_engine(url, echo=echo, future=True)
-    return _engine
+    return url

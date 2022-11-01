@@ -14,18 +14,25 @@ limitations under the License.
 */
 
 /* Example usage:
-   nextflow run moldb/enumerate_mols.nf -with-trace --min_hac 16 --max_hac 20 --min_rings 2 --min_aro_rings 1
+   nextflow run moldb/enumerate_mols.nf -with-trace --specification specification.txt
 */
 
 nextflow.enable.dsl=2
 
-// filter options
+// inputs
+params.specification
+
+// outputs
 params.file = 'need-enum.smi'
+
+// filter options
 // params.count = 10000
 // all the mol prop filters e.g. --min_hac 16
 
 // split options
 params.chunk_size = 1000
+
+specification = file(params.specification)
 
 
 // includes
@@ -37,13 +44,16 @@ include { load_enum } from '../nf-processes/moldb/db_load.nf'
 // workflow definitions
 workflow enumerate_forms {
 
+    take:
+    specification
+
     main:
-    extract_need_enum()
+    extract_need_enum(specification)
     split_txt(extract_need_enum.out)
     enumerate(split_txt.out.flatten())
     load_enum(enumerate.out)
 }
 
 workflow {
-    enumerate_forms()
+    enumerate_forms(specification)
 }
