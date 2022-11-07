@@ -7,6 +7,8 @@ process load_standardized {
 
     container 'informaticsmatters/vs-moldb:latest'
     maxForks 1
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
+    maxRetries 3
 
     input:
     file inputs
@@ -20,6 +22,8 @@ process load_molprops {
 
     container 'informaticsmatters/vs-moldb:latest'
     maxForks 1
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
+    maxRetries 3
 
     input:
     file inputs
@@ -33,6 +37,8 @@ process load_enum {
 
     container 'informaticsmatters/vs-moldb:latest'
     maxForks 1
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
+    maxRetries 3
 
     input:
     file inputs
@@ -47,6 +53,8 @@ process load_conf {
 
     container 'informaticsmatters/vs-moldb:latest'
     maxForks 1
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
+    maxRetries 3
 
     input:
     file inputs

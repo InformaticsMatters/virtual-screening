@@ -21,7 +21,9 @@ from sqlalchemy.orm import declarative_base, declarative_mixin, relationship, se
 
 import sqlalchemy
 
-print('sqlalchemy version:', sqlalchemy.__version__)
+import utils
+
+utils.log('sqlalchemy version:', sqlalchemy.__version__)
 
 
 Base = declarative_base()
@@ -141,7 +143,7 @@ _engine = None
 
 def get_engine(echo=True):
 
-    print('Using database ' + gen_url(obscure_password=True))
+    utils.log('Using database ' + gen_url(obscure_password=True))
 
     global _engine
     if _engine is None:

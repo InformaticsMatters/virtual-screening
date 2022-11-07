@@ -14,7 +14,7 @@ limitations under the License.
 */
 
 /* Example usage:
-   nextflow run moldb/enumerate_mols.nf -with-trace --specification specification.txt
+   nextflow run moldb/enumerate_mols.nf -with-trace --specification specification.txt --count 25000 --chunk_size 2500
 */
 
 nextflow.enable.dsl=2
@@ -27,7 +27,6 @@ params.file = 'need-enum.smi'
 
 // filter options
 // params.count = 10000
-// all the mol prop filters e.g. --min_hac 16
 
 // split options
 params.chunk_size = 1000

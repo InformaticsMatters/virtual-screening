@@ -629,7 +629,7 @@ jobs:
     variables:
       order:
         options:
-        - outfile
+        - outputFile
         - count
         - enum_types
       inputs:
@@ -650,7 +650,7 @@ jobs:
             mime-types:
             - chemical/x-cxsmiles
             - chemical/x-mdl-sdfile
-            creates: '{{ outputFile }}'
+            creates: '{{ outfile }}'
             type: file
       options:
         type: object
@@ -661,6 +661,7 @@ jobs:
         properties:
           outfile:
             title: Output file name (.cxsmi or .sdf)
+            type: string
             default: enumerated.cxsmi
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
           count:
@@ -784,7 +785,7 @@ jobs:
             mime-types:
             - chemical/x-cxsmiles
             - chemical/x-mdl-sdfile
-            creates: '{{ outputFile }}'
+            creates: '{{ outfile }}'
             type: file
       options:
         type: object
@@ -795,6 +796,7 @@ jobs:
         properties:
           outfile:
             title: Output file name (.cxsmi or .sdf)
+            type: string
             default: conformers.cxsmi
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
           count:
@@ -844,3 +846,112 @@ jobs:
             checks:
             - exists: true
             - lineCount: 10
+
+  moldb-analyse:
+    name: MolDB analyse database contents
+    description: >-
+      Analyse the database contents to establish what actions are needed
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: simple
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_database
+      fix-permissions: true
+    command: >-
+      python -m moldb.analyse --output {{ outfile }}
+      {% if specification is defined %}--specification {{ specification }}{% endif %}
+      {% if skip_enum is defined and skip_enum %}--skip-enumeration{% endif %}
+      {% if skip_conf is defined and skip_conf %}--skip-conformer{% endif %}
+    variables:
+      order:
+        options:
+        - outfile
+        - skip_enum
+        - skip_conf
+      inputs:
+        type: object
+        required:
+        - specification
+        properties:
+          specification:
+            title: Filter specification file
+            mime-types:
+            - text/plain
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - text/plain
+            creates: '{{ outfile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outfile
+        properties:
+          outfile:
+            title: Output file name (.txt)
+            type: string
+            default: moldb-report.txt
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          skip_enum:
+            title: Skip enumeration analysis
+            type: boolean
+            default: true
+          conf:
+            title: Skip conformer analysis
+            type: boolean
+            default: true
+    tests:
+      create:
+        run-groups:
+        - name: moldb
+          ordinal: 11
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        inputs:
+          specification: data/14-14-4.spec
+        options:
+          outfile: report.txt
+          skip_enum: false
+          skip_conf: false
+        checks:
+          exitCode: 0
+          outputs:
+          - name: report.txt
+            checks:
+            - exists: true
+            - lineCount: 15

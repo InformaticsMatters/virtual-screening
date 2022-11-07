@@ -116,9 +116,10 @@ def filter_need_enum(output_file, count, filters, dry_run=False):
 
     sql = "COPY (SELECT smiles, id FROM molecule m WHERE"
     if count:
-        suffix = ' AND id NOT IN (SELECT DISTINCT molecule_id FROM enumeration) LIMIT ' + str(int(count)) + ') TO STDOUT'
+        suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration WHERE enumeration.molecule_id = molecule.id) LIMIT ' + \
+                 str(int(count)) + ') TO STDOUT'
     else:
-        suffix = ' AND id NOT IN (SELECT DISTINCT molecule_id FROM enumeration)) TO STDOUT'
+        suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration WHERE enumeration.molecule_id = molecule.id)) TO STDOUT'
 
     _do_filter(sql, output_file, filters, dry_run=dry_run, suffix=suffix)
 
@@ -128,7 +129,7 @@ def filter_need_conf(output_file, count, filters, dry_run=False):
     utils.expand_path(output_file)
 
     sql = "COPY (SELECT e.smiles, e.id, e.code FROM enumeration e JOIN molecule m ON e.molecule_id = m.id " + \
-        "WHERE e.id NOT IN (SELECT DISTINCT enumeration_id FROM conformer) AND"
+        "WHERE e.id NOT EXISTS (SELECT 1 FROM conformer WHERE conformer.enumeration_id = enumeration.id) AND"
     if count:
         suffix = ' LIMIT ' + str(int(count)) + ') TO STDOUT'
     else:
@@ -141,7 +142,8 @@ def _gen_enumerated_query(filters, codes=None, count=None):
 
     filters = _gen_filters(filters, prefix='m.')
 
-    sql = 'SELECT e.molecule_id, e.smiles, e.code, m.smiles FROM enumeration e JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
+    sql = 'SELECT e.molecule_id, e.smiles e_smiles, e.code, m.smiles m_smiles FROM enumeration e ' +\
+          'JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
     if codes:
         sql = sql + " AND e.code IN ('" + "','".join(codes) + "')"
     if count:
@@ -155,7 +157,8 @@ def _gen_conformers_query(filters, codes=None, count=None):
 
     filters = _gen_filters(filters, prefix='m.')
 
-    sql = 'SELECT c.id AS c_id, e.id AS e_id, e.molecule_id AS m_id, e.smiles, c.coords, e.code, m.smiles FROM conformer c ' \
+    sql = 'SELECT c.id AS c_id, e.id AS e_id, e.molecule_id AS m_id, e.smiles, c.coords, e.code, m.smiles ' +\
+          'FROM conformer c ' +\
           'JOIN enumeration e ON c.enumeration_id = e.id JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
     if codes:
         sql = sql + " AND e.code IN ('" + "','".join(codes) + "')"
@@ -235,7 +238,8 @@ def filter_conformers_cxsmi(output_file, filters, count, codes=None, dry_run=Fal
                     count += 1
                     # SELECT c.id AS c_id, e.id AS e_id, e.molecule_id AS m_id, e.smiles, c.coords, e.code, m.smiles
                     #                0             1                      2     3         4         5       6
-                    line = "{} {}\t{}-{}-{}\t{}\t{}\n".format(result[3], result[4], str(result[2]), str(result[1]), str(result[0]), result[6], result[5])
+                    line = "{} {}\t{}-{}-{}\t{}\t{}\n".format(
+                        result[3], result[4], str(result[2]), str(result[1]), str(result[0]), result[6], result[5])
                     writer.write(line)
         t1 = time.time()
         DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
@@ -283,7 +287,7 @@ def main():
     #   python -m moldb.filter --output-smiles filtered.smi --output-need-enum need-enum.smi --min-hac 16 --max-hac 24 \
     #     --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0
 
-    ### command line args definitions #########################################
+    # ----- command line args definitions -------------------------------------------------------
 
     parser = argparse.ArgumentParser(description='Filter')
     parser.add_argument('-s', '--specification', help="Filter specification file")
@@ -292,9 +296,6 @@ def main():
     parser.add_argument('--output-need-conf', help="Output file for SMILES needing conformer generation")
     parser.add_argument('--output-enumerated', help="Output SDF or CXSMILES file for enumerated molecules")
     parser.add_argument('--output-conformer', help="Output SDF file for 3D conformers")
-
-    #moldb_utils.add_filter_args(parser)
-
     parser.add_argument('-m', '--enum-codes', nargs='+', help="Enumerated types (B, C, T, M)")
     parser.add_argument('-c', '--count', type=int, help='Max number of molecules to extract')
     parser.add_argument('--dry-run', action='store_true', help="Generate SQL but don't execute")
@@ -331,6 +332,7 @@ def main():
             filter_conformers_sdf(args.output_conformer, filters, args.count, codes=args.enum_codes, dry_run=args.dry_run)
         else:
             raise ValueError('Output file must be .sdf or .cxsmi')
+
 
 if __name__ == "__main__":
     main()
