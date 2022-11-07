@@ -101,27 +101,27 @@ def _do_filter(sql, output_file, filters, dry_run=False, prefix='', suffix=''):
 
 def filter_smiles(output_file, count, filters, dry_run=False):
 
-    sql = "COPY (SELECT smiles, id FROM molecule WHERE "
+    sql = "COPY (SELECT m.smiles, m.id FROM molecule m WHERE "
     if count:
         suffix = ' LIMIT ' + str(int(count)) + ') TO STDOUT'
     else:
         suffix = ') TO STDOUT'
 
-    _do_filter(sql, output_file, filters, dry_run=dry_run, suffix=suffix)
+    _do_filter(sql, output_file, filters, dry_run=dry_run, prefix='m.', suffix=suffix)
 
 
 def filter_need_enum(output_file, count, filters, dry_run=False):
 
     utils.expand_path(output_file)
 
-    sql = "COPY (SELECT smiles, id FROM molecule m WHERE"
+    sql = "COPY (SELECT m.smiles, m.id FROM molecule m WHERE"
     if count:
-        suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration WHERE enumeration.molecule_id = molecule.id) LIMIT ' + \
+        suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration e WHERE e.molecule_id = m.id) LIMIT ' + \
                  str(int(count)) + ') TO STDOUT'
     else:
-        suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration WHERE enumeration.molecule_id = molecule.id)) TO STDOUT'
+        suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration e WHERE e.molecule_id = m.id)) TO STDOUT'
 
-    _do_filter(sql, output_file, filters, dry_run=dry_run, suffix=suffix)
+    _do_filter(sql, output_file, filters, dry_run=dry_run, prefix='m.', suffix=suffix)
 
 
 def filter_need_conf(output_file, count, filters, dry_run=False):
@@ -129,7 +129,7 @@ def filter_need_conf(output_file, count, filters, dry_run=False):
     utils.expand_path(output_file)
 
     sql = "COPY (SELECT e.smiles, e.id, e.code FROM enumeration e JOIN molecule m ON e.molecule_id = m.id " + \
-        "WHERE e.id NOT EXISTS (SELECT 1 FROM conformer WHERE conformer.enumeration_id = enumeration.id) AND"
+        "WHERE NOT EXISTS (SELECT 1 FROM conformer c WHERE c.enumeration_id = e.id) AND"
     if count:
         suffix = ' LIMIT ' + str(int(count)) + ') TO STDOUT'
     else:
