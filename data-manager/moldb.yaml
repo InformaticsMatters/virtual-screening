@@ -620,18 +620,15 @@ jobs:
       python -m moldb.filter --output-enumerated {{ outfile }}
       --specification {{ specification }}
       --count {{ count }}
-      {% if enum_types is defined %}--enum-codes
-        {% if 'Base' in enum_types %}B{% endif %}
-        {% if 'Tautomer' in enum_types %}T{% endif %}
-        {% if 'Microstate' in enum_types %}M{% endif %}
-        {% if 'Stereoisomer' in enum_types %}C{% endif %}
-      {% endif %}
+      --enum-codes B{% if incl_taut %} T{% endif %}{% if incl_micro %} M{% endif %}{% if incl_stereo %} C{% endif %}
     variables:
       order:
         options:
         - outfile
         - count
-        - enum_types
+        - incl_taut
+        - incl_micro
+        - incl_stereo
       inputs:
         type: object
         required:
@@ -657,7 +654,9 @@ jobs:
         required:
         - outfile
         - count
-        - enum_types
+        - incl_taut
+        - incl_micro
+        - incl_stereo
         properties:
           outfile:
             title: Output file name (.cxsmi or .sdf)
@@ -669,21 +668,18 @@ jobs:
             type: integer
             default: 100000
             maxValue: 5000000
-          enum_types:
-            title: Enumerated types
-            type: array
-            items:
-              type: string
-              enum:
-              - Base
-              - Microstate
-              - Tautomer
-              - Stereoisomer
-              default:
-              - Base
-              - Microstate
-              - Tautomer
-              - Stereoisomer
+          incl_taut:
+            title: Include tautomers
+            type: boolean
+            default: true
+          incl_micro:
+            title: Include microstates
+            type: boolean
+            default: true
+          incl_stereo:
+            title: Include stereoisomers
+            type: boolean
+            default: true
     tests:
       create:
         run-groups:
@@ -699,11 +695,9 @@ jobs:
         options:
           outfile: enumerated.cxsmi
           count: 10
-          enum_types:
-          - Base
-          - Microstate
-          - Tautomer
-          - Stereoisomer
+          incl_taut: true
+          incl_micro: true
+          incl_stereo: true
         checks:
           exitCode: 0
           outputs:
@@ -755,18 +749,15 @@ jobs:
       python -m moldb.filter --output-conformer {{ outfile }}
       --specification {{ specification }}
       --count {{ count }}
-      {% if enum_types is defined %}--enum-codes
-        {% if 'Base' in enum_types %}B{% endif %}
-        {% if 'Tautomer' in enum_types %}T{% endif %}
-        {% if 'Microstate' in enum_types %}M{% endif %}
-        {% if 'Stereoisomer' in enum_types %}C{% endif %}
-      {% endif %}
+      --enum-codes B{% if incl_taut %} T{% endif %}{% if incl_micro %} M{% endif %}{% if incl_stereo %} C{% endif %}
     variables:
       order:
         options:
         - outfile
         - count
-        - enum_types
+        - incl_taut
+        - incl_micro
+        - incl_stereo
       inputs:
         type: object
         required:
@@ -792,7 +783,9 @@ jobs:
         required:
         - outfile
         - count
-        - enum_types
+        - incl_taut
+        - incl_micro
+        - incl_stereo
         properties:
           outfile:
             title: Output file name (.cxsmi or .sdf)
@@ -804,21 +797,18 @@ jobs:
             type: integer
             default: 100000
             maxValue: 5000000
-          enum_types:
-            title: Enumerated types
-            type: array
-            items:
-              type: string
-              enum:
-              - Base
-              - Microstate
-              - Tautomer
-              - Stereoisomer
-              default:
-              - Base
-              - Microstate
-              - Tautomer
-              - Stereoisomer
+          incl_taut:
+            title: Include tautomers
+            type: boolean
+            default: true
+          incl_micro:
+            title: Include microstates
+            type: boolean
+            default: true
+          incl_stereo:
+            title: Include stereoisomers
+            type: boolean
+            default: true
     tests:
       create:
         run-groups:
@@ -834,11 +824,9 @@ jobs:
         options:
           outfile: conformers.cxsmi
           count: 10
-          enum_types:
-          - Base
-          - Microstate
-          - Tautomer
-          - Stereoisomer
+          incl_taut: true
+          incl_micro: true
+          incl_stereo: true
         checks:
           exitCode: 0
           outputs:
