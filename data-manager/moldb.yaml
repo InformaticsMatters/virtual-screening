@@ -629,7 +629,7 @@ jobs:
     variables:
       order:
         options:
-        - outputFile
+        - outfile
         - count
         - enum_types
       inputs:
@@ -928,7 +928,7 @@ jobs:
             title: Skip enumeration analysis
             type: boolean
             default: true
-          conf:
+          skip_conf:
             title: Skip conformer analysis
             type: boolean
             default: true
