@@ -75,6 +75,7 @@ workflow gen_confs {
         now = dateFormat.format(new java.util.Date())
         conf_count++
         log.info("$now # PROGRESS -DONE- $wrkflw:gen_conformers $conf_count")
+        log.info("$now # PROGRESS -START- $wrkflw:load_conf $conf_count")
     }
 
     load_count = 0

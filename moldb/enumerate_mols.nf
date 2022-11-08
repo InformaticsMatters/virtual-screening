@@ -77,6 +77,7 @@ workflow enumerate_forms {
         now = dateFormat.format(new java.util.Date())
         enumerate_count++
         log.info("$now # PROGRESS -DONE- $wrkflw:enumerate $enumerate_count")
+        log.info("$now # PROGRESS -START- $wrkflw:load_enum $enumerate_count")
     }
 
     load_enum_count = 0
