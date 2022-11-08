@@ -65,6 +65,7 @@ workflow molprops {
         now = dateFormat.format(new java.util.Date())
         calc_count++
         log.info("$now # PROGRESS -DONE- $wrkflw:calc_molprops $calc_count")
+        log.info("$now # PROGRESS -START- $wrkflw:load_molprops $split_count")
     }
 
     load_count = 0
