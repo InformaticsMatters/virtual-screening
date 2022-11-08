@@ -9,8 +9,16 @@ services:
     postgres:
         image: informaticsmatters/rdkit-cartridge-debian:Release_2021_03
         volumes:
-        - /work/moldb/pgdata:/var/lib/postgresql/data:Z
+        - /work/moldb/pgdata:/var/lib/postgresql/data
+        #- ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf
         environment:
             POSTGRES_PASSWORD: squonk
         ports:
         - "5432:5432"
+        shm_size: '4gb'
+        command:
+        - "postgres"
+        - "-c"
+        - "max_wal_size=3GB"
+        - "-c"
+        - "shared_buffers=3GB"

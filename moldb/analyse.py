@@ -220,7 +220,7 @@ def analyseConformer(writer, filters, conn):
             .format(filt_count, enums_need_conf_filt)
 
     t1 = time.time()
-    msg += '             took {}s\n'.format((t1-t0))
+    msg += '           took {}s\n'.format((t1-t0))
 
     writer.write(msg)
 
@@ -228,7 +228,7 @@ def analyseConformer(writer, filters, conn):
 def main():
 
     # Example:
-    #   python -m moldb.analyse  -s specification.txt -o report.txt
+    #   python -m moldb.analyse -s specification.txt -o report.txt
 
     # ----- command line args definitions ---------------------------------------------
 

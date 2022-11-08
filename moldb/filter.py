@@ -101,7 +101,14 @@ def _do_filter(sql, output_file, filters, dry_run=False, prefix='', suffix=''):
 
 def filter_smiles(output_file, count, filters, dry_run=False):
 
-    sql = "COPY (SELECT m.smiles, m.id FROM molecule m WHERE "
+    sql = "COPY (SELECT m.smiles, m.id, " +\
+          "concat_ws(',', VARIADIC array_agg(s.code)) codes, " +\
+          "concat_ws(',', VARIADIC array_agg(l.name)) libs  " +\
+          "FROM molecule m " +\
+          "JOIN supply s on s.molecule_id = m.id " +\
+          "JOIN file f ON f.id = s.file_id " +\
+          "JOIN library l ON l.id = f.library_id " +\
+          "GROUP BY m.id HAVING"
     if count:
         suffix = ' LIMIT ' + str(int(count)) + ') TO STDOUT'
     else:
@@ -114,6 +121,7 @@ def filter_need_enum(output_file, count, filters, dry_run=False):
 
     utils.expand_path(output_file)
 
+    # sql = "COPY (SELECT m.smiles, m.id FROM molecule m WHERE"
     sql = "COPY (SELECT m.smiles, m.id FROM molecule m WHERE"
     if count:
         suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration e WHERE e.molecule_id = m.id) LIMIT ' + \
@@ -142,8 +150,18 @@ def _gen_enumerated_query(filters, codes=None, count=None):
 
     filters = _gen_filters(filters, prefix='m.')
 
-    sql = 'SELECT e.molecule_id, e.smiles e_smiles, e.code, m.smiles m_smiles FROM enumeration e ' +\
-          'JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
+    # sql = 'SELECT e.molecule_id, e.smiles e_smiles, e.code, m.smiles m_smiles FROM enumeration e ' +\
+    #       'JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
+
+    sql = "SELECT e.id, e.molecule_id, e.smiles e_smiles, e.coords, e.code, m.smiles m_smiles, " + \
+          "concat_ws(', ', VARIADIC array_agg(s.code)) codes, " + \
+          "concat_ws(', ', VARIADIC array_agg(l.name)) libs " + \
+          "FROM enumeration e " + \
+          "JOIN molecule m ON m.id = e.molecule_id " + \
+          "JOIN supply s on s.molecule_id = m.id " + \
+          "JOIN file f ON f.id = s.file_id " + \
+          "JOIN library l ON l.id = f.library_id " + \
+          "GROUP BY e.id, m.id HAVING" + filters
     if codes:
         sql = sql + " AND e.code IN ('" + "','".join(codes) + "')"
     if count:
@@ -184,7 +202,10 @@ def filter_enumerated_cxsmi(output_file, filters, count, codes=None, dry_run=Fal
                 results = conn.execute(text(sql))
                 for result in results:
                     count += 1
-                    line = "{}\t{}\t{}\t{}\n".format(result[1], str(result[0]), result[2], result[3])
+                    # e.id, e.molecule_id, e_smiles, e.coords, e.code, m_smiles, codes, libs
+                    #    0              1          2        3       4         5      6     7
+                    line = "{} |{}|\t{}\t{}\t{}\t{}\t{}\t{}\n"\
+                        .format(result[2], result[3], str(result[0]), str(result[1]), result[4], result[5], result[6], result[7])
                     writer.write(line)
         t1 = time.time()
         DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
@@ -205,14 +226,18 @@ def filter_enumerated_sdf(output_file, filters, count, codes=None, dry_run=False
                 results = conn.execute(text(sql))
                 for result in results:
                     count += 1
-                    mol = Chem.MolFromSmiles(result[1])
-                    enum_smi = result[1].split(' ')[0]
+                    # e.id, e.molecule_id, e_smiles, e.coords, e.code, m_smiles, codes, libs
+                    #    0              1          2        3       4         5      6     7
+                    mol = Chem.MolFromSmiles(result[2] + ' |' + result[3] + '|')
                     if mol.HasProp('_CXSMILES_Data'):
                         mol.ClearProp('_CXSMILES_Data')
                     mol.SetProp('_Name', str(result[0]))
-                    mol.SetProp('enum_smi', enum_smi)
-                    mol.SetProp('std_smi', result[3])
-                    mol.SetProp('enum_code', result[2])
+                    mol.SetProp('enum_smi', result[2])
+                    mol.SetProp('std_smi', result[5])
+                    mol.SetProp('molecule_id', str(result[1]))
+                    mol.SetProp('enum_code', result[4])
+                    mol.SetProp('codes', result[6])
+                    mol.SetProp('libraries', result[7])
 
                     sdf_block = Chem.SDWriter.GetText(mol)
                     chg_block = rdkit_utils.updateChargeFlagInAtomBlock(sdf_block)
@@ -260,6 +285,7 @@ def filter_conformers_sdf(output_file, filters, count, codes=None, dry_run=False
                 results = conn.execute(text(sql))
                 # SELECT c.id AS c_id, e.id AS e_id, e.molecule_id AS m_id, e.smiles, c.coords, e.code, m.smiles
                 #                0             1                      2     3         4         5       6
+
                 for result in results:
                     count += 1
                     mol = Chem.MolFromSmiles(result[3] + ' ' + result[4])
@@ -284,8 +310,7 @@ def filter_conformers_sdf(output_file, filters, count, codes=None, dry_run=False
 def main():
 
     # Example:
-    #   python -m moldb.filter --output-smiles filtered.smi --output-need-enum need-enum.smi --min-hac 16 --max-hac 24 \
-    #     --min-rings 2 --min-aro-rings 1 --max-chiral-centres 2 --max-undefined-chiral-centres 0
+    #   python -m moldb.filter --output-smiles filtered.smi --output-need-enum need-enum.smi --specification specification.txt
 
     # ----- command line args definitions -------------------------------------------------------
 

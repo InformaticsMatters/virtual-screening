@@ -264,7 +264,7 @@ def main():
 
     # Example:
     #   python3 screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input data/10000.smi --delimiter tab -o foo.smi\
-    #     -d morgan2 -m tanimoto
+    #     -d rdkit -m tanimoto
 
     ### command line args definitions #########################################
 

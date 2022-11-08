@@ -575,6 +575,107 @@ jobs:
         checks:
           exitCode: 0
 
+  moldb-extract-molecules:
+    name: MolDB extract molecules
+    description: >-
+      Extract base molecules
+    version: '1.0.0'
+    category: ligand preparation
+    keywords:
+    - moldb
+    - database
+    image:
+      name: informaticsmatters/vs-moldb
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: simple
+      environment:
+      - name: POSTGRES_USERNAME
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_username
+      - name: POSTGRES_PASSWORD
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_password
+      - name: POSTGRES_SERVER
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_server
+      - name: POSTGRES_DATABASE
+        value-from:
+          secret:
+            name: moldb-database
+            key: moldb_database
+      fix-permissions: true
+    command: >-
+      python -m moldb.filter --output-smiles {{ outfile }}
+      --specification {{ specification }}
+      {% if count is defined and count %}--count {{ count }}{% endif %}
+    variables:
+      order:
+        options:
+        - outfile
+        - count
+      inputs:
+        type: object
+        required:
+        - specification
+        properties:
+          specification:
+            title: Filter specification file
+            mime-types:
+            - text/plain
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-daylight-smiles
+            creates: '{{ outfile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outfile
+        properties:
+          outfile:
+            title: Output file name (.smi)
+            type: string
+            default: molecules.smi
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          count:
+            title: Max number of molecules to extract
+            type: integer
+    tests:
+      create:
+        run-groups:
+        - name: moldb
+          ordinal: 9
+        environment:
+        - POSTGRES_USERNAME
+        - POSTGRES_PASSWORD
+        - POSTGRES_SERVER
+        - POSTGRES_DATABASE
+        inputs:
+          specification: data/14-14-4.spec
+        options:
+          outfile: molecules.smi
+          count: 10
+        checks:
+          exitCode: 0
+          outputs:
+          - name: molecules.smi
+            checks:
+            - exists: true
+            - lineCount: 10
+
   moldb-extract-enums:
     name: MolDB extract enumerated forms
     description: >-
@@ -684,7 +785,7 @@ jobs:
       create:
         run-groups:
         - name: moldb
-          ordinal: 9
+          ordinal: 10
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD
@@ -813,7 +914,7 @@ jobs:
       create:
         run-groups:
         - name: moldb
-          ordinal: 10
+          ordinal: 11
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD
@@ -924,7 +1025,7 @@ jobs:
       create:
         run-groups:
         - name: moldb
-          ordinal: 11
+          ordinal: 12
         environment:
         - POSTGRES_USERNAME
         - POSTGRES_PASSWORD

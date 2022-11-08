@@ -28,8 +28,14 @@ process load_molprops {
     input:
     file inputs
 
+    output:
+    env COUNT
+
     """
     python -m moldb.load_molprops --input '$inputs'
+
+    # count the number of lines
+    COUNT=\$(wc -l < '$inputs')
     """
 }
 
@@ -43,9 +49,15 @@ process load_enum {
     input:
     file inputs
 
+    output:
+    env COUNT
+
     """
     python -m moldb.load_enums --input '$inputs' --interval $params.interval\
       ${params.purge ? '--purge' : ''}
+
+    # count the number of lines
+    COUNT=\$(wc -l < '$inputs')
     """
 }
 
@@ -59,8 +71,14 @@ process load_conf {
     input:
     file inputs
 
+    output:
+    env COUNT
+
     """
     python -m moldb.load_confs --input '$inputs' --interval $params.interval\
       ${params.purge ? '--purge' : ''}
+
+    # count the number of lines
+    COUNT=\$(wc -l < '$inputs')
     """
 }

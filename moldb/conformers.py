@@ -141,15 +141,11 @@ def execute(input, output, minimize_cycles=500, rms_threshold=1.0, num_conformer
 
                     mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, True, num_conformers=num_conformers)
                     for idx in range(mol_with_confs.GetNumConformers()):
-                        # mol_with_confs.SetDoubleProp('Energy',
-                        #                              mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'))
-                        # mol_with_confs.SetDoubleProp('Energy_Delta',
-                        #                              mol_with_confs.GetConformer(idx).GetDoubleProp(
-                        #                                  'Energy_Delta'))
                         cxsmi = Chem.MolToCXSmiles(mol_with_confs)
+
                         writer.write("{}\t{}\t{}\t{}\t{}\n".format(cxsmi, id, str(idx),
                                                          mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'),
-                                                         mol_with_confs.GetConformer(idx).GetDoubleProp( 'Energy_Delta')))
+                                                         mol_with_confs.GetConformer(idx).GetDoubleProp('Energy_Delta')))
                         conformer_count += 1
                         conf_count_for_mol += 1
 
@@ -170,7 +166,7 @@ def execute(input, output, minimize_cycles=500, rms_threshold=1.0, num_conformer
 def main():
 
     # Example:
-    #   python -m moldb.conformers.py -i foo.smi -o bar.cxsmi
+    #   python -m moldb.conformers -i foo.smi -o bar.cxsmi
 
     ### command line args definitions #########################################
 

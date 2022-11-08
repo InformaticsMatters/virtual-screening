@@ -23,12 +23,11 @@ The file should contain these fields:
 * energy
 * energy delta (difference to lowest energy conformer)
 
-The coordinates bit must be the coordiantes section of the cxsmiles extension. e.g if the cxsmiles looked like this:
+The coordinates bit must be the coordinates section of the cxsmiles extension. e.g. if the cxsmiles looked like this:
   CCO |(2.84126,-0.0586636,2.68552;3.04156,1.20289,1.86426;3.754,0.913667,0.663692)|
 then the first field must be like this:
-  2.84126,-0.0586636,2.68552;3.04156,1.20289,1.86426;3.754,0.913667,0.663692
+  (2.84126,-0.0586636,2.68552;3.04156,1.20289,1.86426;3.754,0.913667,0.663692)
 
-Generate data like this using the conformers.py module with the -coords-only option.
 """
 
 import argparse
@@ -83,7 +82,10 @@ def load_data(inputs, chunk_size=100, purge=False, interval=None):
                         break
                     t = line.split('\t')
                     cxsmi = t[0].strip()
-                    coords = cxsmi[cxsmi.index('|'):]
+                    parts = cxsmi.split(' ')
+                    smi = parts[0]
+                    coords = parts[1][1:-1]
+
                     id = t[1].strip()
                     energy = t[3].strip()
                     energy_delta = t[4].strip()
