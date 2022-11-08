@@ -23,8 +23,12 @@ This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
 ## How to run the job
 
+For general information on using this job and interpreting the output look at the *Loading molecules*
+section [here](https://discourse.squonk.it/t/about-moldb/138).
+
 ### Inputs
-* **Molecules to load**: a file from a vendor in SMILES format. An example file with a small subset of ChemSpace can be found [here](https://github.com/InformaticsMatters/virtual-screening/blob/main/data/100000.smi).
+* **Molecules to load**: a file from a vendor in SMILES format. An example file with a small subset of ChemSpace can be
+  found [here](https://github.com/InformaticsMatters/virtual-screening/blob/main/data/100000.smi).
 
 ### Options
 * **Library name**: the name of the library e.g. `ChemSpace`
@@ -36,4 +40,5 @@ This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
 ## Related topics
 
+* [About MOlDB](https://discourse.squonk.it/t/about-moldb/138)
 * [moldb-calc-props job](moldb-calc-props.md)

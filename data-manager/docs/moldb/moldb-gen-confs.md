@@ -34,6 +34,9 @@ This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
 ## How to run the job
 
+For general information on using this job and interpreting the output look at the *Generating low energy 3D conformers*
+section [here](https://discourse.squonk.it/t/about-moldb/138).
+
 ### Options
 
 * **Max number of molecules to process**: the maximum number of molecules to extract.
@@ -42,4 +45,5 @@ This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
 ## Related topics
 
+* [About MOlDB](https://discourse.squonk.it/t/about-moldb/138)
 * [moldb-enumerate-mols job](moldb-enumerate-mols.md)

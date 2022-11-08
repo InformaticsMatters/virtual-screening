@@ -1424,3 +1424,94 @@ jobs:
           - name: foo/clustered-mols.smi
             checks:
             - exists: true
+
+  sdf-manipulate:
+    name: Filter SD-file based on its properties
+    description: >-
+      Filter the records of a SD-file based or field property values
+    version: '1.0.0'
+    category: miscellaneous
+    keywords:
+    - rdkit
+    - filter
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      python -m sdf_manip --input '{{ inputFile }}'
+      --output {{ outputFile }}
+      --filter {% for filt in filters %} '{{ filt }}'{% endfor %}
+      {% if types is defined and types %}--types '{{ types }}'{% endif %}
+      {% if logic_or is defined and logic_or %}--logic-or{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - filters
+        - types
+        - logic_or
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cluster-butina/121'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - filters
+        properties:
+          outputFile:
+            title: Output file
+            type: string
+            default: filtered.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          filters:
+            title: Filter term(s)
+            type: array
+            items:
+              type: string
+          types:
+            title: Field types
+            type: string
+          logic_or:
+            title: Use logical OR
+            type: boolean
+            default: false
+    tests:
+      simple-filter:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: filtered.sdf
+          filters:
+          - "TG_uM < 1.1"
+          - "RL_uM < 0.5"
+          types: "TG_uM:float, RL_uM:float"
+        checks:
+          exitCode: 0
+          outputs:
+          - name: filtered.sdf
+            checks:
+            - exists: true

@@ -19,6 +19,9 @@ set of molecules otherwise you will not get a complete set.
 
 ## How to run the job
 
+For general information on using this job and interpreting the output look at the *Extracting enumerated forms*
+section [here](https://discourse.squonk.it/t/about-moldb/138).
+
 ### Options
 
 * **Output file name**: output file name (.sdf or .cxsmi)
@@ -28,4 +31,5 @@ set of molecules otherwise you will not get a complete set.
 
 ## Related topics
 
+* [About MOlDB](https://discourse.squonk.it/t/about-moldb/138)
 * [moldb-enumerate-mols job](moldb-enumerate-mols.md)
