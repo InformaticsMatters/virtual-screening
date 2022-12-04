@@ -1515,3 +1515,105 @@ jobs:
           - name: filtered.sdf
             checks:
             - exists: true
+
+  reactor:
+    name: Reaction enumeration using RDKit
+    description: >-
+      Enumerate products using RDKit. Inputs are a reaction SMARTS string and SMILES files with reactants.
+    version: '1.0.0'
+    category: molecular libraries
+    keywords:
+    - rdkit
+    - reaction
+    - enumeration
+    - library
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      python /code/reactor.py --reactions{% for rxn in reactions %} '{{ rxn }}'{% endfor %}
+      --reactants '{{ reactant1 }}' {% if reactant2 is defined %}'{{ reactant2 }}'{% endif %} {% if reactant3 is defined %}'{{ reactant3 }}'{% endif %}
+      --output '{{ outputFile }}'
+      {% if readHeader is defined %}--read-header{% endif %}
+      {% if writeHeader is defined %}--write-header{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - reactions
+        - outputFile
+        - readHeader
+        - writeHeader
+      inputs:
+        type: object
+        required:
+        - reactant1
+        properties:
+          reactant1:
+            title: Reactant 1
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+          reactant2:
+            title: Reactant 2
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+          reactant3:
+            title: Reactant 3
+            mime-types:
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - reactions
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          reactions:
+            title: reaction SMARTS
+            type: array
+            items:
+              type: string
+          readHeader:
+            title: Reactants have header line
+            type: boolean
+          writeHeader:
+            title: Output has header line
+            type: boolean
+            default: true
+    tests:
+      simple-execution:
+        inputs:
+          reactant1: data/100.smi
+          reactant2: data/100.smi
+        options:
+          outputFile: foo/enumerated.smi
+          reactions:
+          - "[O:2]=[C:1][OH].[N:3]>>[O:2]=[C:1][N:3]"
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/enumerated.smi
+            checks:
+            - exists: true
+            - lineCount: 79
