@@ -1592,6 +1592,7 @@ jobs:
           reactions:
             title: reaction SMARTS
             type: array
+            pattern: "^((?!').)*$"
             items:
               type: string
           readHeader:
