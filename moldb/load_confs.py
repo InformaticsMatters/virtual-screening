@@ -86,9 +86,11 @@ def load_data(inputs, chunk_size=100, purge=False, interval=None):
                     smi = parts[0]
                     coords = parts[1][1:-1]
 
-                    id = t[1].strip()
-                    energy = t[3].strip()
-                    energy_delta = t[4].strip()
+                    id_s = t[1].strip() # id will be enum_id-conf_id
+                    energy = t[2].strip()
+                    energy_delta = t[3].strip()
+                    id_tokens = id_s.split('-')
+                    id = int(id_tokens[0])
 
                     count += 1
                     recordno += 1

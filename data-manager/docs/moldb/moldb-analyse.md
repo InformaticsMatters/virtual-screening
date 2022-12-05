@@ -17,10 +17,13 @@ From this report you can work out which molecues need property calculation, enum
 For general information on using this job and interpreting the output look at the *Finding out what needs doing*
 section [here](https://discourse.squonk.it/t/about-moldb/138).
 
+### Inputs
+
+* **Filter specification file**: file containing the specification of molecular property filters
+
 ### Options
 
 * **Output file name**: output file name (.txt)
-* **Filter specification file**: file containing the specification of molecular property filters.
 * **Skip enumeration analysis**: do not perform analysis of the enumeration table
 * **Skip conformer analysis**: do not perform analysis of the conformer table
 

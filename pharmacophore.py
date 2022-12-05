@@ -230,6 +230,7 @@ def main():
     # Example usages:
     #   ./pharmacophore.py -i data/candidates.sdf -f data/Mpro-x0107_0A.mol data/Mpro-x1382_0A.mol --outfile out.sdf
     #   ./pharmacophore.py -i data/candidates.sdf -f data/fragments.sdf --outfile out.sdf
+    #   python /code/pharmacophore.py -i /data/mpro-merge-enumerated.sdf -f /data/data/Mpro-x0107_0A.mol /data/data/Mpro-x1382_0A.mol --outfile out.sdf --interval 5000 -c 1
 
     ### command line args definitions #########################################
 

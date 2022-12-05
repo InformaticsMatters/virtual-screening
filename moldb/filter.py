@@ -87,10 +87,12 @@ def _do_filter(sql, output_file, filters, dry_run=False, prefix='', suffix=''):
 
     sql = sql + filters + suffix
 
-    DmLog.emit_event('Query SQL:\n', sql)
+    utils.log('Query SQL:\n', sql)
 
     if not dry_run:
         with Session(engine) as session:
+
+            DmLog.emit_event('Executing query')
 
             output = open(output_file, 'w')
             cursor = session.connection().connection.cursor()
@@ -99,7 +101,7 @@ def _do_filter(sql, output_file, filters, dry_run=False, prefix='', suffix=''):
             session.commit()
 
 
-def filter_smiles(output_file, count, filters, dry_run=False):
+def filter_molecules(output_file, count, filters, dry_run=False):
 
     sql = "COPY (SELECT m.smiles, m.id, " +\
           "concat_ws(',', VARIADIC array_agg(s.code)) codes, " +\
@@ -121,7 +123,6 @@ def filter_need_enum(output_file, count, filters, dry_run=False):
 
     utils.expand_path(output_file)
 
-    # sql = "COPY (SELECT m.smiles, m.id FROM molecule m WHERE"
     sql = "COPY (SELECT m.smiles, m.id FROM molecule m WHERE"
     if count:
         suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration e WHERE e.molecule_id = m.id) LIMIT ' + \
@@ -150,9 +151,6 @@ def _gen_enumerated_query(filters, codes=None, count=None):
 
     filters = _gen_filters(filters, prefix='m.')
 
-    # sql = 'SELECT e.molecule_id, e.smiles e_smiles, e.code, m.smiles m_smiles FROM enumeration e ' +\
-    #       'JOIN molecule m ON m.id = e.molecule_id WHERE' + filters
-
     sql = "SELECT e.id, e.molecule_id, e.smiles e_smiles, e.coords, e.code, m.smiles m_smiles, " + \
           "concat_ws(', ', VARIADIC array_agg(s.code)) codes, " + \
           "concat_ws(', ', VARIADIC array_agg(l.name)) libs " + \
@@ -167,7 +165,6 @@ def _gen_enumerated_query(filters, codes=None, count=None):
     if count:
         sql = sql + " LIMIT " + str(int(count))
 
-    DmLog.emit_event('Query SQL:\n', sql)
     return sql
 
 
@@ -183,7 +180,6 @@ def _gen_conformers_query(filters, codes=None, count=None):
     if count:
         sql = sql + " LIMIT " + str(int(count))
 
-    DmLog.emit_event('Query SQL:\n', sql)
     return sql
 
 
@@ -192,13 +188,14 @@ def filter_enumerated_cxsmi(output_file, filters, count, codes=None, dry_run=Fal
     utils.expand_path(output_file)
 
     sql = _gen_enumerated_query(filters, codes=codes, count=count)
-    utils.log('SQL:', sql)
+    utils.log('SQL:\n', sql)
 
     if not dry_run:
         count = 0
         t0 = time.time()
         with open(output_file, 'wt') as writer:
             with engine.connect() as conn:
+                DmLog.emit_event('Executing query')
                 results = conn.execute(text(sql))
                 for result in results:
                     count += 1
@@ -223,6 +220,7 @@ def filter_enumerated_sdf(output_file, filters, count, codes=None, dry_run=False
         t0 = time.time()
         with open(output_file, 'wt') as writer:
             with engine.connect() as conn:
+                DmLog.emit_event('Executing query')
                 results = conn.execute(text(sql))
                 for result in results:
                     count += 1
@@ -258,6 +256,7 @@ def filter_conformers_cxsmi(output_file, filters, count, codes=None, dry_run=Fal
         t0 = time.time()
         with open(output_file, 'wt') as writer:
             with engine.connect() as conn:
+                DmLog.emit_event('Executing query')
                 results = conn.execute(text(sql))
                 for result in results:
                     count += 1
@@ -282,6 +281,7 @@ def filter_conformers_sdf(output_file, filters, count, codes=None, dry_run=False
         t0 = time.time()
         with open(output_file, 'wt') as writer:
             with engine.connect() as conn:
+                DmLog.emit_event('Executing query')
                 results = conn.execute(text(sql))
                 # SELECT c.id AS c_id, e.id AS e_id, e.molecule_id AS m_id, e.smiles, c.coords, e.code, m.smiles
                 #                0             1                      2     3         4         5       6
@@ -310,13 +310,11 @@ def filter_conformers_sdf(output_file, filters, count, codes=None, dry_run=False
 def main():
 
     # Example:
-    #   python -m moldb.filter --output-smiles filtered.smi --output-need-enum need-enum.smi --specification specification.txt
-
-    # ----- command line args definitions -------------------------------------------------------
+    #   python -m moldb.filter --output-molecules filtered.smi --output-need-enum need-enum.smi --specification specification.txt
 
     parser = argparse.ArgumentParser(description='Filter')
     parser.add_argument('-s', '--specification', help="Filter specification file")
-    parser.add_argument('--output-smiles', help="Output file for SMILES")
+    parser.add_argument('--output-molecules', help="Output file for SMILES")
     parser.add_argument('--output-need-enum', help="Output file for SMILES needing enumeration")
     parser.add_argument('--output-need-conf', help="Output file for SMILES needing conformer generation")
     parser.add_argument('--output-enumerated', help="Output SDF or CXSMILES file for enumerated molecules")
@@ -333,8 +331,8 @@ def main():
     else:
         filters = {}
 
-    if args.output_smiles:
-        filter_smiles(args.output_smiles, args.count, filters, dry_run=args.dry_run)
+    if args.output_molecules:
+        filter_molecules(args.output_molecules, args.count, filters, dry_run=args.dry_run)
 
     if args.output_need_enum:
         filter_need_enum(args.output_need_enum, args.count, filters, dry_run=args.dry_run)

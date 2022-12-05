@@ -119,7 +119,14 @@ def execute(input, output, minimize_cycles=500, rms_threshold=1.0, num_conformer
     utils.expand_path(output)
 
     with open(input) as infile:
-        with open(output, 'wt') as writer:
+
+        if output.endswith('.sdf'):
+            mode = 'sdf'
+        else:
+            mode = 'cxsmi'
+        utils.log("Mode:", mode)
+
+        with (Chem.SDWriter(output) if mode == 'sdf' else open(output, 'wt')) as writer:
             for line in infile:
                 input_count += 1
                 conf_count_for_mol = 0
@@ -141,11 +148,7 @@ def execute(input, output, minimize_cycles=500, rms_threshold=1.0, num_conformer
 
                     mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, True, num_conformers=num_conformers)
                     for idx in range(mol_with_confs.GetNumConformers()):
-                        cxsmi = Chem.MolToCXSmiles(mol_with_confs)
-
-                        writer.write("{}\t{}\t{}\t{}\t{}\n".format(cxsmi, id, str(idx),
-                                                         mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'),
-                                                         mol_with_confs.GetConformer(idx).GetDoubleProp('Energy_Delta')))
+                        write_mol(writer, mode, mol_with_confs, id, idx)
                         conformer_count += 1
                         conf_count_for_mol += 1
 
@@ -156,9 +159,29 @@ def execute(input, output, minimize_cycles=500, rms_threshold=1.0, num_conformer
                     error_count += 1
                     traceback.print_exc()
 
-                utils.log('INFO, Generated', conf_count_for_mol, 'conformers for', smi)
+                utils.log('Generated', conf_count_for_mol, 'conformers for mol', input_count, smi)
 
     return input_count, enumerated_count, conformer_count, error_count
+
+
+def write_mol(writer, mode, mol, id, idx):
+
+    conf = mol.GetConformer(idx)
+    energy = conf.GetDoubleProp('Energy')
+    energy_delta = conf.GetDoubleProp('Energy_Delta')
+    cloned_mol = Chem.Mol(mol)
+    cloned_mol.RemoveAllConformers()
+    cloned_mol.AddConformer(conf)
+    cloned_mol.SetDoubleProp('Energy', energy)
+    cloned_mol.SetDoubleProp('Energy_Delta', energy_delta)
+
+    if mode == 'cxsmi':
+        cxsmi = Chem.MolToCXSmiles(cloned_mol)
+        writer.write("{}\t{}-{}\t{}\t{}\n".format(cxsmi, id, str(idx), energy, energy_delta))
+    else:
+        cloned_mol.SetProp('_Name', id + '-' + str(idx))
+        writer.write(cloned_mol)
+
 
 
 ### start main execution #########################################
@@ -172,7 +195,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Enumerate conformers')
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES")
-    parser.add_argument('-o', '--output', required=True, help="Output file as CXSMILES")
+    parser.add_argument('-o', '--output', required=True, help="Output file as .cxsmi or .sdf")
     parser.add_argument('-n', '--num-conformers', type=int,
                         help="Number of conformers to generate. If not specified the Inhibox rules are used")
     parser.add_argument('-m', '--minimize-cycles', type=int, default=500, help="Number of MMFF minimisation cycles")

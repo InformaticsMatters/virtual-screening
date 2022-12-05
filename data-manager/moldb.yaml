@@ -613,7 +613,7 @@ jobs:
             key: moldb_database
       fix-permissions: true
     command: >-
-      python -m moldb.filter --output-smiles {{ outfile }}
+      python -m moldb.filter --output-molecules {{ outfile }}
       --specification {{ specification }}
       {% if count is defined and count %}--count {{ count }}{% endif %}
     variables:
@@ -1043,4 +1043,4 @@ jobs:
           - name: report.txt
             checks:
             - exists: true
-            - lineCount: 15
+            - lineCount: 16

@@ -62,7 +62,7 @@ class Enumeration(TimestampMixin, Base):
 
     id = Column(BigInteger, primary_key=True)
 
-    molecule_id = Column(BigInteger, ForeignKey('molecule.id'), nullable=False, index=True)
+    molecule_id = Column(BigInteger, ForeignKey('molecule.id', ondelete="CASCADE"), nullable=False, index=True)
     code = Column(CHAR(1), nullable=False)
     smiles = Column(Text, nullable=False)
     coords = Column(Text, nullable=False)
@@ -78,7 +78,7 @@ class Conformer(TimestampMixin, Base):
 
     id = Column(BigInteger, primary_key=True)
 
-    enumeration_id = Column(BigInteger, ForeignKey('enumeration.id'), nullable=False, index=True)
+    enumeration_id = Column(BigInteger, ForeignKey('enumeration.id', ondelete="CASCADE"), nullable=False, index=True)
     coords = Column(Text, nullable=False)
     energy = Column(Float)
     energy_delta = Column(Float)
@@ -96,7 +96,7 @@ class Supply(TimestampMixin, Base):
 
     smiles = Column(Text(), nullable=False)
     code = Column(Text(), nullable=False)
-    molecule_id = Column(BigInteger, ForeignKey('molecule.id'), nullable=False, index=True)
+    molecule_id = Column(BigInteger, ForeignKey('molecule.id', ondelete="CASCADE"), nullable=False, index=True)
     file_id = Column(Integer, ForeignKey('file.id', ondelete="CASCADE"), nullable=False, index=True)
 
     file = relationship("File", back_populates="supplies")

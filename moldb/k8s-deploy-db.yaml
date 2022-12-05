@@ -96,6 +96,7 @@ data:
     #--------------------------------------------------------------------------
     listen_addresses = '*'
     shared_buffers = 1GB
+    max_wal_size = 1GB
 binaryData: {}
 ---
 apiVersion: apps/v1
@@ -129,6 +130,10 @@ spec:
       containers:
       - name: database
         image: informaticsmatters/rdkit-cartridge-debian:Release_2021_03
+        args:
+        - postgres
+        - '-c'
+        - 'config_file=/etc/postgresql/postgresql.conf'
         ports:
         - containerPort: 5432
           protocol: TCP

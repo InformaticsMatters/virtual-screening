@@ -37,11 +37,14 @@ This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 For general information on using this job and interpreting the output look at the *Generating low energy 3D conformers*
 section [here](https://discourse.squonk.it/t/about-moldb/138).
 
+### Inputs
+
+* **Filter specification file**: file containing the specification of molecular property filters
+
 ### Options
 
 * **Max number of molecules to process**: the maximum number of molecules to extract.
-* **Chunk size for splitting**: number of molecules per 'chunk' when calculating properties in parallel
-* **Minimum/Maximum XYZ**: Min or Max values for the various molecular property filters
+* **Chunk size for splitting**: number of molecules per 'chunk' when generating conformers in parallel
 
 ## Related topics
 

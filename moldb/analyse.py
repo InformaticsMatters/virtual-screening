@@ -28,13 +28,19 @@ from sqlalchemy import text
 engine = models.get_engine(echo=False)
 
 
-def analyse(outfile, filters, skip_enum, skip_conf):
+def analyse(outfile, specification, skip_enum, skip_conf):
     utils.expand_path(outfile)
     DmLog.emit_event('Writing to', outfile)
+
+    if specification:
+        filters = moldb_utils.read_specification(specification)
+    else:
+        filters = {}
 
     with open(outfile, 'wt') as w:
         analyseEnvironment(w)
         if filters:
+            w.write("Specification: {}\n".format(specification))
             f_sql = filter._gen_filters(filters)
             w.write('Filter terms: {}\nFilter SQL: {}\n'.format(str(filters), f_sql))
         analyseTables(w, filters, skip_enum, skip_conf)
@@ -246,7 +252,7 @@ def main():
     else:
         filters = {}
 
-    analyse(args.output, filters, args.skip_enumeration, args.skip_conformer)
+    analyse(args.output, args.specification, args.skip_enumeration, args.skip_conformer)
 
 
 if __name__ == "__main__":

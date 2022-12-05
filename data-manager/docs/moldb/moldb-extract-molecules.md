@@ -20,9 +20,13 @@ set of molecules otherwise you will not get a complete set.
 For general information on using this job and interpreting the output look at the *Extracting molecules*
 section [here](https://discourse.squonk.it/t/about-moldb/138).
 
+### Inputs
+
+* **Filter specification file**: file containing the specification of molecular property filters
+
 ### Options
 
-* **Output file name**: output file name (.sdf or .cxsmi)
+* **Output file name**: output file name (.smi)
 * **Max number of molecules to extract**: the maximum number of molecules to extract.
 
 ## Related topics

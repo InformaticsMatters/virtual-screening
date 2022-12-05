@@ -21,12 +21,19 @@ set of molecules otherwise you will not get a complete set.
 For general information on using this job and interpreting the output look at the *Extracting 3D conformers*
 section [here](https://discourse.squonk.it/t/about-moldb/138).
 
+### Inputs
+
+* **Filter specification file**: file containing the specification of molecular property filters
+
 ### Options
 
-* **Output file name**: output file name (.sdf
-* **Max number of molecules to extract**: the maximum number of molecules to extract.
-* **Enumerated types**: at least one of Base, Microstate, Tautomer, Stereoisomer
-* **Minimum/Maximum XYZ**: Min or Max values for the various molecular property filters
+* **Output file name**: output file name (.sdf)
+* **Max number of molecules to extract**: the maximum number of molecules to extract
+* **Include tautomers** include tautomers in the output (1)
+* **Include microstates** include microstates (charge forms) in the output (1)
+* **Include stereoisomers** include stereoisomers in the output (1)
+
+(1) The base molecule (non enumerated) is always output
 
 ## Related topics
 
