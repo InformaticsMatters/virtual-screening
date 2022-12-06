@@ -39,16 +39,23 @@ def add_filter_args(parser):
 
 def read_specification(filename):
     d = {}
+    smarts = []
     with open(filename, 'rt') as f:
         for line in f:
             if line:
                 line = line.strip()
-                tokens = line.split('=')
-                key = tokens[0].strip()
-                if key in ['min_logp', 'max_logp', 'min_tpsa', 'max_tpsa']:
-                    value = (float)(tokens[1].strip())
+                tokens = line.split('=', 1)
+                if len(tokens) == 2:
+                    key = tokens[0].strip()
+                    if key == 'sss':
+                        smarts.append(tokens[1].strip())
+                    elif key in ['min_logp', 'max_logp', 'min_tpsa', 'max_tpsa']:
+                        value = (float)(tokens[1].strip())
+                    else:
+                        value = (int)(tokens[1].strip())
+                    d[key] = value
                 else:
-                    value = (int)(tokens[1].strip())
-                d[key] = value
+                    utils.log('Bad specification line:', line)
     utils.log('Specification:', d)
-    return d
+    utils.log('SSS filters:', smarts)
+    return d, smarts

@@ -33,14 +33,16 @@ def analyse(outfile, specification, skip_enum, skip_conf):
     DmLog.emit_event('Writing to', outfile)
 
     if specification:
-        filters = moldb_utils.read_specification(specification)
+        filters, smarts = moldb_utils.read_specification(specification)
     else:
         filters = {}
+        smarts = []
 
     with open(outfile, 'wt') as w:
         analyseEnvironment(w)
         if filters:
             w.write("Specification: {}\n".format(specification))
+            w.write("SSS filters: {}\n".format(smarts))
             f_sql = filter._gen_filters(filters)
             w.write('Filter terms: {}\nFilter SQL: {}\n'.format(str(filters), f_sql))
         analyseTables(w, filters, skip_enum, skip_conf)

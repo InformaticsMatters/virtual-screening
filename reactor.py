@@ -106,7 +106,7 @@ def execute(reactions, reactants, output, read_header=False, write_header=False,
                 num_products += 1
 
             if interval and num_combinations % interval == 0:
-                DmLog.emit_event("Processed {} reactions".format(num_combinations))
+                DmLog.emit_event("Processed {} reactions, generated {} products".format(num_combinations, num_products))
 
     return reactant_counts, num_products
 
@@ -139,7 +139,7 @@ def main():
         if i:
             msg += 'x'
         msg += str(c)
-    DmLog.emit_event(msg, 'Products:', str(product_count), 'Reactions:', q, 'Time (s):', end - start)
+    DmLog.emit_event(msg, 'Reactions:', q, 'Products:', str(product_count),  'Time (s):', end - start)
     DmLog.emit_cost(product_count)
 
 

@@ -18,7 +18,7 @@ Workflow that generates 3D alignments of ligands against fragment structures.
 
 Example:
 nextflow run frag-merge-pharmacophore.nf --inputs data/candidates.sdf\
-  --fragments data/Mpro-x0107_0A_hs.mol2\
+  --fragments data/Mpro-x0107_0A_hs.mol2 --group_by_field std_smi\
  --publish_dir test
 */
 

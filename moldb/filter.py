@@ -58,7 +58,7 @@ def _add_term(sql, min_value, max_value, column, count, prefix=''):
     return sql, count
 
 
-def _gen_filters(filters, prefix=''):
+def _gen_filters(filters, smarts, prefix=''):
 
     terms = (
         (filters.get('min_hac'), filters.get('max_hac'), 'hac'),
@@ -76,16 +76,32 @@ def _gen_filters(filters, prefix=''):
     for term in terms:
         sql, count = _add_term(sql, term[0], term[1], term[2], count, prefix=prefix)
 
+    if smarts:
+        if count:
+            sql += ' AND ('
+            sql = add_smarts_queries(sql, smarts, prefix)
+        if count:
+            sql += ')'
+
     return sql
 
 
-def _do_filter(sql, output_file, filters, dry_run=False, prefix='', suffix=''):
+def add_smarts_queries(sql, smarts, prefix):
+    if smarts:
+        for i, s in enumerate(smarts):
+            if i:
+                sql += ' OR '
+            sql += prefix + "mol @> '" + s + "'::qmol"
+    return sql
+
+
+def _do_filter(sql, output_file, filters, smarts, dry_run=False, prefix='', suffix=''):
 
     utils.expand_path(output_file)
 
-    filters = _gen_filters(filters, prefix=prefix)
+    filter_sql = _gen_filters(filters, smarts, prefix=prefix)
 
-    sql = sql + filters + suffix
+    sql = sql + filter_sql + suffix
 
     utils.log('Query SQL:\n', sql)
 
@@ -101,7 +117,7 @@ def _do_filter(sql, output_file, filters, dry_run=False, prefix='', suffix=''):
             session.commit()
 
 
-def filter_molecules(output_file, count, filters, dry_run=False):
+def filter_molecules(output_file, count, filters, smarts, dry_run=False):
 
     sql = "COPY (SELECT m.smiles, m.id, " +\
           "concat_ws(',', VARIADIC array_agg(s.code)) codes, " +\
@@ -116,10 +132,10 @@ def filter_molecules(output_file, count, filters, dry_run=False):
     else:
         suffix = ') TO STDOUT'
 
-    _do_filter(sql, output_file, filters, dry_run=dry_run, prefix='m.', suffix=suffix)
+    _do_filter(sql, output_file, filters, smarts, dry_run=dry_run, prefix='m.', suffix=suffix)
 
 
-def filter_need_enum(output_file, count, filters, dry_run=False):
+def filter_need_enum(output_file, count, filters, smarts, dry_run=False):
 
     utils.expand_path(output_file)
 
@@ -130,10 +146,10 @@ def filter_need_enum(output_file, count, filters, dry_run=False):
     else:
         suffix = ' AND NOT EXISTS (SELECT 1 FROM enumeration e WHERE e.molecule_id = m.id)) TO STDOUT'
 
-    _do_filter(sql, output_file, filters, dry_run=dry_run, prefix='m.', suffix=suffix)
+    _do_filter(sql, output_file, filters, smarts, dry_run=dry_run, prefix='m.', suffix=suffix)
 
 
-def filter_need_conf(output_file, count, filters, dry_run=False):
+def filter_need_conf(output_file, count, filters, smarts, dry_run=False):
 
     utils.expand_path(output_file)
 
@@ -144,12 +160,12 @@ def filter_need_conf(output_file, count, filters, dry_run=False):
     else:
         suffix = ') TO STDOUT'
 
-    _do_filter(sql, output_file, filters, dry_run=dry_run, prefix='m.', suffix=suffix)
+    _do_filter(sql, output_file, filters, smarts, dry_run=dry_run, prefix='m.', suffix=suffix)
 
 
-def _gen_enumerated_query(filters, codes=None, count=None):
+def _gen_enumerated_query(filters, smarts, codes=None, count=None):
 
-    filters = _gen_filters(filters, prefix='m.')
+    filters = _gen_filters(filters, smarts, prefix='m.')
 
     sql = "SELECT e.id, e.molecule_id, e.smiles e_smiles, e.coords, e.code, m.smiles m_smiles, " + \
           "concat_ws(', ', VARIADIC array_agg(s.code)) codes, " + \
@@ -168,9 +184,9 @@ def _gen_enumerated_query(filters, codes=None, count=None):
     return sql
 
 
-def _gen_conformers_query(filters, codes=None, count=None):
+def _gen_conformers_query(filters, smarts, codes=None, count=None):
 
-    filters = _gen_filters(filters, prefix='m.')
+    filters = _gen_filters(filters, smarts, prefix='m.')
 
     sql = 'SELECT c.id AS c_id, e.id AS e_id, e.molecule_id AS m_id, e.smiles, c.coords, e.code, m.smiles ' +\
           'FROM conformer c ' +\
@@ -183,11 +199,11 @@ def _gen_conformers_query(filters, codes=None, count=None):
     return sql
 
 
-def filter_enumerated_cxsmi(output_file, filters, count, codes=None, dry_run=False):
+def filter_enumerated_cxsmi(output_file, filters, smarts, count, codes=None, dry_run=False):
 
     utils.expand_path(output_file)
 
-    sql = _gen_enumerated_query(filters, codes=codes, count=count)
+    sql = _gen_enumerated_query(filters, smarts, codes=codes, count=count)
     utils.log('SQL:\n', sql)
 
     if not dry_run:
@@ -208,11 +224,11 @@ def filter_enumerated_cxsmi(output_file, filters, count, codes=None, dry_run=Fal
         DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
 
 
-def filter_enumerated_sdf(output_file, filters, count, codes=None, dry_run=False):
+def filter_enumerated_sdf(output_file, filters, smarts, count, codes=None, dry_run=False):
 
     utils.expand_path(output_file)
 
-    sql = _gen_enumerated_query(filters, codes=codes, count=count)
+    sql = _gen_enumerated_query(filters, smarts, codes=codes, count=count)
     utils.log('SQL:', sql)
 
     if not dry_run:
@@ -244,11 +260,11 @@ def filter_enumerated_sdf(output_file, filters, count, codes=None, dry_run=False
         DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
 
 
-def filter_conformers_cxsmi(output_file, filters, count, codes=None, dry_run=False):
+def filter_conformers_cxsmi(output_file, filters, smarts, count, codes=None, dry_run=False):
 
     utils.expand_path(output_file)
 
-    sql = _gen_conformers_query(filters, codes=codes, count=count)
+    sql = _gen_conformers_query(filters, smarts, codes=codes, count=count)
     utils.log('SQL:', sql)
 
     if not dry_run:
@@ -269,11 +285,11 @@ def filter_conformers_cxsmi(output_file, filters, count, codes=None, dry_run=Fal
         DmLog.emit_event('Generated {} records in file {} in {}s'.format(count, output_file, round(t1 - t0)))
 
 
-def filter_conformers_sdf(output_file, filters, count, codes=None, dry_run=False):
+def filter_conformers_sdf(output_file, filters, smarts, count, codes=None, dry_run=False):
 
     utils.expand_path(output_file)
 
-    sql = _gen_conformers_query(filters, codes=codes, count=count)
+    sql = _gen_conformers_query(filters, smarts, codes=codes, count=count)
     utils.log('SQL:', sql)
 
     if not dry_run:
@@ -327,32 +343,33 @@ def main():
     DmLog.emit_event("filter: ", args)
 
     if args.specification:
-        filters = moldb_utils.read_specification(args.specification)
+        filters, smarts = moldb_utils.read_specification(args.specification)
     else:
         filters = {}
+        smarts = []
 
     if args.output_molecules:
-        filter_molecules(args.output_molecules, args.count, filters, dry_run=args.dry_run)
+        filter_molecules(args.output_molecules, args.count, filters, smarts, dry_run=args.dry_run)
 
     if args.output_need_enum:
-        filter_need_enum(args.output_need_enum, args.count, filters, dry_run=args.dry_run)
+        filter_need_enum(args.output_need_enum, args.count, filters, smarts, dry_run=args.dry_run)
 
     if args.output_need_conf:
-        filter_need_conf(args.output_need_conf, args.count, filters, dry_run=args.dry_run)
+        filter_need_conf(args.output_need_conf, args.count, filters, smarts, dry_run=args.dry_run)
 
     if args.output_enumerated:
         if args.output_enumerated.endswith('.cxsmi'):
-            filter_enumerated_cxsmi(args.output_enumerated, filters, args.count, codes=args.enum_codes, dry_run=args.dry_run)
+            filter_enumerated_cxsmi(args.output_enumerated, filters, smarts, args.count, codes=args.enum_codes, dry_run=args.dry_run)
         elif args.output_enumerated.endswith('.sdf'):
-            filter_enumerated_sdf(args.output_enumerated, filters, args.count, codes=args.enum_codes, dry_run=args.dry_run)
+            filter_enumerated_sdf(args.output_enumerated, filters, smarts, args.count, codes=args.enum_codes, dry_run=args.dry_run)
         else:
             raise ValueError('Output file must be .sdf or .cxsmi')
 
     if args.output_conformer:
         if args.output_conformer.endswith('.cxsmi'):
-            filter_conformers_cxsmi(args.output_conformer, filters, args.count, codes=args.enum_codes, dry_run=args.dry_run)
+            filter_conformers_cxsmi(args.output_conformer, filters, smarts, args.count, codes=args.enum_codes, dry_run=args.dry_run)
         elif args.output_conformer.endswith('.sdf'):
-            filter_conformers_sdf(args.output_conformer, filters, args.count, codes=args.enum_codes, dry_run=args.dry_run)
+            filter_conformers_sdf(args.output_conformer, filters, smarts, args.count, codes=args.enum_codes, dry_run=args.dry_run)
         else:
             raise ValueError('Output file must be .sdf or .cxsmi')
 
