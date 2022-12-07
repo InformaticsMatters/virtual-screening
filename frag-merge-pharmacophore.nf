@@ -78,6 +78,53 @@ workflow ph4_align {
         filter(concatenate_files.out)
     }
 
+    split_count = 0
+    split_sdf.out.flatten().subscribe {
+        now = dateFormat.format(new java.util.Date())
+        if (split_count == 0) log.info("$now # PROGRESS -DONE- $wrkflw:split_sdf 1")
+        split_count++
+        log.info("$now # PROGRESS -START- $wrkflw:pharmacophore $split_count")
+    }
+
+    pharmacophore_count = 0
+    open3dalign_count = 0
+    pharmacophore.out[1].subscribe {
+        cost = new Integer(it)
+        now = dateFormat.format(new java.util.Date())
+        pharmacophore_count++
+        log.info("$now # PROGRESS -DONE- $wrkflw:pharmacophore $pharmacophore_count")
+        log.info("$now # PROGRESS -START- $wrkflw:open3dalign $pharmacophore_count")
+        log.info("$now # INFO -COST- +$cost ${pharmacophore_count + open3dalign_count}")
+    }
+
+    open3dalign.out[1].subscribe {
+        cost = new Integer(it)
+        now = dateFormat.format(new java.util.Date())
+        open3dalign_count++
+        log.info("$now # PROGRESS -DONE- $wrkflw:open3dalign $open3dalign_count")
+        log.info("$now # INFO -COST- +$cost ${pharmacophore_count + open3dalign_count}")
+    }
+
+    open3dalign.out[0].collect().subscribe {
+        now = dateFormat.format(new java.util.Date())
+        log.info("$now # PROGRESS -START- $wrkflw:concatenate_files 1")
+    }
+
+    concatenate_files.out.subscribe {
+        now = dateFormat.format(new java.util.Date())
+        log.info("$now # PROGRESS -DONE- $wrkflw:concatenate_files 1")
+        if (params.group_by_field) {
+            log.info("$now # PROGRESS -START- $wrkflw:filter 1")
+        }
+    }
+
+    if (params.group_by_field) {
+        filter.out.subscribe {
+            now = dateFormat.format(new java.util.Date())
+            log.info("$now # PROGRESS -DONE- $wrkflw:filter 1")
+        }
+    }
+
     emit:
     concatenate_files.out
     params.group_by_field ? filter.out : ''
