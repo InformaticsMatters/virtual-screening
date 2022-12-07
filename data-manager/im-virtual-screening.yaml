@@ -882,3 +882,174 @@ jobs:
             type: string
             default: oddt_interactions.sdf
             pattern: "^[A-Za-z0-9_\\.\\-]+\\.sdf$"
+
+  ph4-align-to-fragments:
+    name: Align molecules to fragments using PLANTS
+    description: >-
+      Flexible alignment of candidate molecules to fragments using PLANTS, followed by
+      scoring with open3Dalign.
+    version: '1.0.0'
+    category: ligand based virtual screening
+    keywords:
+    - plants
+    - open3dalign
+    - alignment
+    - fragment merge
+    image:
+      name: informaticsmatters/vs-nextflow
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/frag-merge-pharmacophore.nf
+      --inputs '{{ inputs }}'
+      --fragments '{{ fragments }}'
+      {% if groupByField is defined %}--group_by_field '{{ groupByField }}'{% endif %}
+      {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
+      --output_filename '{{ outputFile }}'
+      --count {{ count }}
+      {% if torsionWeight is defined %}--torsion_weight {{ torsionWeight }}{% endif %}
+      {% if rmsd is defined %}--rmsd {{ rmsd }}{% endif %}
+      {% if crippen is defined and crippen %}--crippen true{% endif %}
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+    variables:
+      order:
+        options:
+        - outputFile
+        - resultsDir
+        - count
+        - groupByField
+        - torsionWeight
+        - rmsd
+        - crippen
+      inputs:
+        type: object
+        required:
+        - inputs
+        - fragments
+        properties:
+          inputs:
+            title: Candidates to process (SDF format)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          fragments:
+            title: Fragments to align to (SDF format)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          alignedMolecules:
+            title: Aligned and scored molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Align molecules to fragments using PLANTS
+                fields:
+                  PH4_SCORE:
+                    type: number
+                    description: >-
+                      Pharmacophore alignment score
+                    required: true
+                    active: true
+                  o3da_score:
+                    type: number
+                    description: >-
+                      Open3DAlign score
+                    required: true
+                    active: true
+                  o3da_score_rel:
+                    type: number
+                    description: >-
+                      Open3DAlign score relative to the best possible score
+                    required: true
+                    active: true
+                  o3da_align:
+                    type: number
+                    description: >-
+                      Open3DAlign align score
+                    required: true
+                    active: true
+              derived-from: inputs
+      options:
+        type: object
+        required:
+        - outputFile
+        - count
+        properties:
+          resultsDir:
+            title: Directory for results
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]*[A-Za-z0-9_\\.\\-]+$"
+          outputFile:
+            title: Filename for results
+            type: string
+            default: ph4_align.sdf
+            pattern: "^[A-Za-z0-9_\\.\\-]+$"
+          count:
+            title: Number of conformers
+            type: integer
+            default: 5
+          groupByField:
+            title: Field to group molecules
+            type: string
+            default: molecule_id
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          torsionWeight:
+            title: PLANTS Torsion weight setting
+            type: number
+            default: 5
+          rmsd:
+            title: PLANTS RMSD
+          crippen:
+            title: Open3DAlign use Crippen
+            type: boolean
+    tests:
+      simple-execution:
+        inputs:
+          inputs: data/candidates-10.sdf
+          fragments: data/fragments.sdf
+          outputFile: results.sdf
+        options:
+          outputFile: results.sdf
+          count: 2
+          groupByField: std_smi
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+          - name: results-best.sdf
+            checks:
+            - exists: true
+      additional-args:
+        inputs:
+          inputs: data/candidates-10.sdf
+          fragments: data/fragments.sdf
+          outputFile: results.sdf
+        options:
+          outputFile: results.sdf
+          count: 1
+          torsionWeight: 2
+          rmsd: 2
+          crippen: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+          - name: results-best.sdf
+            checks:
+            - exists: false

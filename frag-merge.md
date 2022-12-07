@@ -144,3 +144,10 @@ python -m moldb.filter --output-smiles mpro-merge-candidates.smi -s specificatio
 python -m screen --smiles 'CC(=O)NC1=CN=CC=C1C' 'CC(NC(=O)C)c1cccc(Cl)c1' -i mpro-merge-candidates.smi -o mpro-merge-screened.smi --metric tversky --descriptor morgan2 --interval 10000 --sim-index 5 --threshold 0.4 --nbits 1024
 ```
 Generates 1287 hits.
+
+
+## plants
+
+nextflow run frag-merge-pharmacophore.nf --inputs mpro-merge-enumerated.sdf \
+  --fragments data/fragments.sdf --output_filename mpro-merge-aligned.sdf \
+  --interval 5000 --count 5 --rmsd 1 --torsion_weight 5 --chunk_size 1000 --group_by_field molecule_id

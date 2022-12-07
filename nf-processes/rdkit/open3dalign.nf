@@ -13,15 +13,19 @@ process open3dalign {
 
     output:
     path "o3da_${inputs.name}"
+    env COUNT
 
     """
     /code/open3dalign.py\
-      --inputs $inputs\
-      --query $query\
-      --outfile o3da_${inputs.name}\
+      --inputs '$inputs'\
+      --query '$query'\
+      --outfile 'o3da_${inputs.name}'\
       --interval $params.interval\
       ${params.remove_hydrogens ? '--remove-hydrogens' : ''}\
       ${params.crippen ? '--crippen' : ''}\
       ${params.threshold ? '--threshold ' + threshold : ''}
+
+      # count the number of outputs
+      COUNT=\$(fgrep -c '\$\$\$\$' 'o3da_${inputs.name}')
     """
 }

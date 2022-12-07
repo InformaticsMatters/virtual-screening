@@ -48,3 +48,26 @@ process sd_best_sorted {
       sdsort -n -f${params.sort_field} ${params.sort_descending ? '-r' : ''} > ${params.outputfile}
     """
 }
+
+
+/** Sort within the groups defined by group_by_field to find the best result (sort_field, sort_descending)
+and sort those best results and keep the top n (params.top)
+*/
+process sd_best_sorted_top {
+
+    container 'informaticsmatters/vs-rdock:latest'
+    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+
+    input:
+    path inputs
+
+    output:
+    path params.outputfile
+
+    """
+    sdsort -n -s -f${params.sort_field} -id${params.group_by_field} ${params.sort_descending ? '-r' : ''} $inputs |\
+      sdfilter -f'\$_COUNT == 1' -s${params.group_by_field} |\
+      sdsort -n -f${params.sort_field} ${params.sort_descending ? '-r' : ''} |\
+      sdfilter -f'\$_REC <= ${params.top}' > ${params.outputfile}
+    """
+}

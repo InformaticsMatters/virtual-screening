@@ -13,16 +13,20 @@ process pharmacophore {
 
     output:
     path "ph4_${inputs.name}"
+    env COUNT
 
     """
     /code/pharmacophore.py\
-      --input $inputs\
-      --fragments $fragments\
-      --outfile ph4_${inputs.name}\
+      --input '$inputs'\
+      --fragments '$fragments'\
+      --outfile 'ph4_${inputs.name}'\
       --interval $params.interval\
       --count $params.count\
       --torsion-weight $params.torsion_weight\
       --rmsd $params.rmsd\
       --work-dir work
+
+      # count the number of outputs
+      COUNT=\$(fgrep -c '\$\$\$\$' 'ph4_${inputs.name}')
     """
 }
