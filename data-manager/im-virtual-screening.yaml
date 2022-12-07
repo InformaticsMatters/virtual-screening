@@ -1012,6 +1012,7 @@ jobs:
           rmsd:
             title: PLANTS RMSD
             type: number
+            default: 2
           crippen:
             title: Open3DAlign use Crippen
             type: boolean
