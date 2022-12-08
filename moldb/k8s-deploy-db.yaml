@@ -195,26 +195,10 @@ spec:
         fsGroup: 26
       affinity:
         nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 40
-            preference:
-              matchExpressions:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
               - key: informaticsmatters.com/purpose-core
-                operator: Exists
-          - weight: 30
-            preference:
-              matchExpressions:
-              - key: informaticsmatters.com/purpose-application
-                operator: Exists
-          - weight: 20
-            preference:
-              matchExpressions:
-              - key: informaticsmatters.com/purpose-worker
-                operator: DoesNotExist
-          - weight: 10
-            preference:
-              matchExpressions:
-              - key: informaticsmatters.com/purpose-worker
                 operator: Exists
       schedulerName: default-scheduler
   serviceName: moldb-database
