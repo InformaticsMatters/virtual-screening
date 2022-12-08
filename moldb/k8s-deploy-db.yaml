@@ -1,22 +1,8 @@
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: moldb-database
-  namespace: data-manager-api-test
-spec:
-  accessModes:
-  - ReadWriteOnce
-  storageClassName: longhorn
-  resources:
-    requests:
-      storage: '250Gi'
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: moldb-psp-unrestricted
-  namespace: data-manager-api-test
 rules:
 - verbs:
   - use
@@ -31,17 +17,14 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: moldb-database
-  namespace: data-manager-api-test
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: moldb-sa
-  namespace: data-manager-api-test
 subjects:
 - kind: ServiceAccount
   name: moldb-database
-  namespace: data-manager-api-test
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -51,7 +34,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: moldb-database
-  namespace: data-manager-api-test
 type: Opaque
 data:
   postgres_password: TGlMVlpIUVNvYg==
@@ -64,7 +46,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: moldb-init
-  namespace: data-manager-api-test
 data:
   01-init.sh: |
     #!/bin/bash
@@ -88,7 +69,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: moldb-conf
-  namespace: data-manager-api-test
 data:
   postgresql.conf: |
     #--------------------------------------------------------------------------
@@ -103,7 +83,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: moldb-database
-  namespace: data-manager-api-test
 spec:
   replicas: 1
   selector:
@@ -250,7 +229,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: moldb-database
-  namespace: data-manager-api-test
 spec:
   ports:
   - protocol: TCP
