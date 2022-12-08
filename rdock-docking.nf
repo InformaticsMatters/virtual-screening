@@ -68,24 +68,6 @@ def now = dateFormat.format(new java.util.Date())
 def wrkflw = 'rdock_docking'
 log.info("$now # PROGRESS -START- $wrkflw:split_sdf 1")
 
-/* this process sits between the splitter and the rdock processes and allows to determine the number of parallel
-rdock processes that will be run
-*/
-process reporter {
-
-    input:
-    val f
-
-    output:
-    val f
-
-    exec:
-    splits = f.size()
-    now = dateFormat.format(new java.util.Date())
-    log.info("$now # PROGRESS -DONE- $wrkflw:split_sdf 1")
-    log.info("$now # PROGRESS -START- $wrkflw:rdock $splits")
-    log.info("$now # PROGRESS -START- $wrkflw:collect_results 1")
-}
 
 // workflows
 workflow rdock_docking {
@@ -98,29 +80,38 @@ workflow rdock_docking {
 
     main:
     split_sdf(ligands_sdf)
-    reporter(split_sdf.out)
-    rdock(reporter.out.flatten(), protein_mol2, docking_prm, docking_as)
+    rdock(split_sdf.out.flatten(), protein_mol2, docking_prm, docking_as)
     collect_results(rdock.out[0].collect())
     collect_failed(rdock.out[1].collect())
 
-    int cost = 0
-    int count = 0
+    split_sdf_count = 0
+    split_sdf.out.flatten().subscribe {
+        now = dateFormat.format(new java.util.Date())
+        if (split_sdf_count == 0) {
+             log.info("$now # PROGRESS -DONE- $wrkflw:split_sdf 1")
+        }
+        split_sdf_count++
+        log.info("$now # PROGRESS -START- $wrkflw:rdock $split_sdf_count")
+    }
 
+    int cost = 0
+    int rdock_count = 0
     rdock.out[2].subscribe {
         cost += new Integer(it)
-        count += 1
+        rdock_count += 1
         now = dateFormat.format(new java.util.Date())
-        log.info("$now # INFO -COST- $cost $count")
-        log.info("$now # PROGRESS -DONE- $wrkflw:rdock $count")
+        log.info("$now # INFO -COST- $cost $rdock_count")
+        log.info("$now # PROGRESS -DONE- $wrkflw:rdock $rdock_count")
+        log.info("$now # PROGRESS -START- $wrkflw:collect_results $rdock_count")
     }
     collect_results.out.subscribe {
         now = dateFormat.format(new java.util.Date())
         log.info("$now # PROGRESS -DONE- $wrkflw:collect_results 1")
     }
     collect_failed.out.subscribe {
-            now = dateFormat.format(new java.util.Date())
-            log.info("$now # PROGRESS -DONE- $wrkflw:collect_failed 1")
-        }
+        now = dateFormat.format(new java.util.Date())
+        log.info("$now # PROGRESS -DONE- $wrkflw:collect_failed 1")
+    }
 
     emit:
     collect_results.out

@@ -949,7 +949,7 @@ jobs:
             title: Aligned and scored molecules
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}.sdf'
+            creates: '{% if resultsDir is defined %}{{ resultsDir }}/{% endif %}{{ outputFile }}'
             type: file
             annotation-properties:
               fields-descriptor:
