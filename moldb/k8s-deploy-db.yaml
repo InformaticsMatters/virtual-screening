@@ -57,8 +57,7 @@ data:
         -- Configure a user and database
         CREATE USER $moldb_user;
         ALTER USER $moldb_user WITH PASSWORD '$moldb_pw';
-        CREATE DATABASE $moldb_db;
-        ALTER ROLE $moldb_user SET client_encoding TO 'utf8';
+        CREATE DATABASE $moldb_db WITH ENCODING 'LATIN1' TEMPLATE=template0;
         ALTER ROLE $moldb_user SET default_transaction_isolation TO 'read committed';
         ALTER ROLE $moldb_user SET timezone TO 'UTC';
         GRANT ALL PRIVILEGES ON DATABASE $moldb_db TO $moldb_user;

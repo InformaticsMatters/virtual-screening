@@ -43,9 +43,9 @@ def analyse(outfile, specification, skip_enum, skip_conf):
         if filters:
             w.write("Specification: {}\n".format(specification))
             w.write("SSS filters: {}\n".format(smarts))
-            f_sql = filter._gen_filters(filters)
+            f_sql = filter._gen_filters(filters, smarts)
             w.write('Filter terms: {}\nFilter SQL: {}\n'.format(str(filters), f_sql))
-        analyseTables(w, filters, skip_enum, skip_conf)
+        analyseTables(w, filters, smarts, skip_enum, skip_conf)
 
 
 def analyseEnvironment(writer):
@@ -55,18 +55,18 @@ def analyseEnvironment(writer):
     writer.write('Date: {}\n'.format(datetime.datetime.now()))
 
 
-def analyseTables(writer, filters, skip_enum, skip_conf):
+def analyseTables(writer, filters, smarts, skip_enum, skip_conf):
     writer.write('Database analysis:\n')
     with engine.connect() as conn:
-        analyseLibrary(writer, filters, conn)
-        analyseMolecule(writer, filters, conn)
+        analyseLibrary(writer, conn)
+        analyseMolecule(writer, filters, smarts, conn)
         if not skip_enum:
-            analyseEnumeration(writer, filters, conn)
+            analyseEnumeration(writer, filters, smarts, conn)
         if not skip_conf:
-            analyseConformer(writer, filters, conn)
+            analyseConformer(writer, filters, smarts, conn)
 
 
-def analyseLibrary(writer, filters, conn):
+def analyseLibrary(writer, conn):
     DmLog.emit_event('Analysing library')
     sql = 'SELECT name FROM library'
     t0 = time.time()
@@ -83,7 +83,7 @@ def analyseLibrary(writer, filters, conn):
     writer.flush()
 
 
-def analyseMolecule(writer, filters, conn):
+def analyseMolecule(writer, filters, smarts, conn):
     DmLog.emit_event('Analysing molecule')
 
     t0 = time.time()
@@ -99,7 +99,7 @@ def analyseMolecule(writer, filters, conn):
     need_calc = row[0]
 
     if filters:
-        f_sql = filter._gen_filters(filters)
+        f_sql = filter._gen_filters(filters, smarts)
         DmLog.emit_event('Using filter:', f_sql)
         sql = 'SELECT COUNT(*) FROM molecule WHERE ' + f_sql
         results = conn.execute(text(sql))
@@ -116,7 +116,7 @@ def analyseMolecule(writer, filters, conn):
     writer.flush()
 
 
-def analyseEnumeration(writer, filters, conn):
+def analyseEnumeration(writer, filters, smarts, conn):
     DmLog.emit_event('Analysing enumeration')
 
     t0 = time.time()
@@ -139,7 +139,7 @@ def analyseEnumeration(writer, filters, conn):
     msg = '  enumeration - all data: {} rows, {} molecules enumerated, {} need enumeration\n'.format(enum_count, enum_mols, need_enum)
 
     if filters:
-        f_sql = filter._gen_filters(filters, prefix='m.')
+        f_sql = filter._gen_filters(filters, smarts, prefix='m.')
 
         sql = 'SELECT COUNT(*) FROM enumeration e JOIN molecule m ON m.id = e.molecule_id WHERE' + f_sql
         results = conn.execute(text(sql))
@@ -166,7 +166,7 @@ def analyseEnumeration(writer, filters, conn):
     writer.flush()
 
 
-def analyseConformer(writer, filters, conn):
+def analyseConformer(writer, filters, smarts, conn):
     DmLog.emit_event('Analysing conformer')
 
     t0 = time.time()
@@ -197,7 +197,7 @@ def analyseConformer(writer, filters, conn):
         .format(conf_count, enums_need_conf)
 
     if filters:
-        f_sql = filter._gen_filters(filters, prefix='m.')
+        f_sql = filter._gen_filters(filters, smarts, prefix='m.')
 
         sql = 'SELECT count(*) FROM conformer c JOIN enumeration e ON e.id = c.enumeration_id JOIN molecule m ON m.id = e.molecule_id WHERE' + f_sql
         results = conn.execute(text(sql))

@@ -378,10 +378,11 @@ jobs:
             type: string
             default: std_smi
 
-  filter-sdf:
-    name: Filter the contents of a SDF
+  sort-sdf:
+    name: Sort the contents of a SDF
     description: >-
-      Filters molecules in a SD file.
+      Sorts records in a SD-file, optionally keeping top n.
+      Do not use for very large files.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -389,6 +390,7 @@ jobs:
     - sdfilter
     - sdsort
     - filter
+    doc-url: im-virtual-screening/rdock-filter-sdf.md
     image:
       name: informaticsmatters/vs-rdock
       tag: 'latest'
@@ -396,10 +398,116 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/rdock_filter_sdf.sh '{{ inputFile }}' '{{ outputFile }}'
+      /code/rdock_filter_sdf_sort_top.sh
+        '{{ inputFile }}' '{{ outputFile }}'
         {{ sortField }}
         {% if sortDescending %}true{% else %}false{% endif %}
-        {% if groupByField is defined %}{{ groupByField }}{% endif %}
+        {% if top is defined and top > 0 %}{{ top }}{% else %}0{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - sortField
+        - sortDescending
+        - top
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to filter
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - sortField
+        - sortDescending
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.sdf$"
+          sortField:
+            title: Sort field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          sortDescending:
+            title: Sort descending
+            type: boolean
+            default: false
+          top:
+            title: Keep best n records
+            type: integer
+            minValue: 1
+    tests:
+      simple-sort:
+        inputs:
+          inputFile: data/ph4-results-100.sdf
+        options:
+          outputFile: results.sdf
+          sortField: o3da_score_rel
+          sortDescending: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+            - lineCount: 7545
+      sort-top:
+        inputs:
+          inputFile: data/ph4-results-100.sdf
+        options:
+          outputFile: results.sdf
+          sortField: o3da_score_rel
+          sortDescending: true
+          top: 2
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+            - lineCount: 150
+
+  filter-sdf:
+    name: Filter the contents of a SDF
+    description: >-
+      Filters records in a SD-file, sorted within consecutive groups, sorting the results and optionally keeping the top n.
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdock
+    - sdfilter
+    - sdsort
+    - filter
+    doc-url: im-virtual-screening/rdock-filter-sdf.md
+    image:
+      name: informaticsmatters/vs-rdock
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      /code/rdock_filter_sdf_group.sh
+        '{{ inputFile }}' '{{ outputFile }}'
+        {{ sortField }}
+        {% if sortDescending %}true{% else %}false{% endif %}
+        {% if top is defined and top > 0 %}{{ top }}{% else %}0{% endif %}
+        {% if groupByField is defined %}'{{ groupByField }}'{% endif %}
     variables:
       order:
         options:
@@ -407,6 +515,7 @@ jobs:
         - sortField
         - groupByField
         - sortDescending
+        - top
       inputs:
         type: object
         required:
@@ -449,6 +558,42 @@ jobs:
             title: Sort descending
             type: boolean
             default: false
+          top:
+            title: Keep best n records
+            type: integer
+            minValue: 1
+    tests:
+      group-and-sort:
+        inputs:
+          inputFile: data/ph4-results-100.sdf
+        options:
+          outputFile: results.sdf
+          sortField: o3da_score_rel
+          groupByField: molecule_id
+          sortDescending: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+            - lineCount: 1509
+      group-and-sort-top:
+        inputs:
+          inputFile: data/ph4-results-100.sdf
+        options:
+          outputFile: results.sdf
+          sortField: o3da_score_rel
+          groupByField: molecule_id
+          sortDescending: true
+          top: 1
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+            - lineCount: 75
 
   sdf2json:
     name: Convert SDF to JSON format
