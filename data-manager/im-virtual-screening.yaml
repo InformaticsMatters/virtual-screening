@@ -103,10 +103,11 @@ jobs:
       error:
         options:
           mode: error
+          output: error.txt
         checks:
           exitCode: 1
           outputs:
-          - name: missing.txt
+          - name: error.txt
             checks:
             - exists: false
       missing:
@@ -116,7 +117,7 @@ jobs:
         checks:
           exitCode: 0
           outputs:
-          - name: test-fail-results.txt
+          - name: missing.txt
             checks:
             - exists: false
       empty:
