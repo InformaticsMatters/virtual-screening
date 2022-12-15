@@ -71,7 +71,7 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/fail.py --mode '{{ mode }}'
+      /code/fail.py --mode '{{ mode }}' --output '{{ output }}'
     variables:
       outputs:
         type: object
@@ -80,12 +80,13 @@ jobs:
             title: Test output
             mime-types:
             - text/plain
-            creates: test-fail-results.txt
+            creates: '{{ output }}'
             type: file
       options:
         type: object
         required:
         - mode
+        - output
         properties:
           mode:
             title: Failure mode
@@ -94,6 +95,10 @@ jobs:
             - error
             - empty
             - missing
+          output:
+            title: Output filename
+            type: string
+            pattern: 'A-Za-z0-9_\\-\\.'
     tests:
       error:
         options:
@@ -101,12 +106,13 @@ jobs:
         checks:
           exitCode: 1
           outputs:
-          - name: test-fail-results.txt
+          - name: missing.txt
             checks:
             - exists: false
       missing:
         options:
           mode: missing
+          output: missing.txt
         checks:
           exitCode: 0
           outputs:
@@ -115,11 +121,12 @@ jobs:
             - exists: false
       empty:
         options:
-          mode: error
+          mode: empty
+          output: empty.txt
         checks:
           exitCode: 0
           outputs:
-          - name: test-fail-results.txt
+          - name: empty.txt
             checks:
             - exists: true
 

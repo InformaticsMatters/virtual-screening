@@ -27,19 +27,24 @@ def main():
 
     parser = argparse.ArgumentParser(description='Fail')
     parser.add_argument('-m', '--mode', required=True, choices=['error', 'empty', 'missing'], help='Fail mode')
+    parser.add_argument('-o', '--output', help='Output file name')
 
     args = parser.parse_args()
     DmLog.emit_event("fail: ", args)
+
+    if args.output:
+        outfile = args.output
+    else:
+        outfile = 'test-fail-results.txt'
 
     if args.mode == 'error':
         DmLog.emit_event('Job failed')
         exit(1)
     elif args.mode == 'empty':
-        with open('test-fail-results.txt', 'wt') as out:
-            DmLog.emit_event('Empty results.txt')
-    else:
-        DmLog.emit_event('Missing results.txt')
-
+        with open(outfile, 'wt') as out:
+            DmLog.emit_event('Empty test-fail-results.txt')
+    elif args.mode == 'missing':
+        DmLog.emit_event('Missing test-fail-results.txt')
 
 if __name__ == "__main__":
     main()
