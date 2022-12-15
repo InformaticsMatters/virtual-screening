@@ -56,6 +56,73 @@ jobs:
   #            Every 'variable' expected by the command must be represented by a
   #            corresponding property in 'inputs', 'outputs' or 'options'.
 
+  fail-test:
+    name: Test failures
+    description: >-
+      Simple job that allows how errors are handled to be tested
+    version: '1.0.0'
+    category: miscellaneous
+    keywords:
+    - test
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      /code/fail.py --mode '{{ mode }}'
+    variables:
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Test output
+            mime-types:
+            - text/plain
+            creates: test-fail-results.txt
+            type: file
+      options:
+        type: object
+        required:
+        - mode
+        properties:
+          mode:
+            title: Failure mode
+            type: string
+            enum:
+            - error
+            - empty
+            - missing
+    tests:
+      error:
+        options:
+          mode: error
+        checks:
+          exitCode: 1
+          outputs:
+          - name: test-fail-results.txt
+            checks:
+            - exists: false
+      missing:
+        options:
+          mode: missing
+        checks:
+          exitCode: 0
+          outputs:
+          - name: test-fail-results.txt
+            checks:
+            - exists: false
+      empty:
+        options:
+          mode: error
+        checks:
+          exitCode: 0
+          outputs:
+          - name: test-fail-results.txt
+            checks:
+            - exists: true
+
   obabel-convert:
     name: Convert molecule format
     description: >-
@@ -400,7 +467,7 @@ jobs:
     command: >-
       /code/rdock_filter_sdf_sort_top.sh
         '{{ inputFile }}' '{{ outputFile }}'
-        {{ sortField }}
+        '{{ sortField }}'
         {% if sortDescending %}true{% else %}false{% endif %}
         {% if top is defined and top > 0 %}{{ top }}{% else %}0{% endif %}
     variables:
@@ -504,17 +571,17 @@ jobs:
     command: >-
       /code/rdock_filter_sdf_group.sh
         '{{ inputFile }}' '{{ outputFile }}'
-        {{ sortField }}
+        '{{ sortField }}'
         {% if sortDescending %}true{% else %}false{% endif %}
-        {% if top is defined and top > 0 %}{{ top }}{% else %}0{% endif %}
         {% if groupByField is defined %}'{{ groupByField }}'{% endif %}
+        {% if top is defined and top > 0 %}{{ top }}{% else %}0{% endif %}
     variables:
       order:
         options:
         - outputFile
         - sortField
-        - groupByField
         - sortDescending
+        - groupByField
         - top
       inputs:
         type: object
