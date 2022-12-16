@@ -110,6 +110,7 @@ class SdfReader:
         self.reader = self.create_reader(input)
         self.id_col = id_col
 
+
     @staticmethod
     def create_reader(input):
         if input.endswith('.gz'):
@@ -219,6 +220,7 @@ class SmilesReader:
 
     def close(self):
         self.reader.close()
+
 
 def generate_header_values(extra_field_names, num_orig_props, calc_prop_names):
     headers = ['smiles']

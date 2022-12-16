@@ -1103,10 +1103,129 @@ jobs:
             default: oddt_interactions.sdf
             pattern: "^[A-Za-z0-9_\\.\\-]+\\.sdf$"
 
-  ph4-align-to-fragments:
+  ph4-align-to-fragments-simple:
     name: Align molecules to fragments using PLANTS
     description: >-
-      Flexible alignment of candidate molecules to fragments using PLANTS, followed by
+      Job that performs flexible alignment of candidate molecules to fragments using PLANTS
+    version: '1.0.0'
+    category: ligand based virtual screening
+    keywords:
+    - plants
+    - alignment
+    - fragment merge
+    image:
+      name: informaticsmatters/vs-plants
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      /code/pharmacophore.py
+        --input '{{ inputs }}'
+        --fragments '{{ fragments }}'
+        --outfile '{{ outputFile }}'
+        --count {{ count }}
+        {% if gen3d is defined and gen3d %}--gen-coords{% endif %}
+        {% if torsionWeight is defined %}--torsion-weight {{ torsionWeight }}{% endif %}
+        {% if rmsd is defined %}--rmsd {{ rmsd }}{% endif %}
+        {% if thresh is defined %}--threshold {{ thresh }}{% endif %}
+        --interval 1000
+    variables:
+      order:
+        options:
+        - outputFile
+        - count
+        - gen3d
+        - torsionWeight
+        - rmsd
+        - thresh
+      inputs:
+        type: object
+        required:
+        - inputs
+        - fragments
+        properties:
+          inputs:
+            title: Candidates to process (.sdf, .smi)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - chemical/x-daylight-smiles
+            type: file
+          fragments:
+            title: Fragments to align to (SDF format)
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          alignedMolecules:
+            title: Aligned and scored molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Align molecules to fragments using PLANTS
+                fields:
+                  PH4_SCORE:
+                    type: number
+                    description: >-
+                      Pharmacophore alignment score
+                    required: true
+                    active: true
+              derived-from: inputs
+      options:
+        type: object
+        required:
+        - outputFile
+        - count
+        properties:
+          outputFile:
+            title: Filename for results
+            type: string
+            default: ph4_align.sdf
+            pattern: "^[A-Za-z0-9_\\.\\-\\/]+$"
+          gen3d:
+            title: Generate 3D coords
+            type: boolean
+            default: false
+          count:
+            title: Number of mols to generate
+            type: integer
+            default: 5
+          torsionWeight:
+            title: PLANTS torsion weight setting
+            type: number
+            default: 5
+          rmsd:
+            title: PLANTS RMSD
+            type: number
+            default: 2
+          thresh:
+            title: PLANTS cuttoff score
+            type: number
+    tests:
+      simple-execution-sdf:
+        inputs:
+          inputs: data/candidates-10.sdf
+          fragments: data/fragments.sdf
+        options:
+          outputFile: foo/results.sdf
+          count: 2
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/results.sdf
+            checks:
+            - exists: true
+
+  ph4-align-to-fragments-workflow:
+    name: Workflow to align molecules to fragments using PLANTS
+    description: >-
+      Workflow that does parallel flexible alignment of candidate molecules to fragments using PLANTS, followed by
       scoring with open3Dalign.
     version: '1.0.0'
     category: ligand based virtual screening
@@ -1127,7 +1246,10 @@ jobs:
       run {{ CODE_DIRECTORY|default('/code') }}/frag-merge-pharmacophore.nf
       --inputs '{{ inputs }}'
       --fragments '{{ fragments }}'
+      {% if gen3d is defined and gen3d %}--gen3d{% endif %}
       {% if groupByField is defined %}--group_by_field '{{ groupByField }}'{% endif %}
+      {% if threshPh4 is defined %}--thresh_ph4 '{{ threshPh4 }}'{% endif %}
+      {% if threshO3da is defined %}--thresh_o3da '{{ threshO3da }}'{% endif %}
       {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
       --output_filename '{{ outputFile }}'
       --count {{ count }}
@@ -1142,10 +1264,13 @@ jobs:
         - outputFile
         - resultsDir
         - count
+        - gen3d
         - groupByField
         - torsionWeight
         - rmsd
         - crippen
+        - threshPh4
+        - threshO3da
       inputs:
         type: object
         required:
@@ -1153,9 +1278,10 @@ jobs:
         - fragments
         properties:
           inputs:
-            title: Candidates to process (SDF format)
+            title: Candidates to process (.sdf, .smi)
             mime-types:
             - chemical/x-mdl-sdfile
+            - chemical/x-daylight-smiles
             type: file
           fragments:
             title: Fragments to align to (SDF format)
@@ -1216,8 +1342,12 @@ jobs:
             type: string
             default: ph4_align.sdf
             pattern: "^[A-Za-z0-9_\\.\\-]+$"
+          gen3d:
+            title: Generate 3D coords
+            type: boolean
+            default: false
           count:
-            title: Number of conformers
+            title: Number of mols to generate
             type: integer
             default: 5
           groupByField:
@@ -1226,7 +1356,7 @@ jobs:
             default: molecule_id
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
           torsionWeight:
-            title: PLANTS Torsion weight setting
+            title: PLANTS torsion weight setting
             type: number
             default: 5
           rmsd:
@@ -1236,12 +1366,17 @@ jobs:
           crippen:
             title: Open3DAlign use Crippen
             type: boolean
+          threshPh4:
+            title: PLANTS cuttoff score
+            type: number
+          threshO3da:
+            title: Open3DAlign cuttoff score (0 - 1)
+            type: number
     tests:
       simple-execution:
         inputs:
           inputs: data/candidates-10.sdf
           fragments: data/fragments.sdf
-          outputFile: results.sdf
         options:
           outputFile: results.sdf
           count: 2
@@ -1259,7 +1394,6 @@ jobs:
         inputs:
           inputs: data/candidates-10.sdf
           fragments: data/fragments.sdf
-          outputFile: results.sdf
         options:
           outputFile: results.sdf
           count: 1

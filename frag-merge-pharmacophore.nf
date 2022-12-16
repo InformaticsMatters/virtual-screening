@@ -35,6 +35,9 @@ params.inputs = 'conformers.sdf'
 params.fragments = 'fragments.sdf'
 params.output_filename = 'ph4-results.sdf'
 params.top = 100
+params.gen3d = false
+params.thresh_ph4 = null
+params.thresh_o3da = null
 params.publish_dir = './'
 
 // files
@@ -43,8 +46,10 @@ fragments = file(params.fragments)
 
 // includes
 include { split_sdf } from './nf-processes/file/split_sdf.nf'
-include { pharmacophore } from './nf-processes/plants/pharmacophore.nf'
-include { open3dalign } from './nf-processes/rdkit/open3dalign.nf'
+include { pharmacophore } from './nf-processes/plants/pharmacophore.nf' addParams(
+    threshold: params.thresh_ph4,
+    gen3d: params.gen3d)
+include { open3dalign } from './nf-processes/rdkit/open3dalign.nf' addParams(threshold: params.thresh_o3da)
 include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
     outputfile: params.output_filename,
     glob: 'o3da_*.sdf')
