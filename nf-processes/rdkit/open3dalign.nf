@@ -23,9 +23,14 @@ process open3dalign {
       --interval $params.interval\
       ${params.remove_hydrogens ? '--remove-hydrogens' : ''}\
       ${params.crippen ? '--crippen' : ''}\
-      ${params.threshold ? '--threshold ' + threshold : ''}
+      ${params.threshold ? '--threshold ' + params.threshold : ''}
 
-      # count the number of outputs
-      COUNT=\$(fgrep -c '\$\$\$\$' 'o3da_${inputs.name}')
+      # count the number of outputs - for some strange reason the fgrep command fails is the file is empty
+      if [ -s 'o3da_${inputs.name}'
+      then
+        COUNT=\$(fgrep -c '\$\$\$\$' 'o3da_${inputs.name}')
+      else
+        COUNT=0
+      fi
     """
 }

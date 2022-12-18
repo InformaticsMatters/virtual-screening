@@ -14,7 +14,7 @@ process pharmacophore {
     path fragments  // .mol or .sdf
 
     output:
-    path "ph4_${inputs.name}"
+    path "ph4_${inputs.name}", optional: true
     env COUNT
 
     """
@@ -26,11 +26,16 @@ process pharmacophore {
       --count $params.count\
       --torsion-weight $params.torsion_weight\
       --rmsd $params.rmsd\
-      ${params.threshold ? '--threshold ' + threshold : ''}\
+      ${params.threshold ? '--threshold ' + params.threshold : ''}\
       ${params.gen3d ? '--gen-coords' : ''}\
       --work-dir work
 
-      # count the number of outputs
-      COUNT=\$(fgrep -c '\$\$\$\$' 'ph4_${inputs.name}')
+      # count the number of outputs - for some strange reason the fgrep command fails is the file is empty
+      if [ -s 'o3da_${inputs.name}'
+      then
+        COUNT=\$(fgrep -c '\$\$\$\$' 'o3da_${inputs.name}')
+      else
+        COUNT=0
+      fi
     """
 }
