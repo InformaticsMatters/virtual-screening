@@ -81,7 +81,7 @@ def _write_frag_mol2(mol, dir, index):
 
 
 def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_torsion_weight, cluster_structures,
-                   cluster_rmsd, threshold, interval) :
+                   cluster_rmsd, threshold, interval):
     num_mols = 0
     num_frags = 0
     num_written = 0
