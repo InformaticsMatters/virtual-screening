@@ -1253,6 +1253,7 @@ jobs:
     variables:
       order:
         options:
+        - smiles
         - outputFile
         - count
         - torsionWeight
@@ -1260,7 +1261,6 @@ jobs:
       inputs:
         type: object
         required:
-        - inputs
         - fragments
         properties:
           fragments:
@@ -1292,9 +1292,15 @@ jobs:
       options:
         type: object
         required:
+        - smiles
         - outputFile
         - count
         properties:
+          smiles:
+            title: Input SMILES
+            type: array
+            items:
+              type: string
           outputFile:
             title: Filename for results
             type: string
