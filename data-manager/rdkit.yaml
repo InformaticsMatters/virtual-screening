@@ -623,8 +623,8 @@ jobs:
       /code/screen.py --input '{{ inputFile }}'
       --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}
       --output '{{ outputFile }}'
-      {% if readHeader is defined %}--read-header{% endif %}
-      {% if writeHeader is defined %}--write-header{% endif %}
+      {% if readHeader is defined and readHeader %}--read-header{% endif %}
+      {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       --delimiter '{{ separator }}'
       --descriptor '{{ descriptor }}'
       --metric '{{ metric }}'
