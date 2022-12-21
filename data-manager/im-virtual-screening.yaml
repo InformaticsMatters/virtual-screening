@@ -1126,6 +1126,9 @@ jobs:
         --fragments '{{ fragments }}'
         --outfile '{{ outputFile }}'
         --count {{ count }}
+        {% if genTitle is defined and genTitle %}--gen-title{% endif %}
+        {% if header is defined and header %}--header{% endif %}
+        {% if delimiter is defined %}--delimiter '{{ delimiter }}'{% endif %}
         {% if gen3d is defined and gen3d %}--gen-coords{% endif %}
         {% if torsionWeight is defined %}--torsion-weight {{ torsionWeight }}{% endif %}
         {% if rmsd is defined %}--rmsd {{ rmsd }}{% endif %}
@@ -1135,6 +1138,9 @@ jobs:
       order:
         options:
         - outputFile
+        - genTitle
+        - header
+        - delimiter
         - count
         - gen3d
         - torsionWeight
@@ -1189,6 +1195,22 @@ jobs:
             type: string
             default: ph4_align.sdf
             pattern: "^[A-Za-z0-9_\\.\\-\\/]+$"
+          genTitle:
+            title: Generate unique title line for each record
+            type: boolean
+            default: false
+          header:
+            title: SMILES input has header line
+            type: boolean
+            default: false
+          delimiter:
+            title: SMILES input delimiter
+            type: string
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
           gen3d:
             title: Generate 3D coords
             type: boolean
@@ -1360,6 +1382,9 @@ jobs:
       run {{ CODE_DIRECTORY|default('/code') }}/frag-merge-pharmacophore.nf
       --inputs '{{ inputs }}'
       --fragments '{{ fragments }}'
+      {% if genTitle is defined and genTitle %}--gen_title{% endif %}
+      {% if header is defined and header %}--header{% endif %}
+      {% if delimiter is defined %}--delimiter '{{ delimiter }}'{% endif %}
       {% if gen3d is defined and gen3d %}--gen3d{% endif %}
       {% if groupByField is defined %}--group_by_field '{{ groupByField }}'{% endif %}
       {% if threshPh4 is defined %}--thresh_ph4 '{{ threshPh4 }}'{% endif %}
@@ -1377,6 +1402,9 @@ jobs:
         options:
         - outputFile
         - resultsDir
+        - genTitle
+        - header
+        - delimiter
         - count
         - gen3d
         - groupByField
@@ -1460,6 +1488,22 @@ jobs:
             title: Generate 3D coords
             type: boolean
             default: false
+          genTitle:
+            title: Generate unique title line for each record
+            type: boolean
+            default: false
+          header:
+            title: SMILES input has header line
+            type: boolean
+            default: false
+          delimiter:
+            title: SMILES input delimiter
+            type: string
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
           count:
             title: Number of mols to generate
             type: integer

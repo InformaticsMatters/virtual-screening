@@ -61,9 +61,9 @@ def process(inputs, fragments, outputfile, alignment_torsion_weight=20, cluster_
     if dir:
         if not os.path.exists(dir):
             os.makedirs(dir, exist_ok=True)
-        num_mols, num_written, num_errors = _do_processing(dir, inputs, fragments, outputfile, gen_coords,
-                                              alignment_torsion_weight, cluster_structures,
-                                              cluster_rmsd, threshold, interval)
+        num_mols, num_written, num_errors = _do_processing(dir, inputs, fragments, outputfile,
+                                                           gen_coords, alignment_torsion_weight, cluster_structures,
+                                                            cluster_rmsd, threshold, interval)
     else:
         with tempfile.TemporaryDirectory() as tmpdirname:
             utils.log('created temporary directory', tmpdirname)
@@ -108,7 +108,7 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
 
     utils.log('Fragments:', frag_paths)
     DmLog.emit_event("Found {} fragments".format(num_frags))
-
+    DmLog.emit_event("Preparing input files")
     # write the inputs as mol2 files
     for mol in inputs:
         if gen_coords:
@@ -124,10 +124,7 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
         mol_paths.append([p, props, chg_block])
         num_mols += 1
 
-        if interval and num_mols % interval == 0:
-            DmLog.emit_event("Processed {} records".format(num_mols))
-
-    # run pharmACOphore
+    DmLog.emit_event("Running alignments")
     for i, mol_path in enumerate(mol_paths):
         # create the config file
         path = mol_path[0]
@@ -149,11 +146,12 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
         #utils.log("CMD: " + " ".join(cmd))
         proc = subprocess.run(cmd, capture_output=True)
 
-        utils.log('Aligned molecule', i)
+        if i > 0 and interval and i % interval == 0:
+            DmLog.emit_event("Aligned {} records".format(i))
 
     # collate the results to a SD file
     utils.expand_path(outputfile)
-    utils.log(('Writing output to', outputfile))
+    DmLog.emit_event('Writing output to', outputfile)
     with pybel.Outputfile('sdf', outputfile, overwrite=True) as writer:
         for mol_path in mol_paths:
             props = mol_path[1]
@@ -232,15 +230,40 @@ def _read_charge_block(mol2file):
 
 
 def smiles_generator(smiles):
+    i = 1
     for smi in smiles:
         mol = pybel.readstring('smi', smi)
+        mol.title = str(i)
+        i += 1
         yield mol
 
 
-def file_generator(filename):
-    ftype = 'sdf' if filename.endswith('.sdf') else 'smi'
-    supplr = pybel.readfile(ftype, filename)
-    return supplr
+def file_generator(filename, generate_title, header, delimiter):
+    if filename.endswith('.sdf'):
+        supplr = pybel.readfile('sdf', filename)
+        i = 0
+        for mol in supplr:
+            i += 1
+            if generate_title or not mol.title:
+                mol.title = str(i)
+            yield mol
+    else:
+        with open(filename, 'rt') as reader:
+            if header:
+                reader.readline()
+            count = 0
+            while 1:
+                count += 1
+                line = reader.readline()
+                if not line:
+                    return
+                tokens = line.split(delimiter)
+                mol = pybel.readstring('smi', tokens[0])
+                if generate_title or len(tokens) == 1:
+                    mol.title = str(count)
+                else:
+                    mol.title = tokens[1]
+                yield mol
 
 
 def main():
@@ -259,6 +282,9 @@ def main():
     parser.add_argument('-f', '--fragments', nargs='+', required=True, help="Molfiles or SD files with fragments")
     parser.add_argument('-o', '--outfile', required=True, help="Output file SDF")
     parser.add_argument('-w', '--work-dir', help="Directory to work in. If not defined a temp dir is used")
+    parser.add_argument('--header', action='store_true', help="SMILES input file has header line")
+    parser.add_argument('--gen-title', action='store_true', help="Generate a unique (numeric) title for each molecule")
+    parser.add_argument('-d', '--delimiter', help="SMILES input file delimiter")
     parser.add_argument('-g', '--gen-coords', action='store_true', help="Generate 3D coordinates for inputs")
     parser.add_argument('-t', '--torsion-weight', type=float, default=20,
                         help="Weight for torsional energy contribution")
@@ -270,10 +296,12 @@ def main():
     args = parser.parse_args()
     DmLog.emit_event("pharmacophore.py: ", args)
 
+    delimiter = utils.read_delimiter(args.delimiter)
+
     if args.smiles:
         supplr = smiles_generator(args.smiles)
     elif args.input:
-        supplr = file_generator(args.input)
+        supplr = file_generator(args.input, args.gen_title, args.header, delimiter)
 
     t0 = time.time()
     count, written, errors = process(supplr, args.fragments, args.outfile, dir=args.work_dir,
