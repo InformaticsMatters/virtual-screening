@@ -24,7 +24,7 @@ necessarily rank poses in what would seem to be the optimum order. To address th
 alignment step using Open3DAlign (implemented as part of RDKit), which does a rigid re-alignment of the molecule to the 
 fragments and generates scores that appear to be more meaningful.
 
-The complete workflow job does this:
+The complete *workflow* job does this:
 
 1. Split the SD-file with the candidate molecules in chunks of 5000 molecules so that each chunk can be processed in parallel.
 2. Perform flexible alignment using PLANTS. The fragments are treated as fixed and the candidate molecule as flexible.
@@ -33,6 +33,9 @@ The complete workflow job does this:
 4. Combine the results for all chunks back into a single SD-file.
 5. As long as a *Field to group molecules* option is specified the best aligned molecule in each group (using the
    *o3da_score_rel* field) is determined and then those are sorted using that score.
+
+The *smiles* and *simple* jobs just fo the PLANTS flexible alignment and do not perform the re-scoring using Open3DAlign.
+Open3DAlign can be run as a separate job if required.
 
 When handling alignment to multiple fragments, the PLANTS stage handles this as alignment to 2 separate fixed molecules,
 whilst Open3DAlign can only align to a single molecule so the multiple fragments are merged into a single molecule
@@ -47,11 +50,22 @@ The workflow job is implemented as a [Nextflow](https://www.nextflow.io/) workfl
 * About PLANTS: https://pubs.acs.org/doi/10.1021/ci1000218
 * About Open3DAlign: https://open3dalign.sourceforge.net/
 
+This PLANTS flexible alignment job is implemented as a Python module that does the following:
+
+1. read the inputs using OpenBabel and generate MOL2 format files needed by PLANTS
+2. read the fragments using OpenBabel and generate MOL2 format files needed by PLANTS
+3. write out a PLANTS config file for the alignment of each input to the fragments
+4. run the alignment
+5. collate the results and generate a SD-file
+
+The re-scoring using Open3DAlign is done using the Python module that is used in the `open3dalign` job from the `rdkit`
+collection
+
 ## How to run the job
 
 ### Inputs
 
-* **Candidates to process**: the molecules to dock in SDF or SMILES format.
+* **Candidates to process**: the molecules to dock in SDF or SMILES format (*smiles* job does not have this input).
 * **Fragments to align to**: the fragment molecules, 3D molecules in SDF format. Typically 2 molecules, but could be 1 or 3.
 
 ### Options
@@ -67,6 +81,14 @@ For all 3 jobs:
 Additional options for the *smiles* and *simple* jobs:
 
 * **Filename for results**: the file name for the results (can include a directory path)
+
+Additional options for the *simple* and *workflow* jobs:
+
+* **Generate 3D coords**: generate 3D coordinates for the input molecule (using OpenBabel)
+* **Generate unique title line for each record**: generate a title (number) for each input that will become the title 
+    line of the SDF output file that identifies the input molecule (needed for grouping and sorting)
+* **SMILES input has header line**: if the input is SMILES then this option specifies to skip a header line
+* **SMILES input delimiter**: if the input is SMILES then use this delimiter (one of tab, comma, space or pipe)
 
 Additional options for the *workflow* job:
 
@@ -88,7 +110,7 @@ Notes:
    of slightly less ideal torsion angles.
 2. A default value of 2 is used.
 3. This should be a field in the inputs that uniquely identifies each molecule. If PLANTS is told to generate 10 molecules
-   (the **count** option) then there will be 10 consecutive molecules in the PLANTS output with that value. Whn the value
+   (the **count** option) then there will be 10 consecutive molecules in the PLANTS output with that value. When the value
    changes a new group commences. If it's the title line (first line in the record) that identifies the molecule then use
    the value *_Name*.
 
@@ -111,3 +133,9 @@ The following fields are added by this job (all fields in the input will aslo be
 * **o3da_score_rel**: The Open3DAlign score relative to the score for aligning the fragments to themselves. Value between
   0 and 1, with one being a perfect alignment.
 * **o3da_align**: Open3DAlign alignment score (unclear what this is)
+
+
+## See also
+
+* [open3dalign](../rdkit/open3dalign) job
+* [sort-sdf and filter-sdf](rdock-filter-sdf) jobs
