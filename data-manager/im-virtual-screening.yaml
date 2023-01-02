@@ -1119,7 +1119,6 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
-      memory: 100Mi
       fix-permissions: true
     command: >-
       /code/pharmacophore.py
@@ -1262,7 +1261,6 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
-      memory: 200Mi
       fix-permissions: true
     command: >-
       /code/pharmacophore.py
@@ -1273,7 +1271,7 @@ jobs:
         --gen-coords
         {% if torsionWeight is defined %}--torsion-weight {{ torsionWeight }}{% endif %}
         {% if rmsd is defined %}--rmsd {{ rmsd }}{% endif %}
-        --interval 1000
+        --interval 1
     variables:
       order:
         options:
