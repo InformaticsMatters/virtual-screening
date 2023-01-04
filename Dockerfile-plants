@@ -1,5 +1,7 @@
 FROM informaticsmatters/plants:latest
 
+ENV PYTHONUNBUFFERED=1
+
 USER 0
 
 RUN apt-get update &&\
@@ -11,6 +13,7 @@ RUN apt-get update &&\
     python3-openbabel &&\
   apt-get clean
 
-RUN pip install im-data-manager-job-utilities==1.1.1
-
 COPY pharmacophore.py utils.py /code/
+
+RUN chmod a+x /code/*.py &&\
+    pip install im-data-manager-job-utilities==1.1.1
