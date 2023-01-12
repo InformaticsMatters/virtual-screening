@@ -1262,6 +1262,11 @@ jobs:
       project-directory: /data
       working-directory: /data
       fix-permissions: true
+      environment:
+      - name: OMP_NUM_THREADS
+        value-from:
+          constant:
+            value: '1'
     command: >-
       /code/pharmacophore.py
         --smiles {% for smi in smiles %} '{{ smi }}'{% endfor %}

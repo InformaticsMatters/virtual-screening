@@ -16,7 +16,7 @@
 
 import utils
 from dm_job_utilities.dm_log import DmLog
-from openbabel import pybel, OBConformerSearch
+from openbabel import pybel, openbabel
 from jinja2 import Template
 import argparse, os, time, tempfile, glob
 import subprocess
@@ -66,12 +66,13 @@ def process(inputs, fragments, outputfile, alignment_torsion_weight=20, cluster_
                                                             cluster_rmsd, threshold, interval)
     else:
         with tempfile.TemporaryDirectory() as tmpdirname:
-            utils.log('created temporary directory', tmpdirname)
+            utils.log('Created temporary directory', tmpdirname)
             num_mols, num_written, num_errors = _do_processing(tmpdirname, inputs, fragments, outputfile, gen_coords,
                                                   alignment_torsion_weight, cluster_structures,
                                                   cluster_rmsd, threshold, interval)
 
     return num_mols, num_written, num_errors
+
 
 def _write_frag_mol2(mol, dir, index):
     mol.addh()
@@ -111,13 +112,18 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
     DmLog.emit_event("Preparing input files")
     # write the inputs as mol2 files
     for mol in inputs:
+        utils.log('Handling input', num_mols + 1)
         if gen_coords:
-            mol.make3D()
+            utils.log('Gen coords', num_mols + 1)
+            make_3d(mol)
+        utils.log('Updating props', num_mols + 1)
         props = {}
         props.update(mol.data)
         if 'MOL Chiral Flag' in props:
             del props['MOL Chiral Flag']
+        utils.log('Adding Hs', num_mols + 1)
         mol.addh()
+        utils.log('Writing input', num_mols + 1)
         p = os.path.join(dir, 'mol' + str(num_mols) + '.mol2')
         mol.write(format='mol2', filename=p)
         chg_block = _read_charge_block(p)
@@ -125,8 +131,10 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
         num_mols += 1
 
     DmLog.emit_event("Running alignments")
+    utils.log('Running alignments')
     for i, mol_path in enumerate(mol_paths):
         # create the config file
+        utils.log('Creating config', i)
         path = mol_path[0]
         output_dir = os.path.join(dir, 'results' + str(i))
         mol_path.append(output_dir)
@@ -143,8 +151,9 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
 
         # run plants
         cmd = ['plants', '--mode', 'align', config]
-        #utils.log("CMD: " + " ".join(cmd))
+        utils.log("CMD: " + " ".join(cmd))
         proc = subprocess.run(cmd, capture_output=True)
+        utils.log('Completed alignment', i)
 
         if i > 0 and interval and i % interval == 0:
             DmLog.emit_event("Aligned {} records".format(i))
@@ -189,6 +198,19 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
 
     return num_mols, num_written, num_errors
 
+
+# def make_3d(mol):
+#     mol.make3D()
+
+
+builder = openbabel.OBBuilder()
+ff = openbabel.OBForceField.FindForceField("mmff94")
+
+def make_3d(mol):
+    m = mol.OBMol
+    builder.Build(m)
+    ff.Setup(m)
+    ff.FastRotorSearch()
 
 def _write_charge_block(mol2file, chg_block):
     lines = []
@@ -271,7 +293,7 @@ def main():
     # Example usages:
     #   ./pharmacophore.py -i data/candidates.sdf -f data/Mpro-x0107_0A.mol data/Mpro-x1382_0A.mol --outfile out.sdf
     #   ./pharmacophore.py -i data/candidates.sdf -f data/fragments.sdf --outfile out.sdf
-    #   python /code/pharmacophore.py -i /data/mpro-merge-enumerated.sdf -f /data/data/Mpro-x0107_0A.mol /data/data/Mpro-x1382_0A.mol --outfile out.sdf --interval 5000 -c 1
+    #   ./pharmacophore.py -i /data/mpro-merge-enumerated.sdf -f /data/data/Mpro-x0107_0A.mol /data/data/Mpro-x1382_0A.mol --outfile out.sdf --interval 5000 -c 1
 
     ### command line args definitions #########################################
 
@@ -295,17 +317,22 @@ def main():
 
     args = parser.parse_args()
     DmLog.emit_event("pharmacophore.py: ", args)
+    utils.log("pharmacophore.py: ", args)
 
     delimiter = utils.read_delimiter(args.delimiter)
 
     if args.smiles:
+        utils.log('Reading SMILES')
         supplr = smiles_generator(args.smiles)
+        gen_coords = True
     elif args.input:
+        utils.log('Reading FILE')
         supplr = file_generator(args.input, args.gen_title, args.header, delimiter)
+        gen_coords = args.gen_coords
 
     t0 = time.time()
     count, written, errors = process(supplr, args.fragments, args.outfile, dir=args.work_dir,
-                            cluster_structures=args.count, cluster_rmsd=args.rmsd, gen_coords=args.gen_coords,
+                            cluster_structures=args.count, cluster_rmsd=args.rmsd, gen_coords=gen_coords,
                             alignment_torsion_weight=args.torsion_weight, threshold=args.threshold,
                             interval=args.interval)
     t1 = time.time()
