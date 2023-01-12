@@ -112,18 +112,18 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
     DmLog.emit_event("Preparing input files")
     # write the inputs as mol2 files
     for mol in inputs:
-        utils.log('Handling input', num_mols + 1)
+        #utils.log('Handling input', num_mols + 1)
         if gen_coords:
-            utils.log('Gen coords', num_mols + 1)
+            #utils.log('Gen coords', num_mols + 1)
             make_3d(mol)
-        utils.log('Updating props', num_mols + 1)
+        #utils.log('Updating props', num_mols + 1)
         props = {}
         props.update(mol.data)
         if 'MOL Chiral Flag' in props:
             del props['MOL Chiral Flag']
-        utils.log('Adding Hs', num_mols + 1)
+        #utils.log('Adding Hs', num_mols + 1)
         mol.addh()
-        utils.log('Writing input', num_mols + 1)
+        #utils.log('Writing input', num_mols + 1)
         p = os.path.join(dir, 'mol' + str(num_mols) + '.mol2')
         mol.write(format='mol2', filename=p)
         chg_block = _read_charge_block(p)
@@ -151,9 +151,9 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
 
         # run plants
         cmd = ['plants', '--mode', 'align', config]
-        utils.log("CMD: " + " ".join(cmd))
+        #utils.log("CMD: " + " ".join(cmd))
         proc = subprocess.run(cmd, capture_output=True)
-        utils.log('Completed alignment', i)
+        #utils.log('Completed alignment', i)
 
         if i > 0 and interval and i % interval == 0:
             DmLog.emit_event("Aligned {} records".format(i))
@@ -199,18 +199,16 @@ def _do_processing(dir, inputs, fragments, outputfile, gen_coords, alignment_tor
     return num_mols, num_written, num_errors
 
 
-# def make_3d(mol):
-#     mol.make3D()
-
-
 builder = openbabel.OBBuilder()
 ff = openbabel.OBForceField.FindForceField("mmff94")
+
 
 def make_3d(mol):
     m = mol.OBMol
     builder.Build(m)
     ff.Setup(m)
     ff.FastRotorSearch()
+
 
 def _write_charge_block(mol2file, chg_block):
     lines = []
