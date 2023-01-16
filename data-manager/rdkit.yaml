@@ -1539,6 +1539,9 @@ jobs:
       --output '{{ outputFile }}'
       {% if readHeader is defined %}--read-header{% endif %}
       {% if writeHeader is defined %}--write-header{% endif %}
+      {% if align is defined %}--align '{{ align }}'{% endif %}
+      {% if delimiter is defined %}--delimiter '{{ delimiter }}'{% endif %}
+      {% if idField is defined %}--reactant-id-field '{{ idField }}'{% endif %}
       --interval 10000
     variables:
       order:
@@ -1547,6 +1550,9 @@ jobs:
         - outputFile
         - readHeader
         - writeHeader
+        - align
+        - delimiter
+        - idField
       inputs:
         type: object
         required:
@@ -1602,6 +1608,22 @@ jobs:
             title: Output has header line
             type: boolean
             default: true
+          align:
+            title: Align products to this core
+            type: string
+          delimiter:
+            title: Separator for SMILES reactants
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idField:
+            title: Index or name of reactant ID field
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
     tests:
       simple-execution:
         inputs:

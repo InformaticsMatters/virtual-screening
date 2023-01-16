@@ -31,41 +31,82 @@ Example:
   python -m reactor --reaction '[O:2]=[C:1][OH].[N:3]>>[O:2]=[C:1][N:3]' --reactants acids.smi amines.smi -o products.smi
 """
 
-import argparse, time
+import argparse, time, traceback
 from itertools import product
 
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, TemplateAlign
 
 import utils
+import rdkit_utils
 from dm_job_utilities.dm_log import DmLog
 
 
-def execute(reactions, reactants, output, read_header=False, write_header=False, interval=None):
+def read_sdf(file, index, id_field_name):
+    mols = []
+    count = 0
+    with Chem.SDMolSupplier(file) as supplr:
+        for mol in supplr:
+            count += 1
+            if mol:
+                id = str(count)
+                if id_field_name:
+                    if mol.HasProp(id_field_name):
+                        id = mol.GetProp(id_field_name)
+                mol.SetProp('_Name', id)
+                mols.append(mol)
+            else:
+                utils.log('Failed to read reactant', index, count)
+    return mols
+
+
+def read_smiles(file, index, read_header, delimiter, id_field_idx):
+    mols = []
+    with open(file, 'rt') as reader:
+        count = 0
+        if read_header:
+            line = reader.readline()
+        while True:
+            count += 1
+            line = reader.readline()
+            if not line:
+                break
+            tokens = line.split(delimiter)
+            mol = Chem.MolFromSmiles(tokens[0])
+            if mol:
+                id = str(count)
+                if id_field_idx:
+                    idx = int(id_field_idx)
+                    if len(tokens) > idx:
+                        id = tokens[idx]
+                mol.SetProp('_Name', id)
+                mols.append(mol)
+            else:
+                utils.log('Failed to read reactant', index, count)
+
+    return mols
+
+
+def execute(reactions, reactants, output, read_header=False, write_header=False, delimiter='\t',
+            reactant_id_field=None, align=None, interval=None):
 
     utils.expand_path(output)
+
+    template = None
+    if align:
+        template = Chem.MolFromSmiles(align)
+        AllChem.Compute2DCoords(template)
 
     rxns = [AllChem.ReactionFromSmarts(x) for x in reactions]
 
     mols_arr = []
     for i, reactant in enumerate(reactants):
         DmLog.emit_event('Reading reactant', i + 1)
-        mols = []
+        if reactant.endswith('.sdf'):
+            mols = read_sdf(reactant, i, reactant_id_field)
+        else:
+            mols = read_smiles(reactant, i, read_header, delimiter, reactant_id_field)
         mols_arr.append(mols)
-        with open(reactant, 'rt') as reader:
-            count = 0
-            if read_header:
-                line = reader.readline()
-            while True:
-                line = reader.readline()
-                if not line:
-                    break
-                mol = Chem.MolFromSmiles(line)
-                if mol:
-                    mols.append(mol)
-                else:
-                    utils.log('Failed to read reactant', i, count)
-                count += 1
 
     msg = 'Read reactants '
     reactant_counts = []
@@ -80,33 +121,50 @@ def execute(reactions, reactants, output, read_header=False, write_header=False,
     num_products = 0
     num_reactions = 0
     num_combinations = 0
-    with open(output, 'wt') as writer:
 
+    field_names = ['Iteration']
+    for i in range(len(reactant_counts)):
+        field_names.append('Reactant' + str(i+1))
+    for i in range(len(reactant_counts)):
+        field_names.append('ID' + str(i+1))
+
+    writer = rdkit_utils.create_writer(output, calc_prop_names=field_names)
+    try:
         if write_header:
-            header = 'Product\tCount'
-            for i in range(len(reactant_counts)):
-                header += '\tReactant' + str(i+1)
-            writer.write(header + '\n')
+            headers = ['Product']
+            headers.extend(field_names)
+            writer.write_header(headers)
 
         for reacts in product(*mols_arr):
             num_combinations += 1
             reactant_smiles = [Chem.MolToSmiles(x) for x in reacts]
-            product_smiles_dedup = set()
+            reactant_ids = [x.GetProp('_Name') for x in reacts]
+            product_smiles_dedup = {}
             for rxn in rxns:
                 products = rxn.RunReactants(reacts)
                 num_reactions += 1
                 for ps in products:
                     # deduplicate the molecules using SMILES
                     for m in ps:
-                        product_smiles_dedup.add(Chem.MolToSmiles(m))
+                        product_smiles_dedup[Chem.MolToSmiles(m)] = m
 
             # write the products to the output
-            for smi in product_smiles_dedup:
-                writer.write("{}\t{}\t{}\n".format(smi, num_combinations, "\t".join(reactant_smiles)))
+            for smi, mol in product_smiles_dedup.items():
+                props = [str(num_combinations)]
+                props.extend(reactant_smiles)
+                props.extend(reactant_ids)
+
+                if template:
+                    TemplateAlign.AlignMolToTemplate2D(mol, template)
+
+                writer.write(smi, mol, str(num_combinations), [], props, smiles_prop_name='smiles')
                 num_products += 1
 
             if interval and num_combinations % interval == 0:
                 DmLog.emit_event("Processed {} reactions, generated {} products".format(num_combinations, num_products))
+
+    finally:
+        writer.close()
 
     return reactant_counts, num_products
 
@@ -118,18 +176,24 @@ def main():
     parser = argparse.ArgumentParser(description='Reactor')
     parser.add_argument('--reactions', nargs='+', required=True, help="Reaction SMARTS")
     parser.add_argument('--reactants', nargs='+', required=True, help="Reactant files as .smi")
-    parser.add_argument('-o', '--output', required=True, help="Output file as .smi")
+    parser.add_argument('-o', '--output', required=True, help="Output file (.smi or .sdf)")
     parser.add_argument('--read-header', action='store_true', help="Reactant files have header line")
     parser.add_argument('--write-header', action='store_true', help="Add header line to output")
+    parser.add_argument('--delimiter', help="Delimiter when using SMILES")
+    parser.add_argument('--reactant-id-field', help="Index or name of the IDs of the reactants")
+    parser.add_argument('--align', help="Align molecules to this core structure (SMILES). SDF output only.")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     DmLog.emit_event("reactor: ", args)
 
+    delimiter = utils.read_delimiter(args.delimiter)
+
     start = time.time()
     reactant_counts, product_count = execute(args.reactions, args.reactants, args.output,
                                              read_header=args.read_header, write_header=args.write_header,
-                                             interval=args.interval)
+                                             delimiter=delimiter, reactant_id_field=args.reactant_id_field,
+                                             align=args.align, interval=args.interval)
     end = time.time()
 
     msg = 'Reactants: '

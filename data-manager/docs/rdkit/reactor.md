@@ -31,20 +31,23 @@ Only the first reactant file is manadatory.
 * **Output file**: name for the output file (.smi)
 * **Reactants have header line**: skip the header line in the reactants files
 * **Output has header line**: Write a header line in the output file
-
+* **Align products to this core**: Options SMILES that defines the core atoms to which SDF output will be aligned
+* **Separator for SMILES reactants**: If the input is SMILES then use this delimiter (one of tab, comma, space or pipe)
+* **Index or name of reactant ID field**: Index (SMILES, zero based) or name (SDF) of the field to use for reactant IDs
 
 ## Outputs
 
-The molecules are output as SMILES in tab delineated text format. 
-The format is as follows:
+The molecules are output as SMILES in tab delineated text format or as SDF. 
+The SMILES format is as follows:
 
-product index reactant1 reactant2 ...
+product_smiles iteration reactant1_smiles reactant2_smiles ... reactant1_id reactant2_id ...
 
 The fields are tab separated.
 The product and reactants are in SMILES format.
 The index is the numerical index of the combination of reactants. Some reactants can
 generate multiple products (e.g. if there are multiple reactive centres).
 
+When outputting in SDF format then the same fields are written as SD-file fields.
 
 ## Challenges
 
