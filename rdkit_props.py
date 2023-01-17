@@ -89,9 +89,9 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
                 values.append(mol.GetNumHeavyAtoms())
             if 'num_rot_bonds' in calcs:
                 values.append(rdMolDescriptors.CalcNumRotatableBonds(mol))
-            if 'num_rot_bonds' in calcs:
+            if 'num_rings' in calcs:
                 values.append(rdMolDescriptors.CalcNumRings(mol))
-            if 'num_rot_bonds' in calcs:
+            if 'num_aro_rings' in calcs:
                 values.append(rdMolDescriptors.CalcNumAromaticRings(mol))
             if 'num_cc' in calcs or 'num_undef_cc' in calcs:
                 num_cc, num_undef_cc = rdkit_utils.get_num_chiral_centers(mol)
