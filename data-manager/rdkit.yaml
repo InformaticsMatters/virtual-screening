@@ -597,6 +597,120 @@ jobs:
             checks:
             - exists: true
 
+  sa-score:
+    name: Synthetic accessibility score
+    description: >-
+      Calculates a synthetic accessibility score based on te approach of Ertl and Schuffenhauer
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - rdkit
+    - properties
+    image:
+      name: informaticsmatters/vs-prep
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      /code/sa_score.py --input '{{ inputFile }}'
+      --outfile '{{ outputFile }}'
+      {% if readHeader is defined and readHeader %}--read-header{% endif %}
+      {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
+      {% if sdfReadRecords is defined %}--sdf-read-records '{{ sdfReadRecords }}'{% endif %}
+      {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
+      --interval 50000
+    variables:
+      order:
+        options:
+        - outputFile
+        - readHeader
+        - writeHeader
+        - separator
+        - idColumn
+        - sdfReadRecords
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Synthetic accessibility score
+                fields:
+                  sa_score:
+                    type: number
+                    description: Synthetic accessibility score
+                    required: true
+                    active: true
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          writeHeader:
+            title: Output has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type:
+            - string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          sdfReadRecords:
+            title: Number of SDF records to read field names
+            type: integer
+            default: 100
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/100.smi
+        options:
+          outputFile: results.smi
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.smi
+            checks:
+            - exists: true
+            - lineCount: 100
+
   similarity-screen-smiles:
     name: Descriptor based similarity screening (SMILES input)
     description: >-

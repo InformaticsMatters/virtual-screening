@@ -22,5 +22,5 @@ RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 openbabel=3.1.1 p
   pip install im-data-manager-job-utilities==1.0.1 &&\
   conda init bash
 
-COPY *.py site_substructures.smarts ./
+COPY *.py fpscores.pkl.gz site_substructures.smarts ./
 COPY moldb/* ./moldb/
