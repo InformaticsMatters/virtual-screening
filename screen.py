@@ -97,14 +97,6 @@ def multiply_list(scores) :
     return result
 
 
-def calc_geometric_mean(scores):
-    total = 1.0
-    for score in scores:
-        total = total * score
-    result = total ** (1.0/len(scores))
-    return result
-
-
 def validate_params(descriptor, metric, alpha, beta, nbits):
     if descriptor == 'morgan2' or descriptor == 'morgan3':
         if not (metric == 'tamimoto' or metric == 'dice' or metric == 'tversky'):
@@ -227,7 +219,7 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                         min_sims = min(sims)
                         max_sims = max(sims)
                         amean_sims = sum(sims) / len(q_mols)
-                        gmean_sims = calc_geometric_mean(sims)
+                        gmean_sims = utils.calc_geometric_mean(sims)
                         prod_sims = multiply_list(sims)
                         #if prod_sims > 0.15:
                         #    print(sims, prod_sims)

@@ -21,23 +21,31 @@ It uses RDKit FeatureMaps to determine the  feature complimentarity:
 
 ## How to run the job
 
-You need to specify a SD-file of 3D molecules that will be scored, and a reference molecule to compare to, in molfile or SD-file format. If SD-file is specified the first molecule is used as the reference.
+You need to specify a SD-file of 3D molecules that will be scored, and a reference molecule to compare to, in molfile 
+or SD-file format. Note that SuCOS scores the 3D molecules assuming they are already aligned. It does not generate an
+alignment.
 
 ### Inputs
 
 * **Molecules to process**: molecules to analyse (.sdf)
-* **Reference molecule**: the molecule to compare to (.mol or .sdf)
+* **Reference molecule(s)**: the molecules to compare to (.mol or .sdf) (1)
+
+Both sets of molecules must be 3D structures.
 
 ### Options
 
 * **Output file name**: name for the SD-file output
-* **Use Tanimoto distance**: use symmetric Tamimoto distance instead of symmetric distance(1)
-* **Score mode**: FeatureMaps score mode (2)
+* **Use Tanimoto distance**: use symmetric Tamimoto distance instead of symmetric distance (2)
+* **Score mode**: FeatureMaps score mode (3)
 
 Notes:
-(1) If the Tanimoto option is specified the [ShapeTanimotoDist](http://rdkit.org/docs/source/rdkit.Chem.rdShapeHelpers.html?highlight=shapetanimotodist#rdkit.Chem.rdShapeHelpers.ShapeTanimotoDist) function is used otherwise the [ShapeProtrudeDist](http://rdkit.org/docs/source/rdkit.Chem.rdShapeHelpers.html?highlight=shapeprotrudedist#rdkit.Chem.rdShapeHelpers.ShapeProtrudeDist) function is used.
 
-(2) See [FeatMapScoreMode](http://rdkit.org/docs/source/rdkit.Chem.FeatMaps.FeatMaps.html?highlight=featmapscoremode#rdkit.Chem.FeatMaps.FeatMaps.FeatMapScoreMode)
+(1) Multiple reference molecules can be specified when using a SD-file. For instance, you might want to score molecules
+against 2 fragments. In this case the scores generated are the geometric mean of the scores for each reference molecule.
+
+(2) If the Tanimoto option is specified the [ShapeTanimotoDist](http://rdkit.org/docs/source/rdkit.Chem.rdShapeHelpers.html?highlight=shapetanimotodist#rdkit.Chem.rdShapeHelpers.ShapeTanimotoDist) function is used otherwise the [ShapeProtrudeDist](http://rdkit.org/docs/source/rdkit.Chem.rdShapeHelpers.html?highlight=shapeprotrudedist#rdkit.Chem.rdShapeHelpers.ShapeProtrudeDist) function is used.
+
+(3) See [FeatMapScoreMode](http://rdkit.org/docs/source/rdkit.Chem.FeatMaps.FeatMaps.html?highlight=featmapscoremode#rdkit.Chem.FeatMaps.FeatMaps.FeatMapScoreMode)
 
 ### Output
 

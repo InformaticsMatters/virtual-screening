@@ -47,7 +47,7 @@ jobs:
             - chemical/x-mdl-sdfile
             type: file
           reference:
-            title: Reference molecule (.mol or .sdf)
+            title: Reference molecule(s) (.mol or .sdf)
             mime-types:
             - chemical/x-mdl-molfile
             - chemical/x-mdl-sdfile

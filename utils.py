@@ -126,3 +126,11 @@ def read_delimiter(input):
     else:
         delimiter = None
     return delimiter
+
+
+def calc_geometric_mean(scores):
+    total = 1.0
+    for score in scores:
+        total = total * score
+    result = total ** (1.0/len(scores))
+    return result

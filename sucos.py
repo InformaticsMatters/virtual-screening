@@ -153,9 +153,11 @@ def get_sucos_scores(ref_mol, query_mol, tani=False, ref_features=None, query_fe
 
 def process(reference, input, output, tani=False, score_mode=FeatMaps.FeatMapScoreMode.All, interval=None):
 
-    ref_mol = rdkit_utils.rdk_read_single_mol(reference)
-    DmLog.emit_event("Target mol has {} heavy atoms".format(ref_mol.GetNumHeavyAtoms()))
-    ref_features = get_raw_features(ref_mol)
+    ref_mols = rdkit_utils.rdk_read_mols(reference)
+    ref_features = []
+    for i, mol in enumerate(ref_mols):
+        DmLog.emit_event("Reference mol {} has {} heavy atoms".format(i + 1, mol.GetNumHeavyAtoms()))
+        ref_features.append(get_raw_features(mol))
 
     # create reader
     calc_prop_names = [field_SuCOS_Score, field_SuCOS_FMScore]
@@ -188,8 +190,17 @@ def process(reference, input, output, tani=False, score_mode=FeatMaps.FeatMapSco
             errors += 1
             continue
         try:
-            scores = get_sucos_scores(ref_mol, mol, tani=tani, ref_features=ref_features, score_mode=score_mode)
-            writer.write(None, mol, id, props, scores)
+            score0 = []
+            score1 = []
+            score2 = []
+            count = len(ref_mols)
+            for ref_mol, ref_feat in zip(ref_mols, ref_features):
+                scores = get_sucos_scores(ref_mol, mol, tani=tani, ref_features=ref_feat, score_mode=score_mode)
+                score0.append(scores[0])
+                score1.append(scores[1])
+                score2.append(scores[2])
+            geo_means = (utils.calc_geometric_mean(score0), utils.calc_geometric_mean(score1), utils.calc_geometric_mean(score2))
+            writer.write(None, mol, id, props, geo_means)
         except ValueError as e:
             errors += 1
             DmLog.emit_event("Molecule", count, "failed to score:", e.message)
@@ -211,15 +222,13 @@ def parse_score_mode(value):
         raise ValueError(value + " is not a valid scoring mode option")
 
 
-### start main execution #########################################
-
 def main():
 
     parser = argparse.ArgumentParser(description='SuCOS with RDKit')
 
-    parser.add_argument('-i', '--input', required=True, help="File with molecules to cluster (.sdf)")
+    parser.add_argument('-i', '--input', required=True, help="File with molecules to score (.sdf)")
     parser.add_argument('-o', '--output', required=True, help="Output file (.sdf)")
-    parser.add_argument('-r', '--reference', help='Target molecule to compare against (.sdf or .mol')
+    parser.add_argument('-r', '--reference', help='Target molecule(s) to compare against (.sdf or .mol')
     parser.add_argument('-t', '--tanimoto', action='store_true', help='Include Tanimoto distance in score')
     parser.add_argument('-m', '--score-mode', choices=['all', 'closest', 'best'],
                         help="choose the scoring mode for the feature map, default is 'all'.")

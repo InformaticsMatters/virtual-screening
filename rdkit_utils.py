@@ -385,6 +385,16 @@ def rdk_read_single_mol(input):
     return mol
 
 
+def rdk_read_mols(input):
+    if input.endswith('.mol'):
+        mol = Chem.MolFromMolFile(input)
+        return [mol]
+    else:
+        supplr = rdk_mol_supplier(input)
+        mols = [m for m in supplr]
+        return mols
+
+
 def rdk_merge_mols(inputs):
     """
     Merge multiple molecules into a single molecule
