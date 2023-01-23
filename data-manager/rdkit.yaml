@@ -605,7 +605,8 @@ jobs:
     category: molecular properties
     keywords:
     - rdkit
-    - properties
+    - synthetic accessibility
+    - sa_score
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'

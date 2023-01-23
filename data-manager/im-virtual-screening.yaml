@@ -581,8 +581,8 @@ jobs:
         '{{ inputFile }}' '{{ outputFile }}'
         '{{ sortField }}'
         {% if sortDescending %}true{% else %}false{% endif %}
-        {% if groupByField is defined %}'{{ groupByField }}'{% endif %}
         {% if top is defined and top > 0 %}{{ top }}{% else %}0{% endif %}
+        {% if groupByField is defined %}'{{ groupByField }}'{% endif %}
     variables:
       order:
         options:

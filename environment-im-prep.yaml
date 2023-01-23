@@ -3,11 +3,12 @@ name: im-vs-prep
 channels:
   - conda-forge
 dependencies:
+  - python=3.10
   - pip=21.1.1
-  - rdkit=2021.03.5
+  - rdkit=2022.09.4
   - openbabel=3.1.1
-  - pdb2pqr=3.2.0
-  - jinja2=3.0.1
+  - pdb2pqr=3.4.1
+  - jinja2=3.1.2
   - pip:
     - im-standardize-molecule==0.1.0
-    - im-data-manager-job-utilities==1.0.1
+    - im-data-manager-job-utilities==1.1.1

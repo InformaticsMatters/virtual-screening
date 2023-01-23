@@ -28,7 +28,7 @@ if "$SORT_DESCENDING"; then SORT_FLAG="-r"; else SORT_FLAG=""; fi
 DIR=$(dirname $OUTFILE)
 mkdir -p $DIR
 
-if [ $TOP -gt "0" ]; then
+if [ $TOP -gt 0 ]; then
   echo "Starting grouped sort with top $TOP ..."
   filt="\$_REC <= $TOP"
   sdsort -n -s -f"$SORT_FIELD" -id"$GROUP_BY_FIELD" $SORT_FLAG "$INFILE" |
