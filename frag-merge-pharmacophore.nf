@@ -50,9 +50,10 @@ include { pharmacophore } from './nf-processes/plants/pharmacophore.nf' addParam
     threshold: params.thresh_ph4,
     gen3d: params.gen3d)
 include { open3dalign } from './nf-processes/rdkit/open3dalign.nf' addParams(threshold: params.thresh_o3da)
+include { sucos } from './nf-processes/xchem/sucos.nf'
 include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
     outputfile: params.output_filename,
-    glob: 'o3da_*.sdf')
+    glob: 'sucos_*.sdf')
 include { sd_best_sorted_top as filter } from './nf-processes/rdock/filter.nf' addParams(
     sort_field: 'o3da_score_rel',
     sort_descending: true,
@@ -78,7 +79,8 @@ workflow ph4_align {
     split_sdf(inputs)
     pharmacophore(split_sdf.out.flatten(), fragments)
     open3dalign(pharmacophore.out[0], fragments)
-    concatenate_files(open3dalign.out[0].collect())
+    sucos(open3dalign.out[0], fragments)
+    concatenate_files(sucos.out[0].collect())
     if (params.group_by_field) {
         filter(concatenate_files.out)
     }
@@ -93,13 +95,14 @@ workflow ph4_align {
 
     pharmacophore_count = 0
     open3dalign_count = 0
+    sucos_count = 0
     pharmacophore.out[1].subscribe {
         cost = new Integer(it)
         now = dateFormat.format(new java.util.Date())
         pharmacophore_count++
         log.info("$now # PROGRESS -DONE- $wrkflw:pharmacophore $pharmacophore_count")
         log.info("$now # PROGRESS -START- $wrkflw:open3dalign $pharmacophore_count")
-        log.info("$now # INFO -COST- +$cost ${pharmacophore_count + open3dalign_count}")
+        log.info("$now # INFO -COST- +$cost ${pharmacophore_count + open3dalign_count + sucos_count}")
     }
 
     open3dalign.out[1].subscribe {
@@ -107,10 +110,18 @@ workflow ph4_align {
         now = dateFormat.format(new java.util.Date())
         open3dalign_count++
         log.info("$now # PROGRESS -DONE- $wrkflw:open3dalign $open3dalign_count")
-        log.info("$now # INFO -COST- +$cost ${pharmacophore_count + open3dalign_count}")
+        log.info("$now # INFO -COST- +$cost ${pharmacophore_count + open3dalign_count + sucos_count}")
     }
 
-    open3dalign.out[0].collect().subscribe {
+    sucos.out[1].subscribe {
+        cost = new Integer(it)
+        now = dateFormat.format(new java.util.Date())
+        sucos_count++
+        log.info("$now # PROGRESS -DONE- $wrkflw:sucos $sucos_count")
+        log.info("$now # INFO -COST- +$cost ${pharmacophore_count + open3dalign_count + sucos_count}")
+    }
+
+    sucos.out[0].collect().subscribe {
         now = dateFormat.format(new java.util.Date())
         log.info("$now # PROGRESS -START- $wrkflw:concatenate_files 1")
     }
