@@ -153,7 +153,7 @@ def get_sucos_scores(ref_mol, query_mol, tani=False, ref_features=None, query_fe
 
 def process(reference, input, output, tani=False, score_mode=FeatMaps.FeatMapScoreMode.All, interval=None):
 
-    ref_mols = rdkit_utils.rdk_read_mols(reference)
+    ref_mols = rdkit_utils.rdk_read_molecule_files(reference)
     ref_features = []
     for i, mol in enumerate(ref_mols):
         DmLog.emit_event("Reference mol {} has {} heavy atoms".format(i + 1, mol.GetNumHeavyAtoms()))
@@ -224,14 +224,17 @@ def parse_score_mode(value):
 
 def main():
 
+    # Example:
+    #   ./sucos.py -i data/Mpro-x0107-shapes.sdf -r data/Mpro-x0107_0A.mol -o foo.sdf
+
     parser = argparse.ArgumentParser(description='SuCOS with RDKit')
 
     parser.add_argument('-i', '--input', required=True, help="File with molecules to score (.sdf)")
     parser.add_argument('-o', '--output', required=True, help="Output file (.sdf)")
-    parser.add_argument('-r', '--reference', help='Target molecule(s) to compare against (.sdf or .mol')
+    parser.add_argument('-r', '--reference', nargs='+', help='Target molecule(s) to compare against (.sdf or .mol)')
     parser.add_argument('-t', '--tanimoto', action='store_true', help='Include Tanimoto distance in score')
     parser.add_argument('-m', '--score-mode', choices=['all', 'closest', 'best'],
-                        help="choose the scoring mode for the feature map, default is 'all'.")
+                        help="Choose the scoring mode for the feature map, default is 'all'")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()

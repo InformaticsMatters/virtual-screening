@@ -386,6 +386,9 @@ def rdk_read_single_mol(input):
 
 
 def rdk_read_mols(input):
+    """
+    Read molecules from a single file (.mol or .sdf)
+    """
     if input.endswith('.mol'):
         mol = Chem.MolFromMolFile(input)
         return [mol]
@@ -393,6 +396,44 @@ def rdk_read_mols(input):
         supplr = rdk_mol_supplier(input)
         mols = [m for m in supplr]
         return mols
+
+
+def rdk_read_molecule_files(inputs):
+    """
+    Read input molecules.
+    A list of inputs is specified, each one containing either a single filename or a comma separated list of filenames
+    (no spaces). The files can either be .mol files with a single molecule or .sdf files with multiple molecules.
+    The molecules in all the files specified are read and returned as a list of molecules.
+    Examples:
+    ['mols.sdf']                          - single SDF with one or more molecules
+    ['mol1.mol', 'mol2.mol', 'mol3.mol']  - 3 molfiles as separate elements of the list
+    ['mol1.mol,mol2.mol,mol3.mol']        - 3 molfiles as a single comma separated element of the list
+    ['mol1.mol,mol2.mol', 'mols.sdf']     - 3 molfiles plus 1 SDF
+
+    :param inputs: Input filenames
+    :return: List of molecules that have been read
+    """
+    mols = []
+    for input in inputs:
+        tokens = input.split(',')
+        for token in tokens:
+            if token.endswith('.mol'):
+                m = Chem.MolFromMolFile(token)
+                if m:
+                    mols.append(m)
+                else:
+                    DmLog.emit_event('WARNING: could not process', token)
+            elif token.endswith('.sdf'):
+                supplr = Chem.ForwardSDMolSupplier(token)
+                idx = 0
+                for m in supplr:
+                    if m:
+                        mols.append(m)
+                    else:
+                        DmLog.emit_event('WARNING: could not process molecule', idx, 'from', token)
+            else:
+                raise ValueError("Invalid file", token)
+    return mols
 
 
 def rdk_merge_mols(inputs):
@@ -426,6 +467,9 @@ def rdk_merge_mols(inputs):
 
 
 def rdk_mol_supplier(input):
+    """
+    Generate a ForwardSDMolSupplier from a .sdf or .sdf.gz file
+    """
     if input.endswith('.sdf'):
         suppl = Chem.ForwardSDMolSupplier(input)
     elif input.endswith('.sdf.gz'):
