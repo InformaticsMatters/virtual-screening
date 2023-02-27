@@ -727,7 +727,6 @@ jobs:
     - screen
     - fingerprint
     - filter
-    doc-url: rdkit/similarity-screen.md
     image:
       name: informaticsmatters/vs-prep
       tag: 'latest'

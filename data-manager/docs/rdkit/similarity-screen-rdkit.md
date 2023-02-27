@@ -1,9 +1,7 @@
-# Jobs: similarity-screen-smiles and similarity-screen-file
+# Job: similarity-screen-rdkit
 
 This describes how to run the `similarity-screen-smiles` or `similarity-screen-file` jobs from the `virtual screening`
-category in the `rdkit` collection.
-
-NOTE: these jobs have been superseded by the similarity-screen-rdkit` job.
+category in the `rdkit` collection. This job supersedes the `similarity-screen-smiles` and `similarity-screen-file` jobs.
 
 ## What the job does
 
@@ -13,32 +11,26 @@ It does this using RDKit descriptors and metrics, a summary of which can be foun
 
 Molecules with a similarity greater than a user defined threshold are written out.
 
-Multiple query molecules can be specified, allowing molecules to be found that are similar to one or all of the queries in a user defined manner.
-
-The  job comes in two flavours:
-1. `similarity-screen-smiles`  where the queries are specified  as SMILES strings as a job parameter.
-2. `similarity-screen-file` where the queries are specified in a file in SMILES format.
-
-The second version is better suited when wanting to use a large number of queries. Although both jobs share the same implementation, they are provided as separate jobs to avoid the input options becoming overly complex.
+Multiple query molecules can be specified, allowing molecules to be found that are similar to one or all of the queries
+in a user defined manner.
 
 The definition of which molecules that pass the threshold can be defined by the user along with a number of other options.
 
 ## Implementation details
 
 * Job implementation: [screen.py](/screen.py)
-* Job definition: `jobs.similarity-screen-smiles` and `jobs.similarity-screen-file`  in [rdkit.yaml](../rdkit.yaml)
+* Job definition: `jobs.similarity-screen-rdkit`  in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job
 
 ### Inputs
 
 * **Molecules to screen**: a file of molecules in SMILES format.
-* **Query molecules**: a file of query molecules (similarity-screen-file only)
+* **Query molecules**: query molecules, specified as a file or SMILES, or entered as SMILES.
 
 ### Options
 
 * **Output file name**: the file name for the output
-* **Query SMILES**: one or more query molecules (similarity-screen-smiles only)
 * **Input file has header line**: the input file has a header line
 * **Queries file has header line**: the queries file has a header line (similarity-screen-file only)
 * **Output has header line**: write a header line for the output
@@ -54,7 +46,7 @@ The definition of which molecules that pass the threshold can be defined by the 
 
 ### Outputs
 
-A file of moleciles (in SMILES format) that pass the similarity threshold is created.
+A file of molecules (in SMILES format) that pass the similarity threshold is created.
 This contains all the fields from the input plus one or more similarity scores. See [1] for details.
 
 ### Notes
@@ -76,7 +68,7 @@ Those values are appended to the results after the individual similarity scores.
 - score_gmean
 - score_prod
 
-For the similarity-screen-file job the individual scores and the score_prod are not output as it is expected that there 
+When the queries are defined in a file the individual scores and the score_prod are not output as it is expected that there 
 are a large number of query molecules.
 
 When using a threshold to filter the outputs you must specify the index of the score you want to use to filter. For instance, 
