@@ -423,16 +423,13 @@ def rdk_read_molecule_files(inputs):
                     mols.append(m)
                 else:
                     DmLog.emit_event('WARNING: could not process', token)
-            elif token.endswith('.sdf'):
-                supplr = Chem.ForwardSDMolSupplier(token)
-                idx = 0
-                for m in supplr:
+            else:
+                ms = rdk_read_mols(token)
+                for i, m in enumerate(ms):
                     if m:
                         mols.append(m)
                     else:
-                        DmLog.emit_event('WARNING: could not process molecule', idx, 'from', token)
-            else:
-                raise ValueError("Invalid file", token)
+                        DmLog.emit_event('WARNING: could not process molecule', i, 'from', token)
     return mols
 
 
@@ -443,27 +440,14 @@ def rdk_merge_mols(inputs):
     :return:
     """
     merged_mol = Chem.RWMol()
-    count = 0
-    for input in inputs:
-        if input.endswith('.mol'):
-            mol = Chem.MolFromMolFile(input)
+    mols = rdk_read_molecule_files(inputs)
+    for i, mol in enumerate(mols):
+        if mol:
             merged_mol.InsertMol(mol)
-            count += 1
-        elif input.endswith('.sdf'):
-            suppl = Chem.SDMolSupplier(input)
-            for mol in suppl:
-                merged_mol.InsertMol(mol)
-                count += 1
-        elif input.endswith('.sdf.gz'):
-            with gzip.open(input, 'rb') as gz:
-                suppl = Chem.ForwardSDMolSupplier(gz)
-                for mol in suppl:
-                    merged_mol.InsertMol(mol)
-                    count += 1
         else:
-            raise ValueError('Unsupported file type. Must be .mol .sdf or .sdf.gz. Found ' + input)
+            DmLog.emit_event('WARNING: could not process molecule', i)
     Chem.SanitizeMol(merged_mol)
-    return merged_mol, count
+    return merged_mol, i + 1
 
 
 def rdk_mol_supplier(input):
@@ -476,7 +460,7 @@ def rdk_mol_supplier(input):
         gz = gzip.open(input, 'rb')
         suppl = Chem.ForwardSDMolSupplier(gz)
     else:
-        raise ValueError('Unsupported file type. Must be .mol .sdf or .sdf.gz. Found ' + input)
+        raise ValueError('Unsupported file type. Must be .sdf or .sdf.gz. Found ' + input)
     return suppl
 
 

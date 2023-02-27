@@ -250,6 +250,33 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
     return count, hits, errors
 
 
+def handle_query(smiles, file, workitout):
+    """
+    Work out the input argument for molecules.
+    There are 3 possibilities:
+    1. an array of SMILES is specified as the first (smiles) argument
+    2. a file name is specified as the second (file) argument. The file must contain SMILES
+    3. the third argument (workitout) contains either a file:// URL, in which case it is converted to a simple file name
+       or it contains newline separate SMILES which is split out ito an array of SMILES strings.
+
+    Only one option should be specified, with the other two being None.
+
+    :param smiles: array of SMILES strings
+    :param file: a file name containing SMILES strings
+    :param workitout: a file URL or a text string with newline separate SMILES
+    :return: Two values are returned, an array of SMILES and a file name. One of these will be None.
+    """
+    if workitout:
+        if workitout.startswith('file://'):
+            # treat as a file URL
+            return None, workitout[7:]
+        else:
+            # treat as text with smiles
+            return workitout.split("\\n"), None
+    else:
+        return smiles, file
+
+
 ### start main execution #########################################
 
 def main():
@@ -257,13 +284,20 @@ def main():
     # Example:
     #   python3 screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input data/10000.smi --delimiter tab -o foo.smi\
     #     -d rdkit -m tanimoto
+    #   python3 screen.py --queries-file queries.smi --input data/10000.smi --delimiter tab -o foo.smi\
+    #     -d rdkit -m tanimoto
+    #   python3 screen.py --queries file://queries.smi --input data/10000.smi --delimiter tab -o foo.smi \
+    #     -d rdkit -m tanimoto
+    #   python3 screen.py --queries 'CCC\nCCCCCC' --input data/10000.smi --delimiter tab -o foo.smi \
+    #     -d rdkit -m tanimoto
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='screen')
     inputs = parser.add_mutually_exclusive_group(required=True)
     inputs.add_argument('-s', '--smiles', nargs='+', help="Query SMILES")
-    inputs.add_argument('-q', '--queries', help="File with query molecules")
+    inputs.add_argument('--queries-file', help="File with query molecules")
+    inputs.add_argument('--queries', help="Query molecules as text (SMILES) or a file URL")
     parser.add_argument('--queries-delimiter', help="Delimiter for queries file (text format)")
     parser.add_argument('--queries-read-header', action='store_true',
                         help="Does the queries file contain a header line (text format)")
@@ -289,9 +323,11 @@ def main():
     delimiter = utils.read_delimiter(args.delimiter)
     queries_delimiter = utils.read_delimiter(args.queries_delimiter)
 
+    smiles, query_file = handle_query(args.smiles, args.queries_file, args.queries)
+
     start = time.time()
     input_count, hit_count, error_count = \
-        execute(args.smiles, args.queries, args.input, args.output, args.descriptor, args.metric,
+        execute(smiles, query_file, args.input, args.output, args.descriptor, args.metric,
                 threshold=args.threshold, sim_idx=args.sim_index, delimiter=delimiter,
                 read_header=args.read_header, write_header=args.write_header,
                 queries_read_header=args.queries_read_header, queries_delimiter=queries_delimiter,
