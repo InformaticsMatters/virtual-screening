@@ -922,14 +922,15 @@ jobs:
           outputFileName: foo/screened.smi
           descriptor: rdkit
           metric: tanimoto
-          threshold: 0.5
+          threshold: 0.95
+          simIndex: 3
         checks:
           exitCode: 0
           outputs:
           - name: foo/screened.smi
             checks:
             - exists: true
-            - lineCount: 3
+            - lineCount: 2
       file-execution:
         inputs:
           inputFile: data/100.smi
@@ -938,14 +939,15 @@ jobs:
           outputFileName: foo/screened.smi
           descriptor: rdkit
           metric: tanimoto
-          threshold: 0.5
+          threshold: 0.95
+          simIndex: 1
         checks:
           exitCode: 0
           outputs:
           - name: foo/screened.smi
             checks:
             - exists: true
-            - lineCount: 3
+            - lineCount: 2
 
   minimize-mmff94:
     name: Energy minimize molecules

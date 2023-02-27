@@ -161,7 +161,8 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
             if not mol:
                 raise ValueError('Failed to read query molecule:', q_count)
             q_mols.append(mol)
-        DmLog.emit_event('Read', len(q_mols), 'query molecules')
+
+    DmLog.emit_event('Read', len(q_mols), 'query molecules')
 
     q_fps = []
     for q_mol in q_mols:
@@ -198,11 +199,8 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                     if query_smis:
                         for i in range(len(query_smis)):
                             headers.append('score_' + str(i + 1))
-                    if query_smis and len(query_smis) > 1:
+                    if query_file or (query_smis and len(query_smis) > 1):
                         headers.extend(['score_min', 'score_max', 'score_amean', 'score_gmean', 'score_prod'])
-                    if query_file:
-                        headers.extend(['score_min', 'score_max', 'score_amean', 'score_gmean'])
-
                     outf.write(delimiter.join(headers) + '\n')
                 try:
                     t_mol = Chem.MolFromSmiles(smi)
@@ -221,8 +219,6 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                         amean_sims = sum(sims) / len(q_mols)
                         gmean_sims = utils.calc_geometric_mean(sims)
                         prod_sims = multiply_list(sims)
-                        #if prod_sims > 0.15:
-                        #    print(sims, prod_sims)
                         if query_file:
                             # clear the sims as we don't want to write individual scores when using a query file
                             sims = []
@@ -230,8 +226,7 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                         sims.append(max_sims)
                         sims.append(amean_sims)
                         sims.append(gmean_sims)
-                        if query_smis:
-                            sims.append(prod_sims)
+                        sims.append(prod_sims)
 
                     sim = sims[sim_idx]
                     if sim > threshold:
