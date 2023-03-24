@@ -568,8 +568,7 @@ jobs:
             - pipe
           idColumn:
             title: Index (text) or name (SDF) to use for the ID field
-            type:
-            - string
+            type: string
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
           sdfReadRecords:
             title: Number of SDF records to read field names
@@ -600,7 +599,7 @@ jobs:
   sa-score:
     name: Synthetic accessibility score
     description: >-
-      Calculates a synthetic accessibility score based on te approach of Ertl and Schuffenhauer
+      Calculates a synthetic accessibility score based on the approach of Ertl and Schuffenhauer
     version: '1.0.0'
     category: molecular properties
     keywords:
