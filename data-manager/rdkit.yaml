@@ -712,11 +712,11 @@ jobs:
             - lineCount: 100
 
   similarity-screen-rdkit:
-    name: Descriptor based similarity screening (file input)
+    name: Descriptor based similarity screening
     description: >-
       Filters molecules by molecular similarity using RDKit.
       A number of descriptors and metrics are available.
-      Query molecule(s) are specified as parameters in SMILES format.
+      Query molecule(s) are specified from a project file or as SMILES.
     version: '1.0.0'
     category: comp chem
     keywords:
@@ -834,6 +834,7 @@ jobs:
           outputFileName:
             title: Output file name
             type: string
+            default: screened.smi
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
           headerInputs:
             title: Input file has header line

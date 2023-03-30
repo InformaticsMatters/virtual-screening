@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-import os
-import sys
+import os, sys
+from math import log10, floor
 
 default_num_chars = 2
 default_num_levels = 2
@@ -134,3 +134,13 @@ def calc_geometric_mean(scores):
         total = total * score
     result = total ** (1.0/len(scores))
     return result
+
+
+def round_to_significant_number(val, sig):
+    """
+    Round the value to the specified number of significant numbers
+    :param val: The number to round
+    :param sig: Number of significant numbers
+    :return:
+    """
+    return round(val, sig - int(floor(log10(abs(val))))-1)

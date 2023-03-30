@@ -1,0 +1,25 @@
+FROM continuumio/miniconda3:4.10.3
+
+# Note:     When run by the Data Manager the uid and gid
+#           will be set according to the Project we're running against.
+#           Consequently we cannot know in advance the user or group id
+#           for execution, and so we must ensure the code runs
+#           as any user.
+
+RUN apt-get -y update &&\
+  apt-get -y install procps &&\
+  apt-get clean
+
+ENV PYTHONUNBUFFERED=1
+
+ENV PYTHONPATH=/code
+ENV HOME=/code
+WORKDIR ${HOME}
+
+COPY utils.py ./
+COPY dmpk/*.py ./dmpk/
+
+RUN conda install -y -c conda-forge matplotlib=3.7.1 &&\
+  conda init bash &&\
+  pip install im-data-manager-job-utilities==1.0.1
+

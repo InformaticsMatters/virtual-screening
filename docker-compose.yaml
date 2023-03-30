@@ -62,3 +62,9 @@ services:
       dockerfile: Dockerfile-moldb
     image: informaticsmatters/vs-moldb:${IMAGE_TAG:-latest}
 
+  dmpk:
+    build:
+      context: .
+      dockerfile: Dockerfile-dmpk
+    image: informaticsmatters/vs-dmpk:${IMAGE_TAG:-latest}
+
