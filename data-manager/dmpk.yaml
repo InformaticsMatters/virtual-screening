@@ -77,30 +77,30 @@ jobs:
             default: output
           halfLife:
             title: Half life (hours)
-            type: float
+            type: number
           absorption:
             title: Half life absorption (hours)
-            type: float
+            type: number
           dose:
             title: Initial dose (mg)
-            type: float
+            type: number
           auc:
             title: AUC (mg/L*hr)
-            type: float
+            type: number
           time:
             title: Time (h)
-            type: float
+            type: number
           plotWidth:
             title: Plot width (inches)
-            type: int
+            type: integer
             default: 10
           plotHeight:
             title: Plot height (inches)
-            type: int
+            type: integer
             default: 4
           fontSize:
             title: Find size (points)
-            type: int
+            type: integer
             default: 12
     tests:
       simple-execution:
