@@ -3,6 +3,7 @@ misc
 work
 outputs
 **.pyc
+**.DS_Store
 __pycache__
 .idea
 .nextflow*
