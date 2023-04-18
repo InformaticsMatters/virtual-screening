@@ -142,7 +142,11 @@ def execute(inputs_sdf, ref_mols, outfile_sdf, use_crippen=False, threshold=None
     finally:
         writer.close()
 
-    mean_score = sum_score / input_count
+    if input_count == 0:
+        mean_score = 0
+    else:
+        mean_score = sum_score / input_count
+
     return input_count, output_count, error_count, mean_score, score_perf
 
 
