@@ -734,7 +734,7 @@ jobs:
       fix-permissions: true
     command: >-
       /code/screen.py --input '{{ inputFile }}'
-      --queries '{{ queries }}'
+      --queries-file '{{ queries }}'
       --output '{{ outputFileName }}'
       {% if headerInputs is defined %}--read-header{% endif %}
       {% if headerQueries is defined %}--queries-read-header{% endif %}
@@ -782,7 +782,7 @@ jobs:
             mime-types:
             - squonk/x-smiles
             - text/csv
-            type: molecules
+            type: molecules-smi
       outputs:
         type: object
         properties:
