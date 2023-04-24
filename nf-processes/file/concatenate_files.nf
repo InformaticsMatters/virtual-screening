@@ -16,6 +16,8 @@ process concatenate_files {
     path params.outputfile optional params.optional
 
     """
+    DIR=\$(dirname "${params.outputfile}")
+    mkdir -p \$DIR
     ls ${params.glob} | xargs cat >> ${params.outputfile}
     """
 }
