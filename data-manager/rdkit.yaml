@@ -440,7 +440,7 @@ jobs:
             - chemical/x-mdl-sdfile
             - squonk/x-smiles
             - text/csv
-            type: file
+            type: molecules-smi
       outputs:
         type: object
         properties:
