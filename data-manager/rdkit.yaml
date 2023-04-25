@@ -914,27 +914,10 @@ jobs:
             title: Number of bits for Morgan bit vector
             type: integer
     tests:
-      smiles-execution:
-        inputs:
-          inputFile: data/100.smi
-          queries: 'O=C(CCc1c[nH]c2ccccc12)OCc3ccccc3\nCOCN1C(=O)NC(C)(C)C1=O'
-        options:
-          outputFileName: foo/screened.smi
-          descriptor: rdkit
-          metric: tanimoto
-          threshold: 0.95
-          simIndex: 3
-        checks:
-          exitCode: 0
-          outputs:
-          - name: foo/screened.smi
-            checks:
-            - exists: true
-            - lineCount: 2
       file-execution:
         inputs:
           inputFile: data/100.smi
-          queries: 'file://data/queries-2.smi'
+          queries: 'data/queries-2.smi'
         options:
           outputFileName: foo/screened.smi
           descriptor: rdkit
