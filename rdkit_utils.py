@@ -99,10 +99,11 @@ class SdfReader:
                 else:
                     try:
                         mol = next(r)
-                        names = mol.GetPropNames()
-                        for name in names:
-                            if name not in self.field_names:
-                                self.field_names.append(name)
+                        if mol:
+                            names = mol.GetPropNames()
+                            for name in names:
+                                if name not in self.field_names:
+                                    self.field_names.append(name)
                     except StopIteration:
                         break
 
