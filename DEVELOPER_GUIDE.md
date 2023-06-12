@@ -5,4 +5,4 @@
 
 ---
 
-[creating-new-jobs]: https://informaticsmatters.gitlab.io/mini-apps-data-tier/0-7/creating-new-jobs.html
+[creating-new-jobs]: https://informaticsmatters.gitlab.io/squonk2-data-manager/1-1/creating-new-jobs.html
