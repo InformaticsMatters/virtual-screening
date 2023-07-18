@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.10.3
+FROM continuumio/miniconda3:22.11.1
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -15,11 +15,11 @@ ENV PYTHONUNBUFFERED=1
 ENV HOME=/code
 WORKDIR ${HOME}
 
-COPY fn_*.py utils.py ./
-
 # conda install our requirements, including RDKit and Neo4j drivers
-RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 neo4j-python-driver=4.4.1 &&\
+RUN conda install -y -c conda-forge python=3.10 pip=21.1.1 rdkit neo4j-python-driver=4.4.1 &&\
   pip install im-standardize-molecule==0.1.0 &&\
   pip install im-data-manager-job-utilities==1.0.1 &&\
   conda init bash
+
+COPY fn_*.py utils.py ./
 

@@ -5,6 +5,16 @@ kind-version: '2021.1'
 name: Fragment Network search tools
 collection: im-fragment-network
 
+test-groups:
+- name: fragnet-search
+  compose:
+    file: docker-compose-fns.yaml
+    delay-seconds: 10
+  environment:
+  - NEO4J_USERNAME: neo4j
+  - NEO4J_PASSWORD: test123
+  - NEO4J_SERVER: bolt://graph:7687
+
 jobs:
   fragment-network-expand:
     name: Fragment network expansion
@@ -102,6 +112,26 @@ jobs:
             title: Permitted increase in ring atom count
             type: integer
             minimum: 1
+    tests:
+      simple-expand:
+        run-groups:
+        - name: fragnet-search
+          ordinal: 1
+        environment:
+        - NEO4J_USERNAME
+        - NEO4J_PASSWORD
+        - NEO4J_SERVER
+        options:
+          smiles: c1ccco1
+          hops: 1
+          outputFile: foo.smi
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo.smi
+            checks:
+            - exists: true
+            - lineCount: 1180
 
   fragment-network-find-synthons:
     name: Fragment network find synthons
@@ -167,6 +197,26 @@ jobs:
             type: string
             default: synthons.smi
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.smi$"
+    tests:
+      simple-find-synthons:
+        run-groups:
+        - name: fragnet-search
+          ordinal: 2
+        environment:
+        - NEO4J_USERNAME
+        - NEO4J_PASSWORD
+        - NEO4J_SERVER
+        options:
+          smiles: c1coc(CNc2nc3ccccc3[nH]2)c1
+          hops: 1
+          outputFile: foo.smi
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo.smi
+            checks:
+            - exists: true
+            - lineCount: 10
 
   fragment-network-synthon-expansion:
     name: Fragment network expansion
@@ -270,3 +320,24 @@ jobs:
             title: Max ring atom count
             type: integer
             minimum: 1
+    tests:
+      simple-synthon-expansion:
+        run-groups:
+        - name: fragnet-search
+          ordinal: 3
+        environment:
+        - NEO4J_USERNAME
+        - NEO4J_PASSWORD
+        - NEO4J_SERVER
+        options:
+          smiles: c1ccco1
+          synthon: "[Xe]C1C=CCCC1"
+          hops: 2
+          outputFile: foo.smi
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo.smi
+            checks:
+            - exists: true
+            - lineCount: 54
