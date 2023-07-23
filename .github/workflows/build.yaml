@@ -24,8 +24,9 @@ on:
     branches:
     - 'master'
   schedule:
-  # Build daily at 6:01am...
-  - cron: '1 6 * * *'
+  # The build is time-consuming.
+  # Build On Sundays (0) at 6:01am...
+  - cron: '1 6 * * 0'
 
 jobs:
   build:
