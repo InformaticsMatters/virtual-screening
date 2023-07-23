@@ -2,6 +2,7 @@ molecules
 misc
 work
 outputs
+venv
 **.pyc
 **.DS_Store
 __pycache__

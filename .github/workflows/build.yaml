@@ -23,17 +23,21 @@ on:
   pull_request:
     branches:
     - 'master'
+  schedule:
+  # The build is time-consuming.
+  # Build On Sundays (0) at 6:01am...
+  - cron: '1 6 * * 0'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: '3.10'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
