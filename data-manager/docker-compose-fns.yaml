@@ -1,0 +1,15 @@
+---
+version: '2.4'
+
+networks:
+  jote:
+services:
+  graph:
+    image: informaticsmatters/fragnet-test:3.5.25-xchem-combi-sample-2021-02
+    networks:
+    - jote
+    environment:
+      GRAPH_PASSWORD: test123
+    ports:
+    - "7474:7474"
+    - "7687:7687"
