@@ -801,7 +801,8 @@ jobs:
       project-directory: /data
       working-directory: /data
       type: nextflow
-      memory: 5Gi
+      memory: 1Gi
+      #cores: 250m
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
@@ -818,13 +819,14 @@ jobs:
       -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
     variables:
       order:
-        options:
-        - resultsDir
-        - outputFile
+        inputs:
         - ligandsSDF
         - proteinMOL2
         - prmFile
         - asFile
+        options:
+        - resultsDir
+        - outputFile
         - numDockings
         - mode
       inputs:

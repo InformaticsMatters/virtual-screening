@@ -60,11 +60,12 @@ include { concatenate_files as collect_failed } from './nf-processes/file/concat
 */
 
 
-def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
 dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+def curr_t() { dateFormat.format(new java.util.Date()) }
 int splits = 0
 
-def now = dateFormat.format(new java.util.Date())
+def now = curr_t()
 def wrkflw = 'rdock_docking'
 log.info("$now # PROGRESS -START- $wrkflw:split_sdf 1")
 
@@ -86,7 +87,7 @@ workflow rdock_docking {
 
     split_sdf_count = 0
     split_sdf.out.flatten().subscribe {
-        now = dateFormat.format(new java.util.Date())
+        now = curr_t()
         if (split_sdf_count == 0) {
              log.info("$now # PROGRESS -DONE- $wrkflw:split_sdf 1")
         }
@@ -99,17 +100,17 @@ workflow rdock_docking {
     rdock.out[2].subscribe {
         cost += new Integer(it)
         rdock_count += 1
-        now = dateFormat.format(new java.util.Date())
+        now = curr_t()
         log.info("$now # INFO -COST- $cost $rdock_count")
         log.info("$now # PROGRESS -DONE- $wrkflw:rdock $rdock_count")
-        log.info("$now # PROGRESS -START- $wrkflw:collect_results $rdock_count")
+        log.info("$now # PROGRESS -START- $wrkflw:collect_results 1")
     }
     collect_results.out.subscribe {
-        now = dateFormat.format(new java.util.Date())
+        now = curr_t()
         log.info("$now # PROGRESS -DONE- $wrkflw:collect_results 1")
     }
     collect_failed.out.subscribe {
-        now = dateFormat.format(new java.util.Date())
+        now = curr_t()
         log.info("$now # PROGRESS -DONE- $wrkflw:collect_failed 1")
     }
 
