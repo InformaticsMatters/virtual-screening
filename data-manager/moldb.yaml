@@ -150,7 +150,7 @@ jobs:
         - POSTGRES_DATABASE
         options:
           table: enumeration
-          count: 523
+          count: 514
         checks:
           exitCode: 0
       conformer:

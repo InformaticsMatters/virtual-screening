@@ -8,6 +8,12 @@ version: '3.0'
 
 services:
 
+  rdkit-base:
+    build:
+      context: .
+      dockerfile: Dockerfile-rdkit-base
+    image: informaticsmatters/vs-rdkit-base:${IMAGE_TAG:-latest}
+
   prep:
     build:
       context: .

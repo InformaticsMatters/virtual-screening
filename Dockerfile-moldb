@@ -1,26 +1,23 @@
-FROM continuumio/miniconda3:4.10.3
+FROM informaticsmatters/vs-rdkit-base:latest
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
 #           Consequently we cannot know in advance the user or group id
-#           for execution, and so we must ensure the code runs
-#           as any user.
-
-RUN apt-get -y update &&\
-  apt-get -y install procps &&\
-  apt-get clean
-
-ENV PYTHONUNBUFFERED=1
+#           for execution, and so we must ensure the code runs as any user.
 
 ENV PYTHONPATH=/code
 ENV HOME=/code
 WORKDIR ${HOME}
 
-# conda install our requirements, including RDKit and SQLAlchemy
-RUN conda install -y -c conda-forge pip=21.1.1 rdkit=2021.03.5 sqlalchemy=1.4 psycopg2=2.9 &&\
-  pip install im-standardize-molecule==0.1.0 &&\
-  pip install im-data-manager-job-utilities==1.0.1 &&\
-  conda init bash
+# gcc libpq-dev are needed for psycopg2
+RUN apt-get update && apt-get install -y gcc libpq-dev &&\
+  apt-get clean
+
+# install our requirements. RDKit is already present in the base container.
+RUN pip install sqlalchemy==1.4.49\
+    psycopg2-binary==2.9.6\
+    im-standardize-molecule==0.1.0\
+    im-data-manager-job-utilities==1.0.1
 
 COPY *.py site_substructures.smarts ./
 COPY moldb/* ./moldb/

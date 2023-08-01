@@ -1,4 +1,4 @@
-FROM informaticsmatters/vs-rdkit-base:latest
+FROM python:3.10.12-slim-bullseye
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -6,15 +6,13 @@ FROM informaticsmatters/vs-rdkit-base:latest
 #           for execution, and so we must ensure the code runs
 #           as any user.
 
-RUN apt-get -y install git &&\
+RUN apt-get -y update &&\
+  apt-get -y install procps &&\
   apt-get clean
 
-ENV PYTHONPATH=/code
-ENV HOME=/code
-WORKDIR ${HOME}
+ENV PYTHONUNBUFFERED=1
 
-RUN pip install wheel six &&\
-  pip install im-data-manager-job-utilities==1.1.1\
-  git+https://github.com/oddt/oddt.git@master
+# pip install RDKit
+RUN pip install rdkit==2023.3.2
 
-COPY *.py ./
+

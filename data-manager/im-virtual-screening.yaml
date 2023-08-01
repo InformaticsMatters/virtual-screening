@@ -802,7 +802,7 @@ jobs:
       working-directory: /data
       type: nextflow
       memory: 1Gi
-      #cores: 250m
+      cores: 250m
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
