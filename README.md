@@ -11,6 +11,6 @@ The tools can be used *standalone*, but many are also packaged up as Squonk2 *jo
 More information can be found in the following docs:
 
 * [User guide](USER_GUIDE.md)
-* [Developer guide](DEVELOPER_GUIDE.md)
+* [Developer guide](https://informaticsmatters.gitlab.io/squonk2-data-manager/1-1/creating-new-jobs.html)
 
 These tools are available under the [Apache2.0 license](LICENSE).
