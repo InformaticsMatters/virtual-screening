@@ -1,4 +1,14 @@
 #!/bin/bash
+#
+# Filters a SD-file, sorting within groups of molecules to get the best withing the group, then sorts those best
+# ones and optionally takes the top n records.
+#
+# Usage (requires the rdock binaries to be present):
+#   ./rdock_filter_sdf_group.sh results1/results_rdock.sdf results1/results_sorted.sdf SCORE false 15
+#
+# Usage with Docker:
+#   docker run -it --rm -v $PWD:$PWD -w $PWD -u 1000:1000 informaticsmatters/vs-rdock:latest \
+#   /code/rdock_filter_sdf_group.sh results1/results_rdock.sdf results1/results_sorted.sdf SCORE false 15
 
 set -e
 

@@ -148,7 +148,8 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
 
         mol, smi, id, props = t
         if count == 0 and write_header:
-            headers = rdkit_utils.generate_header_values(extra_field_names, len(props), calc_field_names)
+            headers = rdkit_utils.generate_header_values(
+                reader.get_mol_field_name(), reader.field_names, len(props), calc_field_names)
             writer.write_header(headers)
 
         count += 1

@@ -53,7 +53,6 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
         writer = rdkit_utils.create_writer(output, extra_field_names=extra_field_names, calc_prop_names=calc_prop_names,
                                            delimiter=delimiter)
 
-
     num_outputs = 0
     count = 0
     while True:
@@ -65,7 +64,8 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
         mol, smi, id, props = t
 
         if count == 1 and write_header:
-            headers = rdkit_utils.generate_header_values(extra_field_names, len(props), calc_prop_names)
+            headers = rdkit_utils.generate_header_values(
+                reader.get_mol_field_name(), reader.field_names, len(props), calc_prop_names)
             if output:
                 writer.write_header(headers)
             else:

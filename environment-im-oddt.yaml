@@ -3,8 +3,12 @@ name: im-vs-oddt
 channels:
   - conda-forge
 dependencies:
-  - pip=21.1.1
-  - rdkit=2021.03.5
+  - python=3.10
+  - pip=23.2.1
+  - rdkit=2023.03.3
+  - mdtraj=1.9.9
+  - six=1.16.0
+  #- oddt
   - pip:
     - im-data-manager-job-utilities==1.0.1
-    - git+https://github.com/oddt/oddt.git@master
+    #- git+https://github.com/oddt/oddt.git@master

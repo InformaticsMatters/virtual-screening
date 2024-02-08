@@ -111,6 +111,8 @@ class SdfReader:
         self.reader = self.create_reader(input)
         self.id_col = id_col
 
+    def get_mol_field_name(self):
+        return None
 
     @staticmethod
     def create_reader(input):
@@ -161,13 +163,19 @@ class SmilesReader:
         else:
             self.id_col = int(id_col)
         self.field_names = None
-        # skip header lines
+        # read header line
         if read_header:
             line = self.reader.readline()
             tokens = self.tokenize(line)
             self.field_names = []
             for token in tokens:
                 self.field_names.append(token.strip())
+
+    def get_mol_field_name(self):
+        if self.field_names:
+            return self.field_names[0]
+        else:
+            return None
 
     def tokenize(self, line):
         line = line.strip()
@@ -198,11 +206,10 @@ class SmilesReader:
                 if i != 0:
                     props.append(token)
                     if mol:
-                        if self.field_names:
+                        if self.field_names and len(self.field_names) > i:
                             mol.SetProp(self.field_names[i], token)
                         else:
                             mol.SetProp('field' + str(i), token)
-
 
             t = (mol, smi, id, props)
             return t
@@ -223,11 +230,20 @@ class SmilesReader:
         self.reader.close()
 
 
-def generate_header_values(extra_field_names, num_orig_props, calc_prop_names):
-    headers = ['smiles']
-    if extra_field_names:
-        headers.extend(extra_field_names)
+def generate_header_values(mol_field_name, field_names, num_orig_props, calc_prop_names):
+    headers = []
+    if field_names:
+        if mol_field_name:
+            if mol_field_name != field_names[0]:
+                headers.append(mol_field_name)
+        else:
+            headers.append('smiles')
+        headers.extend(field_names)
     else:
+        if mol_field_name:
+            headers.append(mol_field_name)
+        else:
+            headers.append('smiles')
         for i in range(num_orig_props):
             headers.append('field' + str(i + 2))
     headers.extend(calc_prop_names)
@@ -466,6 +482,12 @@ def rdk_mol_supplier(input):
 
 
 def fragment(mol, mode):
+    """
+    Generate the largest fragment in the molecule e.g. typically a desalt operation
+    :param mol: The molecule to fragment
+    :param mode: The strategy for picking the largest (mw or hac)
+    :return:
+    """
     frags = Chem.GetMolFrags(mol, asMols=True)
 
     if len(frags) == 1:
@@ -483,7 +505,7 @@ def fragment(mol, mode):
                     biggest_mol = frag
                     biggest_index = i
                 i+=1
-            utils.log("Chose fragment", biggest_index, "from", len(frags), "based on HAC")
+            # utils.log("Chose fragment", biggest_index, "from", len(frags), "based on HAC")
         elif mode == 'mw':
             biggest_mw = 0
             for frag in frags:
@@ -493,7 +515,7 @@ def fragment(mol, mode):
                     biggest_mol = frag
                     biggest_index = i
                 i+=1
-            utils.log("Chose fragment", biggest_index, "from", len(frags), "based on MW")
+            # utils.log("Chose fragment", biggest_index, "from", len(frags), "based on MW")
         else:
             raise ValueError('Invalid fragment mode:',mode)
 

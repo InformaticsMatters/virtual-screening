@@ -125,7 +125,7 @@ nextflow run rdock-docking.nf\
   --prmfile docking.prm\
   --asfile docking.as\
   --num_dockings 5\
-  --publishDir results
+  --publish_dir results
 ```
 We use `--num_dockings 5` to speed things up. A real run would typically use 25-50 dockings for each candidate.
 
