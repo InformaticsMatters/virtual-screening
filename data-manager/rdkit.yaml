@@ -382,7 +382,7 @@ jobs:
     name: Molecular property calculations
     description: >-
       Calculates molecular properties using RDKit
-    version: '1.0.1'
+    version: '1.0.0'
     category: molecular properties
     keywords:
     - rdkit
