@@ -28,7 +28,7 @@ on:
   - cron: '1 6 * * *'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -46,9 +46,15 @@ jobs:
         jote --manifest manifest-fragnet-search.yaml --dry-run --allow-no-tests
         jote --manifest manifest-im-virtual-screening.yaml --dry-run
         jote --manifest manifest-silicos-it.yaml --dry-run --allow-no-tests
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Install docker compose (v2)
       uses: KengoTODA/actions-setup-docker-compose@v1
       with:
-        version: '2.25.5'
+        version: '2.24.0'
     - name: Build
       run: docker compose build
