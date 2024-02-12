@@ -1,0 +1,16 @@
+---
+version: '3.0'
+
+# Several of the targets in the Docker-compose file depend on these images,
+# but these ones rarely change so don't need to be built every time.
+#
+# Build and push manually when RDKit or whatever needs updating.
+
+
+services:
+
+  rdkit-base:
+    build:
+      context: .
+      dockerfile: Dockerfile-rdkit-base
+    image: informaticsmatters/vs-rdkit-base:${IMAGE_TAG:-latest}
