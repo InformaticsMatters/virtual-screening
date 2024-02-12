@@ -24,7 +24,6 @@ from dm_job_utilities.dm_log import DmLog
 from rdkit import Chem
 
 
-
 def process(input, outfile, mode='hac', delimiter=None, id_column=None, read_header=False, write_header=False,
             sdf_read_records=100, interval=0):
 
@@ -70,10 +69,14 @@ def process(input, outfile, mode='hac', delimiter=None, id_column=None, read_hea
             DmLog.emit_event("Failed to process record", count)
             continue
 
-        # calculate the molecular props
+        # deduplicate
         try:
-            biggest = rdkit_utils.fragment(mol, mode)
-            cann_smi = Chem.MolToSmiles(biggest)
+            if mode == 'none':
+                biggest = mol
+                cann_smi = smi
+            else:
+                biggest = rdkit_utils.fragment(mol, mode)
+                cann_smi = Chem.MolToSmiles(biggest)
             if cann_smi in canon_smiles:
                 DmLog.emit_event("Molecule {} is duplicate of molecule {}".format(count, canon_smiles.get(cann_smi)))
                 duplicates += 1
@@ -113,8 +116,8 @@ def main():
     parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
     parser.add_argument('--sdf-read-records', default=100, type=int,
                         help="Read this many SDF records to determine field names")
-    parser.add_argument('-m', '--mode', choices=['hac', 'mw'], default='hac',
-                        help='Strategy for picking largest fragment (mw or hac')
+    parser.add_argument('-m', '--mode', choices=['hac', 'mw', 'none'], default='hac',
+                        help='Strategy for picking largest fragment (mw or hac or none')
 
     parser.add_argument("--interval", type=int, help="Reporting interval")
 

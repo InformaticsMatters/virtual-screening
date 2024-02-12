@@ -669,12 +669,13 @@ jobs:
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
           mode:
-            title: Calculate heavy atom count
+            title: Biggest fragment strategy
             type: string
             default: hac
             enum:
             - hac
             - mw
+            - none
           readHeader:
             title: Input has header line (text formats only)
             type: boolean
