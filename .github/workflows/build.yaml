@@ -46,5 +46,7 @@ jobs:
         jote --manifest manifest-fragnet-search.yaml --dry-run --allow-no-tests
         jote --manifest manifest-im-virtual-screening.yaml --dry-run
         jote --manifest manifest-silicos-it.yaml --dry-run --allow-no-tests
+    - name: Install docker compose (v2)
+      uses: KengoTODA/actions-setup-docker-compose@v1
     - name: Build
-      run: docker-compose build
+      run: docker compose build
