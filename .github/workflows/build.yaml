@@ -48,6 +48,7 @@ jobs:
         jote --manifest manifest-silicos-it.yaml --dry-run --allow-no-tests
 
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

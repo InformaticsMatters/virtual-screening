@@ -38,9 +38,13 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Install docker compose (v2)
+      uses: KengoTODA/actions-setup-docker-compose@v1
+      with:
+        version: '2.24.0'
     - name: Build and Push
       run: |
-        docker-compose build
-        docker-compose push
+        docker compose build
+        docker compose push
       env:
         IMAGE_TAG: stable
