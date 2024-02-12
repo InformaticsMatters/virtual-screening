@@ -48,5 +48,7 @@ jobs:
         jote --manifest manifest-silicos-it.yaml --dry-run --allow-no-tests
     - name: Install docker compose (v2)
       uses: KengoTODA/actions-setup-docker-compose@v1
+      with:
+        version: '2.25.5'
     - name: Build
       run: docker compose build
