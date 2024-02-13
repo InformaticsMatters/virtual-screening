@@ -5,6 +5,12 @@ version: '3.0'
 #
 # IMAGE_TAG=1.0.0 docker-compose build
 # IMAGE_TAG=1.0.0 docker-compose push
+#
+# ----
+# NOTE: This file is for copnvenience, it does not feature in the CI build process.
+# ----  The CI Build (GitHib's Actions) DOES NOT use Docker Compose.
+#       It builds each image individually and pushes it to Docker Hub.
+#       If you add or remove entries here, update the repository's workflow files.
 
 services:
 
@@ -19,7 +25,7 @@ services:
       context: .
       dockerfile: Dockerfile-nextflow
     image: informaticsmatters/vs-nextflow:${IMAGE_TAG:-latest}
-    
+
   rdock:
     build:
       context: .
@@ -67,4 +73,3 @@ services:
       context: .
       dockerfile: Dockerfile-dmpk
     image: informaticsmatters/vs-dmpk:${IMAGE_TAG:-latest}
-
