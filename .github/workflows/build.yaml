@@ -117,7 +117,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
-      run: docker build -f Dockerfile-jaqpot
+      run: docker build -f Dockerfile-jaqpot .
 
   build-moldb:
     needs: test
@@ -126,7 +126,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
-      run: docker build -f Dockerfile-moldb
+      run: docker build -f Dockerfile-moldb .
 
   build-dmpk:
     needs: test
@@ -135,4 +135,4 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
-      run: docker build -f Dockerfile-dmpk
+      run: docker build -f Dockerfile-dmpk .
