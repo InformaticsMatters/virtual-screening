@@ -46,6 +46,7 @@ jobs:
         jote --manifest manifest-fragnet-search.yaml --dry-run --allow-no-tests
         jote --manifest manifest-im-virtual-screening.yaml --dry-run
         jote --manifest manifest-silicos-it.yaml --dry-run --allow-no-tests
+        jote --manifest manifest-dmpk.yaml --dry-run
 
   build-prep:
     needs: test
