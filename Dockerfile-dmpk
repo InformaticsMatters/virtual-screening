@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.10.3
+FROM python:3.10.12-slim-bullseye
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -16,10 +16,7 @@ ENV PYTHONPATH=/code
 ENV HOME=/code
 WORKDIR ${HOME}
 
+RUN pip install matplotlib==3.7.1 im-data-manager-job-utilities==1.0.1
+
 COPY utils.py ./
 COPY dmpk/*.py ./dmpk/
-
-RUN conda install -y -c conda-forge matplotlib=3.7.1 &&\
-  conda init bash &&\
-  pip install im-data-manager-job-utilities==1.0.1
-
