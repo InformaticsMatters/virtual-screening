@@ -23,7 +23,7 @@ from jaqpotpy import Jaqpot
 
 
 def execute_jaqpot_model(input, output, model_id, api_key, filter=False, threshold=None, descending=False, delimiter=None,
-                         id_column=None, read_header=False, write_header=False, sdf_read_records=100, interval=0):
+                         id_column=None, read_header=False, write_header=False, read_records=100, interval=0):
 
     from jaqpotpy.cfg import config
     config.verbose = False
@@ -43,7 +43,7 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
     DmLog.emit_event("Model title:", model_title, ", property name", model_name, ", type:", model_type)
 
     reader = rdkit_utils.create_reader(input, delimiter=delimiter, read_header=read_header,
-                                       id_column=id_column, sdf_read_records=sdf_read_records)
+                                       id_column=id_column, read_records=read_records)
     extra_field_names = reader.get_extra_field_names()
 
     calc_prop_names = get_calc_prop_names(molmod, model_name)
@@ -55,6 +55,7 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
 
     num_outputs = 0
     count = 0
+    id_col_type, id_col_value = utils.is_type(id_column, int)
     while True:
         t = reader.read()
         # break if no more data to read
@@ -64,8 +65,15 @@ def execute_jaqpot_model(input, output, model_id, api_key, filter=False, thresho
         mol, smi, id, props = t
 
         if count == 1 and write_header:
-            headers = rdkit_utils.generate_header_values(
-                reader.get_mol_field_name(), reader.field_names, len(props), calc_prop_names)
+
+            headers = rdkit_utils.generate_headers(
+                id_col_type,
+                id_col_value,
+                reader.get_mol_field_name(),
+                reader.field_names,
+                calc_prop_names,
+                False)
+
             if output:
                 writer.write_header(headers)
             else:
@@ -187,8 +195,8 @@ def main():
     parser.add_argument('--read-header', action='store_true',
                         help="Read a header line with the field names when reading .smi or .txt")
     parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
-    parser.add_argument('--sdf-read-records', default=100, type=int,
-                        help="Read this many SDF records to determine field names")
+    parser.add_argument('--read-records', default=100, type=int,
+                        help="Read this many records to determine the fields that are present")
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
@@ -211,7 +219,7 @@ def main():
                          filter=args.filter, threshold=args.threshold, descending=args.descending,
                          delimiter=delimiter, id_column=args.id_column,
                          read_header=args.read_header, write_header=args.write_header,
-                         sdf_read_records=args.sdf_read_records, interval=args.interval)
+                         read_records=args.read_records, interval=args.interval)
 
 
 if __name__ == "__main__":

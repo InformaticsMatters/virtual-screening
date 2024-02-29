@@ -1,0 +1,12 @@
+---
+name: im-mordred
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip=24.0
+  - rdkit=2023.09.5
+  - mordredcommunity=2.0.4
+  - pip:
+    - im-standardize-molecule==0.1.0
+    - im-data-manager-job-utilities==1.1.1

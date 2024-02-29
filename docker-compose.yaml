@@ -73,3 +73,9 @@ services:
       context: .
       dockerfile: Dockerfile-dmpk
     image: informaticsmatters/vs-dmpk:${IMAGE_TAG:-latest}
+
+  mordred:
+    build:
+      context: .
+      dockerfile: Dockerfile-mordred
+    image: informaticsmatters/mordred:${IMAGE_TAG:-latest}

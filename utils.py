@@ -144,3 +144,14 @@ def round_to_significant_number(val, sig):
     :return:
     """
     return round(val, sig - int(floor(log10(abs(val))))-1)
+
+
+def is_type(value, typ):
+    if value is not None:
+        try:
+            i = typ(value)
+            return 1, i
+        except:
+            return -1, value
+    else:
+        return 0, value

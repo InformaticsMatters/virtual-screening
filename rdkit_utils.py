@@ -16,6 +16,9 @@ import gzip
 from rdkit import Chem
 import utils
 
+ID_COL_NAME = "ID"
+SMILES_COL_NAME = "SMILES"
+
 class SdfWriter:
 
     def __init__(self, outfile, prop_names):
@@ -67,6 +70,8 @@ class SmilesWriter:
 
     def write(self, smi, mol, id, existing_props, new_props, smiles_prop_name=None):
         values = [smi]
+        if id is not None:
+            values.append(id)
         for prop in existing_props:
             if prop is not None:
                 values.append(prop)
@@ -90,6 +95,8 @@ class SdfReader:
     def __init__(self, input, id_col, recs_to_read):
 
         self.field_names = []
+        if id_col == "_Name":
+            self.field_names.append(ID_COL_NAME)
         # read a number of records to determine the field names
         if recs_to_read:
             r = self.create_reader(input)
@@ -128,9 +135,14 @@ class SdfReader:
             mol = next(self.reader)
             smi = Chem.MolToSmiles(mol)
             if self.id_col:
-                id = mol.GetProp(self.id_col)
+                if mol.HasProp(self.id_col):
+                    id = mol.GetProp(self.id_col)
+                else:
+                    id = None
             else:
                 id = None
+            if self.id_col == "_Name":
+                props.append(id)
 
             for name in self.field_names:
                 if mol.HasProp(name):
@@ -152,24 +164,56 @@ class SdfReader:
 
 class SmilesReader:
 
-    def __init__(self, input, read_header, delimiter, id_col):
-        if input.endswith('.gz'):
-            self.reader = gzip.open(input, 'rt')
-        else:
-            self.reader = open(input, 'rt')
+    def __init__(self, input, read_header, delimiter, id_col, recs_to_read):
+        tmp_reader = self.create_reader(input)
         self.delimiter = delimiter
         if id_col is None:
             self.id_col = None
         else:
             self.id_col = int(id_col)
-        self.field_names = None
+
         # read header line
         if read_header:
-            line = self.reader.readline()
+            line = tmp_reader.readline()
             tokens = self.tokenize(line)
             self.field_names = []
             for token in tokens:
                 self.field_names.append(token.strip())
+        else:
+            self.field_names = [SMILES_COL_NAME]
+            if self.id_col is not None:
+                if self.id_col == 1:
+                    self.field_names.append(ID_COL_NAME)
+                elif self.id_col > 1:
+                    for i in range(1, self.id_col):
+                        self.field_names.append(None)
+                    self.field_names.append(ID_COL_NAME)
+
+        max_num_tokens = 0
+        for i in range(0, recs_to_read):
+            line = tmp_reader.readline()
+            if not line:
+                break
+            else:
+                num_tokens = len(self.tokenize(line))
+                if num_tokens > max_num_tokens:
+                    max_num_tokens = num_tokens
+
+        if max_num_tokens > len(self.field_names):
+            for i in range(len(self.field_names), max_num_tokens):
+                self.field_names.append('field' + str(i + 1))
+
+        # now create the read reader and discard the header
+        self.reader = self.create_reader(input)
+        if read_header:
+            line = self.reader.readline()
+
+    @staticmethod
+    def create_reader(input):
+        if input.endswith('.gz'):
+            return  gzip.open(input, 'rt')
+        else:
+            return open(input, 'rt')
 
     def get_mol_field_name(self):
         if self.field_names:
@@ -195,6 +239,7 @@ class SmilesReader:
             smi = tokens[0]
             if self.id_col:
                 id = tokens[self.id_col]
+                del tokens[self.id_col]
             else:
                 id = None
 
@@ -224,33 +269,65 @@ class SmilesReader:
                     results.append(name)
             return results
         else:
-            return None
+            return []
 
     def close(self):
         self.reader.close()
 
 
-def generate_header_values(mol_field_name, field_names, num_orig_props, calc_prop_names):
+def generate_headers(
+        id_col_type,
+        id_col_value,
+        mol_field_name: str,
+        field_names: list[str],
+        calc_prop_names:
+        list[str],
+        omit_fields: bool):
+    """
+    Generate the headers for when writing a tab or comma separated files
+    
+    :param id_col_type: The type of ID column that was specified.
+        -1 String for the SDF field name
+        +1 int for column index for TAB
+        0 for None (no ID col)
+    :param id_col_value: The value specified for the ID column
+        -1: the string specified
+        +1: the value specified as an int
+        0: None
+    :param mol_field_name: The name of the mol column, or None for SDF
+    :param field_names: The names of the fields that were in the input that will be added to the input
+    :param calc_prop_names: The names of the new fields to be added
+    :param omit_fields: Do not add the input fields (except for the mol and ID)
+    :return: List of the header names 
+    """
     headers = []
-    if field_names:
-        if mol_field_name:
-            if mol_field_name != field_names[0]:
-                headers.append(mol_field_name)
+    mol_header = mol_field_name if mol_field_name else SMILES_COL_NAME
+
+    if id_col_type == 0:  # id_col was None
+        if omit_fields or mol_header not in field_names:
+            headers.append(mol_header)
+    elif id_col_type == 1:  # was an int so CSV
+        if omit_fields or mol_header not in field_names:
+            headers.append(mol_header)
+        if omit_fields:
+            headers.append(field_names[id_col_value])
+    else:  # id_col was string, so SDF field name or _Name
+        headers.append(mol_field_name if mol_field_name else SMILES_COL_NAME)
+        if id_col_value == '_Name':
+            id_name = ID_COL_NAME
         else:
-            headers.append('smiles')
+            id_name = id_col_value
+        if id_name not in field_names or omit_fields:
+            headers.append(id_name)
+
+    if not omit_fields:
         headers.extend(field_names)
-    else:
-        if mol_field_name:
-            headers.append(mol_field_name)
-        else:
-            headers.append('smiles')
-        for i in range(num_orig_props):
-            headers.append('field' + str(i + 2))
+
     headers.extend(calc_prop_names)
     return headers
 
 
-def create_reader(input, type=None, id_column=None, sdf_read_records=100, read_header=False, delimiter='\t'):
+def create_reader(input, type=None, id_column=None, read_records=100, read_header=False, delimiter='\t'):
     if type is None:
         if input.endswith('.sdf') or input.endswith('.sdf.gz') or input.endswith('.sd') or input.endswith('.sd.gz'):
             type = 'sdf'
@@ -258,9 +335,9 @@ def create_reader(input, type=None, id_column=None, sdf_read_records=100, read_h
             type = 'smi'
 
     if type == 'sdf':
-        return SdfReader(input, id_column, sdf_read_records)
+        return SdfReader(input, id_column, read_records)
     elif type == 'smi':
-        return SmilesReader(input, read_header, delimiter, id_column)
+        return SmilesReader(input, read_header, delimiter, id_column, read_records)
     else:
         raise ValueError('Unexpected file type', type)
 
@@ -568,3 +645,20 @@ def fragmentAndFingerprint(reader, mols, data, fps, descriptor, fragmentMethod='
             fps.append(d)
             continue
     return errors
+
+
+def check_molecules_are_3d(input, num_to_check=10):
+    if input.endswith('.gz'):
+        suppl = Chem.ForwardSDMolSupplier(gzip.open(input))
+    else:
+        suppl = Chem.ForwardSDMolSupplier(input)
+
+    count = 0
+    for mol in suppl:
+        conf = mol.GetConformer()
+        if conf is None or not conf.Is3D():
+            return False
+        count += 1
+        if count == num_to_check:
+            break
+    return True

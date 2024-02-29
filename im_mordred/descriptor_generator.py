@@ -14,52 +14,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse, datetime, time, sys, os
 
-import argparse, os, gzip, time
-import traceback
+from mordred import Calculator, descriptors
+
+from rdkit import Chem
 
 import utils, rdkit_utils
 from dm_job_utilities.dm_log import DmLog
 
-from rdkit import Chem
 
+def run(input, outfile, mode='hac', include_3d=False, delimiter=None, id_column=None, omit_fields=False,
+        read_header=False, write_header=False,
+        read_records=50, interval=1000):
 
-def process(input, outfile, mode='hac', delimiter=None, id_column=None, read_header=False, write_header=False,
-            read_records=100, interval=0):
+    if include_3d:
+        if not (input.endswith('.sdf') or input.endswith('.sdf.gz')):
+            DmLog.emit_event('If calculating 3D descriptors input must be a SDF with 3D molecules')
+            exit(1)
+        if not rdkit_utils.check_molecules_are_3d(input):
+            DmLog.emit_event('Molecules do not seem to have 3D coordinates')
+            exit(1)
 
     utils.expand_path(outfile)
 
+    calc = Calculator(descriptors, ignore_3D=not include_3d)
+
     count = 0
     errors = 0
-    duplicates = 0
+
+    t0 = time.time()
 
     # setup the reader
     reader = rdkit_utils.create_reader(input, id_column=id_column, read_records=read_records,
                                        read_header=read_header, delimiter=delimiter)
     extra_field_names = reader.get_extra_field_names()
 
+    calc_field_names = [str(name) for name in calc.descriptors]
+    DmLog.emit_event("Calculating {} descriptors".format(len(calc_field_names)))
+
     # setup the writer
-    writer = rdkit_utils.create_writer(outfile, extra_field_names=extra_field_names,
+    writer = rdkit_utils.create_writer(outfile,
+                                       extra_field_names=extra_field_names,
+                                       calc_prop_names=calc_field_names,
                                        delimiter=delimiter)
 
-    # read the input records and write the output
-    canon_smiles = {}
     id_col_type, id_col_value = utils.is_type(id_column, int)
+
+    # read the input records and write the output
     while True:
         t = reader.read()
         # break if no more data to read
         if not t:
             break
-
         mol, smi, id, props = t
+
         if count == 0 and write_header:
             headers = rdkit_utils.generate_headers(
                 id_col_type,
                 id_col_value,
                 reader.get_mol_field_name(),
                 reader.field_names,
-                [],
-                False)
+                calc_field_names,
+                omit_fields)
+
             writer.write_header(headers)
 
         count += 1
@@ -72,10 +90,14 @@ def process(input, outfile, mode='hac', delimiter=None, id_column=None, read_hea
 
         if not mol:
             errors += 1
-            DmLog.emit_event("Failed to process record", count)
+            DmLog.emit_event("Failed to read molecule for record", count)
             continue
 
-        # deduplicate
+        if omit_fields:
+            for name in mol.GetPropNames():
+                mol.ClearProp(name)
+            props = []
+
         try:
             if mode == 'none':
                 biggest = mol
@@ -83,37 +105,44 @@ def process(input, outfile, mode='hac', delimiter=None, id_column=None, read_hea
             else:
                 biggest = rdkit_utils.fragment(mol, mode)
                 cann_smi = Chem.MolToSmiles(biggest)
-            if cann_smi in canon_smiles:
-                DmLog.emit_event("Molecule {} is duplicate of molecule {}".format(count, canon_smiles.get(cann_smi)))
-                duplicates += 1
-                continue
-            else:
-                canon_smiles[cann_smi] = count
+
+            values = calc(biggest)
+
+        except KeyboardInterrupt:
+            utils.log('Interrupted')
+            sys.exit(0)
 
         except:
             errors += 1
             DmLog.emit_event('Failed to process record', count)
-            # traceback.print_exc()
             continue
 
-        # write the output
-        writer.write(smi, biggest, id, props, [])
+        writer.write(cann_smi, biggest, id, props, values)
 
-    writer.close()
-    reader.close()
-
-    return count, errors, duplicates
+    t1 = time.time()
+    utils.log('Processing took {} secs'.format(round(t1 - t0)))
 
 
 def main():
-    # Example usage:
-    #   ./rdkit_dedup.py -i data/11100.smi --outfile out.smi --delimiter tab --interval 10000
 
-    ### command line args definitions #########################################
+    # Example:
+    #   python -m im_mordred.descriptor_generator -i data/10.smi -o descriptors.smi -d tab
 
-    parser = argparse.ArgumentParser(description='RDKit deduplicate')
-    parser.add_argument('-i', '--input', required=True, help="Input file as SMILES or SDF")
-    parser.add_argument('-o', '--outfile', required=True, help="Output file as SMILES or SDF")
+    # ----- command line args definitions ---------------------------------------------
+
+    parser = argparse.ArgumentParser(description='Mordred 2D descriptors')
+    parser.add_argument('-i', '--input', required=True, help="Input file (.smi or .sdf)")
+    parser.add_argument('-o', '--output', default='descriptors2d.smi', help="Output file (.smi or .sdf")
+
+    parser.add_argument('-f', '--fragment-method', choices=['hac', 'mw', 'none'], default='hac',
+                        help='Strategy for picking largest fragment (mw or hac or none')
+
+    parser.add_argument('-3', '--include-3d', action='store_true',
+                        help="Include 3D descriptors (requires 3D molecules in SDF file)")
+
+    parser.add_argument('-k', '--omit-fields', action='store_true',
+                        help="Don't include fields from the input in the output")
+
     # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
     parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
     parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
@@ -122,31 +151,17 @@ def main():
     parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
     parser.add_argument('--read-records', default=100, type=int,
                         help="Read this many records to determine the fields that are present")
-    parser.add_argument('-m', '--mode', choices=['hac', 'mw', 'none'], default='hac',
-                        help='Strategy for picking largest fragment (mw or hac or none')
-
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
-    DmLog.emit_event("rdk_dedup.py: ", args)
+    DmLog.emit_event("descriptor_calc: ", args)
 
-    # special processing of delimiter to allow it to be set as a name
     delimiter = utils.read_delimiter(args.delimiter)
 
-    t0 = time.time()
-    count, errors, duplicates = process(args.input, args.outfile, mode=args.mode, delimiter=delimiter, id_column=args.id_column,
-                            read_header=args.read_header, write_header=args.write_header,
-                            read_records=args.read_records, interval=args.interval)
-    t1 = time.time()
-    # Duration? No less than 1 second?
-    duration_s = int(t1 - t0)
-    if duration_s < 1:
-        duration_s = 1
-
-    DmLog.emit_event('Processed {} records in {} seconds. {} errors. {} duplicates'.format(
-        count, duration_s, errors, duplicates))
-    # Emit final 'total' cost, replacing all prior costs
-    DmLog.emit_cost(count)
+    run(args.input, args.output, mode=args.fragment_method, include_3d=args.include_3d,
+        omit_fields=args.omit_fields ,delimiter=delimiter, id_column=args.id_column,
+        read_header=args.read_header, write_header=args.write_header,
+        read_records=args.read_records, interval=args.interval)
 
 
 if __name__ == "__main__":

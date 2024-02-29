@@ -37,7 +37,7 @@ calc_props = {
 
 
 def process(input, outfile, calcs, delimiter, id_column=None, read_header=False, write_header=False,
-            sdf_read_records=100, interval=0):
+            read_records=100, interval=0):
 
     utils.log('Using calculations:', calcs)
 
@@ -47,7 +47,7 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
     errors = 0
 
     # setup the reader
-    reader = rdkit_utils.create_reader(input, id_column=id_column, sdf_read_records=sdf_read_records,
+    reader = rdkit_utils.create_reader(input, id_column=id_column, read_records=read_records,
                                        read_header=read_header, delimiter=delimiter)
     extra_field_names = reader.get_extra_field_names()
 
@@ -57,6 +57,7 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
     writer = rdkit_utils.create_writer(outfile, extra_field_names=extra_field_names, calc_prop_names=calc_field_names,
                                        delimiter=delimiter)
 
+    id_col_type, id_col_value = utils.is_type(id_column, int)
     # read the input records and write the output
     while True:
         t = reader.read()
@@ -66,8 +67,14 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
 
         mol, smi, id, props = t
         if count == 0 and write_header:
-            headers = rdkit_utils.generate_header_values(
-                reader.get_mol_field_name(), reader.field_names, len(props), calc_field_names)
+            headers = rdkit_utils.generate_headers(
+                id_col_type,
+                id_col_value,
+                reader.get_mol_field_name(),
+                reader.field_names,
+                calc_field_names,
+                False)
+
             writer.write_header(headers)
 
         count += 1
@@ -131,7 +138,7 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
 
 def main():
     # Example usage:
-    #   ./rdkit_props.py -i data/100000.smi --outfile out.sdf -a --delimiter tab --interval 10000
+    #   ./rdkit_props.py -i data/1000.smi --outfile out.sdf -a --delimiter tab --interval 100
 
     ### command line args definitions #########################################
 
@@ -144,8 +151,8 @@ def main():
     parser.add_argument('--read-header', action='store_true',
                         help="Read a header line with the field names when reading .smi or .txt")
     parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
-    parser.add_argument('--sdf-read-records', default=100, type=int,
-                        help="Read this many SDF records to determine field names")
+    parser.add_argument('--read-records', default=100, type=int,
+                        help="Read this many records to determine the fields that are present")
 
     parser.add_argument('-a', '--all', action='store_true', help="Calculate all properties")
     for key in calc_props:
@@ -171,7 +178,7 @@ def main():
     t0 = time.time()
     count, errors = process(args.input, args.outfile, calcs_to_use, delimiter, id_column=args.id_column,
                             read_header=args.read_header, write_header=args.write_header,
-                            sdf_read_records=args.sdf_read_records, interval=args.interval, )
+                            read_records=args.read_records, interval=args.interval, )
     t1 = time.time()
     # Duration? No less than 1 second?
     duration_s = int(t1 - t0)

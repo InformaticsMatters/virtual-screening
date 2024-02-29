@@ -408,7 +408,7 @@ jobs:
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
-      {% if sdfReadRecords is defined %}--sdf-read-records '{{ sdfReadRecords }}'{% endif %}
+      {% if readRecords is defined %}--read-records '{{ readRecords }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
       --interval 50000
     variables:
@@ -428,7 +428,7 @@ jobs:
         - writeHeader
         - separator
         - idColumn
-        - sdfReadRecords
+        - readRecords
       inputs:
         type: object
         required:
@@ -570,8 +570,8 @@ jobs:
             title: Index (text) or name (SDF) to use for the ID field
             type: string
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
-          sdfReadRecords:
-            title: Number of SDF records to read field names
+          readRecords:
+            title: Number of records to read field names
             type: integer
             default: 100
     tests:
@@ -618,7 +618,7 @@ jobs:
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
-      {% if sdfReadRecords is defined %}--sdf-read-records '{{ sdfReadRecords }}'{% endif %}
+      {% if readRecords is defined %}--read-records '{{ readRecords }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
       --interval 50000
     variables:
@@ -630,7 +630,7 @@ jobs:
         - writeHeader
         - separator
         - idColumn
-        - sdfReadRecords
+        - readRecords
       inputs:
         type: object
         required:
@@ -695,8 +695,8 @@ jobs:
             title: Index (text) or name (SDF) to use for the ID field
             type: string
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
-          sdfReadRecords:
-            title: Number of SDF records to read field names
+          readRecords:
+            title: Number of records to read field names
             type: integer
             default: 100
     tests:
@@ -736,7 +736,7 @@ jobs:
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
-      {% if sdfReadRecords is defined %}--sdf-read-records '{{ sdfReadRecords }}'{% endif %}
+      {% if readRecords is defined %}--read-records '{{ readRecords }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
       --interval 50000
     variables:
@@ -747,7 +747,7 @@ jobs:
         - writeHeader
         - separator
         - idColumn
-        - sdfReadRecords
+        - readRecords
       inputs:
         type: object
         required:
@@ -811,8 +811,8 @@ jobs:
             type:
             - string
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
-          sdfReadRecords:
-            title: Number of SDF records to read field names
+          readRecords:
+            title: Number of records to read field names
             type: integer
             default: 100
     tests:
