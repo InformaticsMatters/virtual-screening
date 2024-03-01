@@ -15,5 +15,5 @@ RUN pip install pip install mordredcommunity==2.0.4 \
   im-standardize-molecule==0.1.0 \
   im-data-manager-job-utilities==1.1.1
 
-COPY im_mordred/descriptor_calc.py ./im_mordred/
+COPY im_mordred/descriptor_generator.py ./im_mordred/
 COPY utils.py rdkit_utils.py ./
