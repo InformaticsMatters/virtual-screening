@@ -23,8 +23,8 @@ jobs:
       fix-permissions: true
     command: >-
       python -m im_mordred.descriptor_generator -i '{{ inputFile }}' -o '{{ outputFile }}'
-      {% if fragment is defined %}-fragment-method {{ fragment }}{% endif %}
-      {% if calc3d is defined %}-include-3d {{ calc3d }}{% endif %}
+      {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
+      {% if calc3d is defined %}--include-3d {{ calc3d }}{% endif %}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
@@ -72,7 +72,7 @@ jobs:
             title: Output file name
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
-            default: descriptors2d.smi
+            default: mordred-descriptors.smi
           fragment:
             title: Fragment method
             type: string
