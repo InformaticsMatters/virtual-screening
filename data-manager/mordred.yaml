@@ -1,0 +1,136 @@
+---
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: Mordred descriptors
+collection: mordred
+
+jobs:
+  descriptor-generator:
+    name: 2D Mordred descriptor generation
+    description: >-
+      Generate Mordred descriptors for molecules
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - rdkit
+    - mordred
+    - descriptors
+    image:
+      name: informaticsmatters/mordred
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      python -m im_mordred.descriptor_generator -i '{{ inputFile }}' -o '{{ outputFile }}'
+      {% if fragment is defined %}-fragment-method {{ fragment }}{% endif %}
+      {% if calc3d is defined %}-include-3d {{ calc3d }}{% endif %}
+      {% if readHeader is defined and readHeader %}--read-header{% endif %}
+      {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
+      {% if readRecords is defined %}--read-records '{{ readRecords }}'{% endif %}
+      {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
+      --interval 10000
+    variables:
+      order:
+        options:
+        - outputFile
+        - fragment
+        - calc3d
+        - readHeader
+        - writeHeader
+        - separator
+        - idColumn
+        - readRecords
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+            default: descriptors2d.smi
+          fragment:
+            title: Fragment method
+            type: string
+            default: hac
+            enum:
+            - hac
+            - mw
+            - none
+          calc3d:
+            title: Calculate 3D descriptors
+            type: boolean
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          writeHeader:
+            title: Output has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          readRecords:
+            title: Number of records to read field names
+            type: integer
+            default: 100
+    tests:
+      execution-2d:
+        inputs:
+          inputFile: data/10.smi
+        options:
+          outputFile: foo/descriptors2d.smi
+          writeHeader: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/descriptors2d.smi
+            checks:
+            - exists: true
+            - lineCount: 11
+      execution-3d:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/descriptors3d.smi
+          writeHeader: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/descriptors3d.smi
+            checks:
+            - exists: true
+            - lineCount: 11
