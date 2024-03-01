@@ -30,7 +30,7 @@ jobs:
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
       {% if readRecords is defined %}--read-records '{{ readRecords }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
-      --interval 10000
+      --interval 1000
     variables:
       order:
         options:
