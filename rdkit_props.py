@@ -36,8 +36,17 @@ calc_props = {
 }
 
 
-def process(input, outfile, calcs, delimiter, id_column=None, read_header=False, write_header=False,
-            read_records=100, interval=0):
+def process(input,
+            outfile,
+            calcs,
+            delimiter,
+            id_column=None,
+            mol_column=0,
+            omit_fields=False,
+            read_header=False,
+            write_header=False,
+            read_records=100,
+            interval=0):
 
     utils.log('Using calculations:', calcs)
 
@@ -47,14 +56,22 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
     errors = 0
 
     # setup the reader
-    reader = rdkit_utils.create_reader(input, id_column=id_column, read_records=read_records,
-                                       read_header=read_header, delimiter=delimiter)
+    reader = rdkit_utils.create_reader(input,
+                                       id_column=id_column,
+                                       mol_column=mol_column,
+                                       read_records=read_records,
+                                       read_header=read_header,
+                                       delimiter=delimiter)
     extra_field_names = reader.get_extra_field_names()
 
     calc_field_names = [calc_props[s][0] for s in calcs]
 
     # setup the writer
-    writer = rdkit_utils.create_writer(outfile, extra_field_names=extra_field_names, calc_prop_names=calc_field_names,
+    writer = rdkit_utils.create_writer(outfile,
+                                       id_column=id_column,
+                                       mol_column=mol_column,
+                                       extra_field_names=extra_field_names,
+                                       calc_prop_names=calc_field_names,
                                        delimiter=delimiter)
 
     id_col_type, id_col_value = utils.is_type(id_column, int)
@@ -73,7 +90,7 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
                 reader.get_mol_field_name(),
                 reader.field_names,
                 calc_field_names,
-                False)
+                omit_fields)
 
             writer.write_header(headers)
 
@@ -127,6 +144,11 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
             DmLog.emit_event('Failed to process record', count)
             continue
 
+        if omit_fields:
+            for name in mol.GetPropNames():
+                mol.ClearProp(name)
+            props = []
+
         # write the output
         writer.write(smi, mol, id, props, values)
 
@@ -138,16 +160,23 @@ def process(input, outfile, calcs, delimiter, id_column=None, read_header=False,
 
 def main():
     # Example usage:
-    #   ./rdkit_props.py -i data/1000.smi --outfile out.sdf -a --delimiter tab --interval 100
+    #   ./rdkit_props.py -i data/1000.smi --outfile out.sdf -a --delimiter tab --id-column 1 --interval 100
+    #   ./rdkit_props.py -i data/1000.smi --outfile out.smi --write-header -a --delimiter tab --id-column 1 --interval 100
 
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Calc RDKit props')
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES or SDF")
     parser.add_argument('-o', '--outfile', required=True, help="Output file as SMILES or SDF")
+
+    parser.add_argument('-k', '--omit-fields', action='store_true',
+                        help="Don't include fields from the input in the output")
+
     # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
     parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
     parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
+    parser.add_argument('--mol-column', type=int, default=0,
+                        help="Column index for molecule when using delineated text formats (zero based integer)")
     parser.add_argument('--read-header', action='store_true',
                         help="Read a header line with the field names when reading .smi or .txt")
     parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
@@ -176,9 +205,10 @@ def main():
     delimiter = utils.read_delimiter(args.delimiter)
 
     t0 = time.time()
-    count, errors = process(args.input, args.outfile, calcs_to_use, delimiter, id_column=args.id_column,
-                            read_header=args.read_header, write_header=args.write_header,
-                            read_records=args.read_records, interval=args.interval, )
+    count, errors = process(
+        args.input, args.outfile, calcs_to_use, delimiter, id_column=args.id_column, mol_column=args.mol_column,
+        omit_fields=args.omit_fields, read_header=args.read_header, write_header=args.write_header,
+        read_records=args.read_records, interval=args.interval, )
     t1 = time.time()
     # Duration? No less than 1 second?
     duration_s = int(t1 - t0)

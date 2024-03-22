@@ -22,7 +22,8 @@ See also le_conformers_for_mol.py that provides a simpler way to generate confor
 same methodology that this module uses.
 """
 import os, argparse, traceback, time, gzip
-import utils
+
+import utils, rdkit_utils
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
@@ -109,85 +110,85 @@ def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens, num_co
     return final_mol
 
 
-def execute(input, data_dir, minimize_cycles=500, remove_hydrogens=False, rms_threshold=1.0,
-            num_conformers=None, interval=None):
+def execute(input, output, minimize_cycles=500,
+            delimiter=' ', id_column=None, mol_column=0, read_records=100, read_header=False,
+            remove_hydrogens=False, rms_threshold=1.0, num_conformers=None, interval=None):
 
     DmLog.emit_event('Executing ...')
+
+    utils.expand_path(output)
 
     input_count = 0
     enumerated_count = 0
     conformer_count = 0
     error_count = 0
 
-    with open(input) as infile:
-        for line in infile:
+    reader = rdkit_utils.create_reader(input, id_column=id_column, mol_column=mol_column, read_records=read_records,
+                                       read_header=read_header, delimiter=delimiter)
+
+    # read the input records and write the output
+    with gzip.open(output, 'wt') if output.endswith('.gz') else open(output, 'wt') as out:
+        while True:
+            t = reader.read()
+            # break if no more data to read
+            if not t:
+                break
+            mol, smi, id, props = t
+
             input_count += 1
+
+            if interval and input_count % interval == 0:
+                DmLog.emit_event("Processed {} records".format(input_count))
+
+            if not mol:
+                error_count += 1
+                DmLog.emit_event("Failed to read molecule for record", input_count)
+                continue
+
             conf_count_for_mol = 0
+
             try:
-                tokens = line.strip().split('\t')
-                std_smi = tokens[0]
-                uid = tokens[1]
-                digest = tokens[2]
+                molh = Chem.AddHs(mol)
 
-                if interval and input_count % interval == 0:
-                    DmLog.emit_event("Processed {} records".format(input_count))
+                mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, remove_hydrogens,
+                                                num_conformers=num_conformers)
+                for idx in range(mol_with_confs.GetNumConformers()):
 
-                parts = [data_dir]
-                parts.extend(utils.get_path_from_digest(digest))
-                path = os.path.join(*parts)
-                if not os.path.isdir(path):
-                    DmLog.emit_event('WARNING, path', path, 'not found')
-                    error_count += 1
-                    continue
+                    if id is not None:
+                        mol_with_confs.SetProp('ID', id)
+                        mol_with_confs.SetProp('_Name', id + '_' + str(conf_count_for_mol + 1))
+                    else:
+                        mol_with_confs.SetProp('_Name', str(input_count) + '_' + str(conf_count_for_mol + 1))
 
-                smi_in = os.path.join(path, digest + '.smi')
-                sdf_out = os.path.join(path, digest + '_le_confs.sdf.gz')
-                if not os.path.exists(smi_in):
-                    DmLog.emit_event('WARNING, smiles file', smi_in, 'not found')
-                    error_count += 1
-                    continue
+                    mol_with_confs.SetIntProp("CONF_NUM", conf_count_for_mol + 1)
+                    mol_with_confs.SetDoubleProp('Energy',
+                                                 mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'))
+                    mol_with_confs.SetDoubleProp('Energy_Delta',
+                                                 mol_with_confs.GetConformer(idx).GetDoubleProp(
+                                                     'Energy_Delta'))
 
-                #utils.log('INFO, Processing file', smi_in)
-                with gzip.open(sdf_out, 'wt') as gz:
-                    with Chem.SDWriter(gz) as writer:
-                        with open(smi_in) as enums:
-                            for line in enums:
-                                enumerated_count += 1
-                                tokens2 = line.strip().split('\t')
-                                enum_smi = tokens2[0]
-                                uid2 = tokens2[1]
-                                code = tokens2[2]
+                    sdf_block = Chem.SDWriter.GetText(mol_with_confs, confId=idx)
+                    chg_block = rdkit_utils.updateChargeFlagInAtomBlock(sdf_block)
+                    out.write(chg_block)
 
-                                mol = Chem.MolFromSmiles(enum_smi)
-                                if not mol:
-                                    error_count += 1
-                                    DmLog.emit_event("ERROR, Failed to create molecule", input_count, enumerated_count)
-                                    continue
+                    conformer_count += 1
+                    conf_count_for_mol += 1
+                mol_with_confs.ClearProp('ID')
+                mol_with_confs.ClearProp('CONF_NUM')
+                mol_with_confs.ClearProp('Energy')
+                mol_with_confs.ClearProp('Energy_Delta')
 
-                                molh = Chem.AddHs(mol)
-                                molh.SetProp('_Name', uid2)
-                                molh.SetProp('std_smi', std_smi)
-                                molh.SetProp('enum_smi', enum_smi)
-                                molh.SetProp('enum_code', code)
-                                if code != 'B':
-                                    molh.SetProp('parent_uuid', uid)
+                utils.log('INFO generated', conf_count_for_mol, 'conformers for molecule', input_count, smi)
 
-                                mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, remove_hydrogens,
-                                                                num_conformers=num_conformers)
-                                for idx in range(mol_with_confs.GetNumConformers()):
-                                    mol_with_confs.SetDoubleProp('Energy', mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'))
-                                    mol_with_confs.SetDoubleProp('Energy_Delta', mol_with_confs.GetConformer(idx).GetDoubleProp('Energy_Delta'))
-                                    writer.write(mol_with_confs, confId=idx)
-                                    conformer_count += 1
-                                    conf_count_for_mol += 1
-                                mol_with_confs.ClearProp('Energy')
-                                mol_with_confs.ClearProp('Energy_Delta')
-
-                utils.log('INFO, Generated', conf_count_for_mol, 'conformers for', std_smi)
-
+            except KeyboardInterrupt:
+                utils.log('Interrupted')
+                sys.exit(0)
             except:
                 error_count += 1
                 traceback.print_exc()
+
+    reader.close()
+    DmLog.emit_cost(conformer_count)
 
     return input_count, enumerated_count, conformer_count, error_count
 
@@ -202,21 +203,39 @@ def main():
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Enumerate conformers')
-    parser.add_argument('-i', '--input', required=True, help="Input file as SMILES")
-    parser.add_argument('--data-dir', default='molecules/sha256', help="Data directory")
+    parser.add_argument('-i', '--input', required=True, help="Input file (.smi, .sdf)")
+    parser.add_argument('-o', '--output', required=True, help="Output file (.sdf)")
+
+    parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
+    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
+    parser.add_argument('--mol-column', type=int, default=0,
+                        help="Column index for molecule when using delineated text formats (zero based integer)")
+    parser.add_argument('--read-header', action='store_true',
+                        help="Read a header line with the field names when reading .smi or .txt")
+    parser.add_argument('--read-records', default=100, type=int,
+                        help="Read this many records to determine the fields that are present")
+
     parser.add_argument('-n', '--num-conformers', type=int,
                         help="Number of conformers to generate. If not specified the Inhibox rules are used")
     parser.add_argument('-m', '--minimize-cycles', type=int, default=500, help="Number of MMFF minimisation cycles")
     parser.add_argument('-t', '--rms-threshold', type=float, default=1.0, help="RMS threshold for excluding conformers")
     parser.add_argument('--remove-hydrogens', action='store_true', help='Remove hydrogens from the output')
+
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     DmLog.emit_event("le_conformers: ", args)
 
+    delimiter = utils.read_delimiter(args.delimiter)
+
     start = time.time()
     input_count, enumerated_count, conformer_count, error_count = \
-        execute(args.input, args.data_dir,
+        execute(args.input, args.output,
+                delimiter=delimiter,
+                id_column=args.id_column,
+                mol_column=args.mol_column,
+                read_records=args.read_records,
+                read_header=args.read_header,
                 num_conformers=args.num_conformers,
                 minimize_cycles=args.minimize_cycles,
                 remove_hydrogens=args.remove_hydrogens,
@@ -227,7 +246,6 @@ def main():
 
     DmLog.emit_event('Inputs:', input_count, 'Enumerated:', enumerated_count,
                      'Conformers:', conformer_count, 'Errors:', error_count, 'Time (s):', end - start)
-    DmLog.emit_cost(conformer_count)
 
 
 if __name__ == "__main__":

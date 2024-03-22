@@ -124,48 +124,128 @@ jobs:
     - conformer
     - nextflow
     - 3d
-    doc-url: https://discourse.squonk.it/t/job-generate-low-energy-conformers/86
     image:
-      name: informaticsmatters/vs-nextflow
-      tag: 'latest'
+      name: informaticsmatters/vs-prep
+      tag: latest
       project-directory: /data
       working-directory: /data
-      type: nextflow
       fix-permissions: true
     command: >-
-      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
-      --inputs '{{ inputFile }}'
-      --data_dir '{{ dataDir }}'
-      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
-      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+      /code/le_conformers.py --input '{{ inputFile }}' --output '{{ outputFile }}'
+      {% if numConformers is defined %}--num-conformers {{ numConformers }}{% endif %}
+      {% if minimizeCycles is defined %}--minimize-cycles {{ minimizeCycles }}{% endif %}
+      {% if rmsThreshold is defined %}--rms-threshold {{ rmsThreshold }}{% endif %}
+      {% if removeHydrogens is defined and removeHydrogens%}--remove-hydrogens{% endif %}
+      {% if readHeader is defined and readHeader %}--read-header{% endif %}
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
+      {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
+      --interval 1000
     variables:
+      order:
+        options:
+        - outputFile
+        - numConformers
+        - minimizeCycles
+        - rmsThreshold
+        - removeHydrogens
+        - readHeader
+        - separator
+        - idColumn
       inputs:
         type: object
         required:
         - inputFile
-        - dataDir
         properties:
           inputFile:
             title: Molecules to process
             mime-types:
             - chemical/x-csv
             type: file
-          dataDir:
-            title: Directory with sharded data
-            type: directory
-            default: molecules/sha256
       outputs:
         type: object
         properties:
-          enumerated:
-            title: 3D conformers
+          outfile:
+            title: SDF file
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{{ dataDir }}/sha256/*/*/*_le_confs.sdf'
-            # additional *.sdf files might have already been generated
-            type: files
-      # there are no options for this job
+            creates: '{{ sdfout }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Open3DAlign alignment
+                fields:
+                  ID:
+                    type: string
+                    description: Input molecule ID
+                  CONF_NUM:
+                    type: integer
+                    description: Conformer number
+                  Energy:
+                    type: number
+                    description: The energy of the conformer
+                  Energy_Delta:
+                    type: number
+                    description: Energy difference to the molecule's lowest energy conformer
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name (.sdf)
+            type: string
+            default: conformers.sdf
+          numConformers:
+            title: Max number of conformers to generate
+            type: integer
+          minimizeCycles:
+            title: Number of minimisation cycles
+            type: integer
+            default: 500
+          rmsThreshold:
+            title: RMS threshold for excluding conformers
+            type: number
+            default: 1.0
+          removeHydrogens:
+            title: Remove hydrogens from the outputs
+            type: boolean
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/10.smi
+        options:
+          outputFile: foo/results.sdf
+          numConformers: 5
+          minimizeCycles: 300
+          rmsThreshold: 0.8
+          removeHydrogens: true
+          readHeader: false
+          separator: tab
+          idColumn: 1
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/results.sdf
+            checks:
+            - exists: true
 
   conformers-for-mol:
     name: Generate 3D conformers of a molecule
@@ -351,8 +431,6 @@ jobs:
                       Align
                     required: true
                     active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/open3dalign/99'
               derived-from: inputFile
       options:
         type: object
@@ -410,7 +488,7 @@ jobs:
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
       {% if readRecords is defined %}--read-records '{{ readRecords }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
-      --interval 50000
+      --interval 10000
     variables:
       order:
         options:
@@ -503,8 +581,6 @@ jobs:
                     description: Topological polar surface area
                     required: true
                     active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-rdkit-props/91'
               derived-from: inputFile
       options:
         type: object
@@ -939,8 +1015,6 @@ jobs:
                       Geometric mean of similarities
                     required: true
                     active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-similarity-screen/92'
                 derived-from: inputFile
       options:
         type: object
@@ -1333,8 +1407,6 @@ jobs:
             creates: '{{ outputFile }}'
             type: file
             annotation-properties:
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-cluster-butina/121'
               derived-from: inputFile
       options:
         type: object
@@ -1504,8 +1576,6 @@ jobs:
             creates: '{{ outputFile }}'
             type: file
             annotation-properties:
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-cluster-butina/121'
               derived-from: inputFile
       options:
         type: object

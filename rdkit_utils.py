@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import csv
 import gzip
 from rdkit import Chem
 import utils
 
 ID_COL_NAME = "ID"
 SMILES_COL_NAME = "SMILES"
+
 
 class SdfWriter:
 
@@ -56,7 +58,7 @@ class SdfWriter:
 
 class SmilesWriter:
 
-    def __init__(self, outfile, sep, extra_field_names):
+    def __init__(self, outfile, sep, extra_field_names, id_column=None, mol_column=0):
         self.writer = open(outfile, 'w')
         if sep is None:
             self.sep = ' '
@@ -64,17 +66,32 @@ class SmilesWriter:
             self.sep = sep
         self.extra_field_names = extra_field_names
 
+
+        self.id_column = None if id_column is None else int(id_column)
+        self.mol_column = None if mol_column is None else int(mol_column)
+
     def write_header(self, values):
         line = self.sep.join(values)
         self.writer.write(line + "\n")
 
     def write(self, smi, mol, id, existing_props, new_props, smiles_prop_name=None):
-        values = [smi]
-        if id is not None:
-            values.append(id)
+        if type(id) == str and self.sep in id:
+            id = '"' + id + '"'
+
+        if self.id_column is not None:
+            if self.id_column < self.mol_column:
+                values = [id, smi]
+            else:
+                values = [smi, id]
+        else:
+            values = [smi]
+
         for prop in existing_props:
             if prop is not None:
-                values.append(prop)
+                if type(prop) == str and self.sep in prop:
+                    values.append('"' + prop + '"')
+                else:
+                    values.append(prop)
             else:
                 values.append('')
 
@@ -164,38 +181,44 @@ class SdfReader:
 
 class SmilesReader:
 
-    def __init__(self, input, read_header, delimiter, id_col, recs_to_read):
-        tmp_reader = self.create_reader(input)
+    def __init__(self, input, read_header, delimiter, id_column, mol_column, recs_to_read):
         self.delimiter = delimiter
-        if id_col is None:
-            self.id_col = None
+        if mol_column is None:
+            if id_column == 0:
+                self.mol_column = 1
+            else:
+                self.mol_column = 0
         else:
-            self.id_col = int(id_col)
+            self.mol_column = mol_column
 
+        if id_column is None:
+            self.id_column = None
+        else:
+            self.id_column = int(id_column)
+
+        tmp_reader, file_reader = self.create_readers(input)
         # read header line
         if read_header:
-            line = tmp_reader.readline()
-            tokens = self.tokenize(line)
+            tokens = next(tmp_reader)
+            # tokens = self.tokenize(line)
             self.field_names = []
             for token in tokens:
                 self.field_names.append(token.strip())
         else:
-            self.field_names = [SMILES_COL_NAME]
-            if self.id_col is not None:
-                if self.id_col == 1:
-                    self.field_names.append(ID_COL_NAME)
-                elif self.id_col > 1:
-                    for i in range(1, self.id_col):
-                        self.field_names.append(None)
-                    self.field_names.append(ID_COL_NAME)
+            self.field_names = []
+            for i in range(0, max(1, self.mol_column + 1, 0 if self.id_column is None else self.id_column + 1)):
+                self.field_names.append(None)
+            self.field_names[self.mol_column] = SMILES_COL_NAME
+            if self.id_column is not None:
+                self.field_names[self.id_column] = ID_COL_NAME
 
         max_num_tokens = 0
         for i in range(0, recs_to_read):
-            line = tmp_reader.readline()
+            line = next(tmp_reader, None)
             if not line:
                 break
             else:
-                num_tokens = len(self.tokenize(line))
+                num_tokens = len(line)
                 if num_tokens > max_num_tokens:
                     max_num_tokens = num_tokens
 
@@ -203,43 +226,33 @@ class SmilesReader:
             for i in range(len(self.field_names), max_num_tokens):
                 self.field_names.append('field' + str(i + 1))
 
-        # now create the read reader and discard the header
-        self.reader = self.create_reader(input)
-        if read_header:
-            line = self.reader.readline()
+        file_reader.close()
 
-    @staticmethod
-    def create_reader(input):
+        # now create the read reader and discard the header
+        self.reader, self.file = self.create_readers(input)
+        if read_header:
+            line = next(self.reader)
+
+    def create_readers(self, input):
         if input.endswith('.gz'):
-            return  gzip.open(input, 'rt')
+            r = gzip.open(input, 'rt')
+            return csv.reader(r, delimiter=self.delimiter), r
         else:
-            return open(input, 'rt')
+            r = open(input, 'rt')
+            return csv.reader(r, delimiter=self.delimiter), r
 
     def get_mol_field_name(self):
         if self.field_names:
-            return self.field_names[0]
+            return self.field_names[self.mol_column]
         else:
             return None
 
-    def tokenize(self, line):
-        line = line.strip()
-        if self.delimiter is None:
-            tokens = line.split()
-        else:
-            tokens = line.split(self.delimiter)
-        stripped = []
-        for token in tokens:
-            stripped.append(token.strip())
-        return stripped
-
     def read(self):
-        line = self.reader.readline()
-        if line:
-            tokens = self.tokenize(line)
-            smi = tokens[0]
-            if self.id_col:
-                id = tokens[self.id_col]
-                del tokens[self.id_col]
+        tokens = next(self.reader, None)
+        if tokens:
+            smi = tokens[self.mol_column]
+            if self.id_column is not None:
+                id = tokens[self.id_column]
             else:
                 id = None
 
@@ -248,7 +261,7 @@ class SmilesReader:
 
             for i, token in enumerate(tokens):
                 token = token.strip()
-                if i != 0:
+                if not (i == self.mol_column or i == self.id_column):
                     props.append(token)
                     if mol:
                         if self.field_names and len(self.field_names) > i:
@@ -265,14 +278,14 @@ class SmilesReader:
         if self.field_names:
             results = []
             for i, name in enumerate(self.field_names):
-                if i != 0 and i != self.id_col:
+                if i != 0 and i != self.id_column:
                     results.append(name)
             return results
         else:
             return []
 
     def close(self):
-        self.reader.close()
+        self.file.close()
 
 
 def generate_headers(
@@ -327,7 +340,7 @@ def generate_headers(
     return headers
 
 
-def create_reader(input, type=None, id_column=None, read_records=100, read_header=False, delimiter='\t'):
+def create_reader(input, type=None, id_column=None, mol_column=None, read_records=100, read_header=False, delimiter='\t'):
     if type is None:
         if input.endswith('.sdf') or input.endswith('.sdf.gz') or input.endswith('.sd') or input.endswith('.sd.gz'):
             type = 'sdf'
@@ -337,16 +350,16 @@ def create_reader(input, type=None, id_column=None, read_records=100, read_heade
     if type == 'sdf':
         return SdfReader(input, id_column, read_records)
     elif type == 'smi':
-        return SmilesReader(input, read_header, delimiter, id_column, read_records)
+        return SmilesReader(input, read_header, delimiter, id_column, mol_column, read_records)
     else:
         raise ValueError('Unexpected file type', type)
 
 
-def create_writer(outfile, delimiter='\t', extra_field_names=[], calc_prop_names=[]):
+def create_writer(outfile, delimiter='\t', extra_field_names=[], calc_prop_names=[], id_column=None, mol_column=0):
     if outfile.endswith('.sdf') or outfile.endswith('sd'):
         return SdfWriter(outfile, calc_prop_names)
     else:
-        return SmilesWriter(outfile, delimiter, extra_field_names)
+        return SmilesWriter(outfile, delimiter, extra_field_names, id_column=id_column, mol_column=mol_column)
 
 
 def updateChargeFlagInAtomBlock(mb):

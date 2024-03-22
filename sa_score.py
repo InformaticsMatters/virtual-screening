@@ -26,6 +26,7 @@ http://www.jcheminf.com/content/1/1/8
 """
 
 import argparse, time, os, pickle, traceback, math
+from sigfig import round
 
 import utils, rdkit_utils
 from dm_job_utilities.dm_log import DmLog
@@ -120,8 +121,15 @@ def calculateScore(m):
     return sascore
 
 
-def process(input, outfile, delimiter, id_column=None, read_header=False, write_header=False,
-            read_records=100, interval=0):
+def process(input,
+            outfile,
+            delimiter,
+            id_column=None,
+            mol_column=0,
+            read_header=False,
+            write_header=False,
+            read_records=100,
+            interval=0):
 
     utils.expand_path(outfile)
 
@@ -129,15 +137,23 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
     errors = 0
 
     # setup the reader
-    reader = rdkit_utils.create_reader(input, id_column=id_column, read_records=read_records,
-                                       read_header=read_header, delimiter=delimiter)
+    reader = rdkit_utils.create_reader(input,
+                                       id_column=id_column,
+                                       mol_column=mol_column,
+                                       read_records=read_records,
+                                       read_header=read_header,
+                                       delimiter=delimiter)
     extra_field_names = reader.get_extra_field_names()
 
     calc_field_names = ['sa_score']
 
     # setup the writer
-    writer = rdkit_utils.create_writer(outfile, extra_field_names=extra_field_names, calc_prop_names=calc_field_names,
-                                       delimiter=delimiter)
+    writer = rdkit_utils.create_writer(outfile,
+                                       extra_field_names=extra_field_names,
+                                       calc_prop_names=calc_field_names,
+                                       delimiter=delimiter,
+                                       id_column=id_column,
+                                       mol_column=mol_column)
 
     id_col_type, id_col_value = utils.is_type(id_column, int)
     # read the input records and write the output
@@ -172,9 +188,11 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
             DmLog.emit_event("Failed to process record", count)
             continue
 
-        # calculate the molecular props
+        # calculate the synthetic accessibility score props
         try:
             sa_score = calculateScore(mol)
+            if sa_score is not None:
+                sa_score = round(sa_score, sigfigs=3)
 
         except:
             errors += 1
@@ -194,7 +212,7 @@ def process(input, outfile, delimiter, id_column=None, read_header=False, write_
 def main():
 
     # Example usage:
-    #   ./sa_score.py -i data/100.smi -o out.smi
+    #   ./sa_score.py -i data/100.smi -o out.smi -d tab --id-column 1 --write-header
 
     parser = argparse.ArgumentParser(description='SA Score')
     parser.add_argument('-i', '--input', required=True, help="Input file as SMILES or SDF")
@@ -202,6 +220,8 @@ def main():
     # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
     parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
     parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
+    parser.add_argument('--mol-column', type=int, default=0,
+                        help="Column index for molecule when using delineated text formats (zero based integer)")
     parser.add_argument('--read-header', action='store_true',
                         help="Read a header line with the field names when reading .smi or .txt")
     parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
@@ -215,7 +235,7 @@ def main():
     delimiter = utils.read_delimiter(args.delimiter)
 
     t0 = time.time()
-    count, errors = process(args.input, args.outfile, delimiter, id_column=args.id_column,
+    count, errors = process(args.input, args.outfile, delimiter, id_column=args.id_column, mol_column=args.mol_column,
                             read_header=args.read_header, write_header=args.write_header,
                             read_records=args.read_records, interval=args.interval, )
     t1 = time.time()

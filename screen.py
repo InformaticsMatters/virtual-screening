@@ -123,9 +123,26 @@ def validate_params(descriptor, metric, alpha, beta, nbits):
         DmLog.emit_event('Using {} descriptor and {} metric'.format(descriptor, metric))
 
 
-def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
-            delimiter='\t', threshold=0.7, sim_idx=0, read_header=False, write_header=False,
-            queries_read_header=False, queries_delimiter=None, alpha=1.0, beta=0.0, nbits=None, interval=None):
+def execute(query_smis,
+            query_file,
+            inputfile,
+            outputfile,
+            descriptor,
+            metric,
+            delimiter='\t',
+            threshold=0.7,
+            sim_idx=0,
+            read_header=False,
+            write_header=False,
+            id_column=None,
+            mol_column=0,
+            read_records=100,
+            queries_read_header=False,
+            queries_delimiter=None,
+            alpha=1.0,
+            beta=0.0,
+            nbits=None,
+            interval=None):
 
     if query_smis and query_file:
         raise ValueError("Specify queries as SMILES or a file, not both")
@@ -149,7 +166,13 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
                 raise ValueError('Failed to read query smiles:', smi)
             q_mols.append(mol)
     elif query_file:
-        reader = rdkit_utils.create_reader(query_file, read_header=queries_read_header, delimiter=queries_delimiter)
+        reader = rdkit_utils.create_reader(
+            query_file,
+            id_column=id_column,
+            mol_column=mol_column,
+            read_records=read_records,
+            read_header=queries_read_header,
+            delimiter=queries_delimiter)
         q_count = 0
         while True:
             q_count += 1
@@ -247,11 +270,11 @@ def execute(query_smis, query_file, inputfile, outputfile, descriptor, metric,
 
 def main():
 
-    # Example:
-    #   python3 screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input data/10000.smi --delimiter tab -o foo.smi\
+    # Examples:
+    #   python screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input data/10000.smi --delimiter tab -o foo.smi\
     #     -d rdkit -m tanimoto
-    #   python3 screen.py --queries-file queries.smi --input data/10000.smi --delimiter tab -o foo.smi\
-    #     -d rdkit -m tanimoto
+    #   python screen.py --queries-file data/10.smi --input data/10000.smi --delimiter tab --id-column 1 -o foo.smi \
+    #     -d rdkit -m tanimoto --queries-delimiter tab --threshold 0.4
 
     parser = argparse.ArgumentParser(description='screen')
     inputs = parser.add_mutually_exclusive_group(required=True)
@@ -262,9 +285,15 @@ def main():
                         help="Does the queries file contain a header line (text format)")
     parser.add_argument('-i', '--input', required=True, help="SMILES file with molecules to search")
     parser.add_argument('--delimiter', default='\t', help="Delimiter")
+    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
+    parser.add_argument('--mol-column', type=int, default=0,
+                        help="Column index for molecule when using delineated text formats (zero based integer)")
     parser.add_argument('--read-header', action='store_true', help="Read a header line with the field names")
     parser.add_argument('-o', '--output', required=True, help="Output file as SMILES")
     parser.add_argument('--write-header', action='store_true', help='Write a header line')
+    parser.add_argument('--read-records', default=100, type=int,
+                        help="Read this many records to determine the fields that are present")
+
     parser.add_argument('-d', '--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit',
                         help='Descriptor or fingerprint type (default rdkit)')
     parser.add_argument('-m', '--metric', type=str.lower, choices=list(metrics.keys()), default='tanimoto',
@@ -284,7 +313,9 @@ def main():
 
     start = time.time()
     input_count, hit_count, error_count = \
-        execute(args.smiles, args.queries_file, args.input, args.output, args.descriptor, args.metric,
+        execute(args.smiles, args.queries_file, args.input, args.output,
+                args.descriptor, args.metric,
+                id_column=args.id_column, mol_column=args.mol_column, read_records=args.read_records,
                 threshold=args.threshold, sim_idx=args.sim_index, delimiter=delimiter,
                 read_header=args.read_header, write_header=args.write_header,
                 queries_read_header=args.queries_read_header, queries_delimiter=queries_delimiter,

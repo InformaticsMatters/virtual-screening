@@ -153,16 +153,25 @@ def get_closest_distance(distances, mol_idx, compare_to):
     return best
 
 
-def execute(input, output, descriptor, metric, threshold, fragment_method, output_fragment, num, field, descending, exclude):
+def execute(input, output, descriptor, metric, threshold, fragment_method, output_fragment, num, field, descending, exclude,
+    delimiter=None, id_column=None, mol_column=0, omit_fields=False,
+    read_header=False, write_header=False, read_records=50):
 
     # create reader
     calc_prop_names = [field_Cluster]
-    reader = rdkit_utils.create_reader(input)
+    reader = rdkit_utils.create_reader(input, id_column=id_column, mol_column=mol_column, read_records=read_records,
+                                       read_header=read_header, delimiter=delimiter)
     extra_field_names = reader.get_extra_field_names()
 
     # create writer
     utils.expand_path(output)
-    writer = rdkit_utils.create_writer(output, extra_field_names=extra_field_names, calc_prop_names=calc_prop_names)
+    writer = rdkit_utils.create_writer(output,
+                                       extra_field_names=extra_field_names,
+                                       calc_prop_names=calc_prop_names,
+                                       delimiter=delimiter,
+                                       id_column=id_column, mol_column=mol_column)
+
+    id_col_type, id_col_value = utils.is_type(id_column, int)
 
     # fragment and generate fingerprints
     mols = []  # the RDKit molecules
@@ -194,6 +203,18 @@ def execute(input, output, descriptor, metric, threshold, fragment_method, outpu
     i = 0
     result_count = 0
     for mol in mols:
+
+        if result_count == 0 and write_header:
+            headers = rdkit_utils.generate_headers(
+                id_col_type,
+                id_col_value,
+                reader.get_mol_field_name(),
+                reader.field_names,
+                calc_prop_names,
+                omit_fields)
+
+            writer.write_header(headers)
+
         if i in lookup:
             cluster = lookup[i]
             writer.write(data[i][1], mol, data[i][0], data[i][2], (cluster,))
@@ -209,13 +230,31 @@ def execute(input, output, descriptor, metric, threshold, fragment_method, outpu
 
 def main():
 
+    # Examples:
+    #   python -m cluster_butina -i data/100.smi -o clustered.smi --id-column 1 -d tab --write-header -t 0.3
+
     # command line args definitions #########################################
     parser = argparse.ArgumentParser(description='RDKit Butina Cluster')
     parser.add_argument('-i', '--input', required=True, help="File with molecules to cluster (.sdf or .smi)")
     parser.add_argument('-o', '--output', required=True, help="Output file (.sdf or .smi)")
+
+    parser.add_argument('-k', '--omit-fields', action='store_true',
+                        help="Don't include fields from the input in the output")
+
+    # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
+    parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
+    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
+    parser.add_argument('--mol-column', type=int, default=0,
+                        help="Column index for molecule when using delineated text formats (zero based integer)")
+    parser.add_argument('--read-header', action='store_true',
+                        help="Read a header line with the field names when reading .smi or .txt")
+    parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
+    parser.add_argument('--read-records', default=100, type=int,
+                        help="Read this many records to determine the fields that are present")
+
     parser.add_argument('-t', '--threshold', type=float, default=0.7,
                         help='similarity clustering threshold (1.0 means identical)')
-    parser.add_argument('-d', '--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit',
+    parser.add_argument('--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit',
                         help='descriptor or fingerprint type (default rdkit)')
     parser.add_argument('-m', '--metric', type=str.lower, choices=list(metrics.keys()), default='tanimoto',
                         help='similarity metric (default tanimoto)')
@@ -232,6 +271,7 @@ def main():
     args = parser.parse_args()
     DmLog.emit_event("Cluster Butina Args: ", args)
 
+    delimiter = utils.read_delimiter(args.delimiter)
     descriptor = descriptors[args.descriptor]
     metric = metrics[args.metric]
 
@@ -239,7 +279,10 @@ def main():
         raise ValueError('--num argument must be specified for diverse subset selection')
 
     num_clusters = execute(args.input, args.output, descriptor, metric, args.threshold, args.fragment_method,
-                           args.output_fragment, args.num, args.field, not args.ascending, args.exclude)
+                           args.output_fragment, args.num, args.field, not args.ascending, args.exclude,
+                           omit_fields=args.omit_fields, delimiter=delimiter, id_column=args.id_column, mol_column=args.mol_column,
+                           read_header=args.read_header, write_header=args.write_header,
+                           read_records=args.read_records)
 
 
 if __name__ == "__main__":

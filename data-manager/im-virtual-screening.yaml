@@ -422,8 +422,6 @@ jobs:
                       Shape similarity
                     required: true
                     active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-ultrafast-shape-recognition/87'
               derived-from: inputFile
       options:
         type: object
@@ -712,8 +710,6 @@ jobs:
             creates: '{{ outputFile }}'
             type: file
             annotation-properties:
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-rdk-props/91'
               derived-from: inputFile
       options:
         type: object
@@ -725,14 +721,10 @@ jobs:
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.json$"
 
-  ####################
-  # nextflow jobs
-  ####################
   enumerate-candidates:
     name: Enumerate microstates, tautomers and undefined chiral centres
     description: >-
-      Enumerate microstates, tautomers and undefined chiral centres. Inputs are defined
-      by the prep-enum-conf-lists job.
+      Enumerate microstates, tautomers and undefined chiral centres.
     version: '1.0.0'
     category: virtual screening
     keywords:
@@ -740,50 +732,200 @@ jobs:
     - ligand preparation
     - enumeration
     - dimorphite_dl
-    - nextflow
     - 3d
     image:
-      name: informaticsmatters/vs-nextflow
-      tag: 'latest'
+      name: informaticsmatters/vs-prep
+      tag: latest
       project-directory: /data
       working-directory: /data
-      type: nextflow
       fix-permissions: true
     command: >-
-      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/enumerate.nf
-      --inputs '{{ inputFile }}'
-      --data_dir '{{ dataDir }}'
-      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
-      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+      /code/enumerate.py --input '{{ inputFile }}' --output '{{ outputFile }}'
+      {% if enumerateCharges is defined and enumerateCharges %}--enumerate-charges{% endif %}
+      {% if enumerateChirals is defined and enumerateChirals %}--enumerate-chirals{% endif %}
+      {% if enumerateTautomers is defined and enumerateTautomers %}--enumerate-tautomers{% endif %}
+      {% if combinatorial is defined and combinatorial %}--combinatorial{% endif %}
+      {% if minHac is defined %}--min-hac {{ minHac }}{% endif %}
+      {% if maxHac is defined %}--max-hac {{ maxHac }}{% endif %}
+      {% if minPh is defined %}--min-ph {{ minPh }}{% endif %}
+      {% if maxPh is defined %}--max-ph {{ maxPh }}{% endif %}
+      {% if maxTautomers is defined%}--max-tautomers {{ maxTautomers }}{% endif %}
+      {% if minCharge is defined%}--min-charge {{ minCharge }}{% endif %}
+      {% if maxCharge is defined%}--max-charge {{ maxCharge }}{% endif %}
+      {% if numCharges is defined%}--num-charges {{ numCharges }}{% endif %}
+      {% if addHydrogens is defined and addHydrogens %}--add-hydrogens{% endif %}
+      {% if tryEmbedding is defined and tryEmbedding %}--try-embedding{% endif %}
+      {% if readHeader is defined and readHeader %}--read-header{% endif %}
+      {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
+      {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
+      --interval 1000
     variables:
+      order:
+        options:
+        - outputFile
+        - enumerateCharges
+        - enumerateChirals
+        - enumerateTautomers
+        - combinatorial
+        - minHac
+        - maxHac
+        - minPh
+        - maxPh
+        - maxTautomers
+        - minCharge
+        - maxCharge
+        - numCharges
+        - addHydrogens
+        - tryEmbedding
+        - readHeader
+        - separator
+        - idColumn
       inputs:
         type: object
         required:
         - inputFile
-        - dataDir
         properties:
           inputFile:
             title: Molecules to enumerate
             mime-types:
             - chemical/x-csv
+            - chemical/x-mdl-sdfile
             type: file
-          dataDir:
-            title: Directory with sharded data
-            type: directory
-            default: molecules/sha256
       outputs:
         type: object
         properties:
           enumerated:
             title: Enumerated molecules
             mime-types:
-            - chemical/x-csv
-            creates: '{{ dataDir }}/*/*/*.smi'
-            # additional *.smi files might have already been generated
-            type: files
-      # there are no options for this job
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Open3DAlign alignment
+                fields:
+                  enum_code:
+                    type: string
+                    description: The type of enumeration (B, T, M, C, X)
+                  std_smi:
+                    type: string
+                    description: The canonical SMILES of the input molecule
+                  enum_smi:
+                    type: string
+                    description: The canonical SMILES of the enumerated molecule
+              derived-from: inputs
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name (.sdf)
+            type: string
+            default: enumerated-mols.sdf
+          enumerateCharges:
+            title: Enumerate charge forms
+            type: boolean
+            default: true
+          enumerateChirals:
+            title: Enumerate undefined chiral centres
+            type: boolean
+            default: true
+          enumerateTautomers:
+            title: Enumerate tautomers
+            type: boolean
+            default: true
+          combinatorial:
+            title: Combinatorial enumeration of charges and tautomers
+            type: boolean
+            default: false
+          minHac:
+            title: Minimum heavy atom count
+            type: integer
+          maxHac:
+            title: Maximum heavy atom count
+            type: integer
+          minPh:
+            title: Minimum pH for charge enumeration
+            type: number
+            default: 5
+          maxPh:
+            title: Maximum pH for charge enumeration
+            type: number
+            default: 9
+          maxTautomers:
+            title: Maximum number of tautomers to generate
+            type: integer
+            default: 25
+          minCharge:
+            title: Minimum charge on molecule
+            type: integer
+          maxCharge:
+            title: Maximum charge on molecule
+            type: integer
+          numCharges:
+            title: Maximum number of atoms with a charge
+            type: integer
+          addHydrogens:
+            title: Add explicit hydrogens to output
+            type: boolean
+          tryEmbedding:
+            title: Try to embed a 3D molecule to verify the stereochemisty is sane
+            type: boolean
+            default: true
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/10.smi
+        options:
+          outputFile: foo/results.sdf
+          hac: true
+          enumerateCharges: true
+          enumerateChirals: true
+          enumerateTautomers: true
+          combinatorial: false
+          minHac: 15
+          maxHac: 20
+          numSP3: true
+          minPh: 6
+          maxPh: 8
+          maxTautomers: 5
+          minCharge: -2
+          maxCharge: 2
+          numCharges: 2
+          addHydrogens: true
+          tryEmbedding: true
+          readHeader: false
+          separator: tab
+          idColumn: 1
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/results.sdf
+            checks:
+            - exists: true
 
+  ####################
+  # nextflow jobs
+  ####################
   run-rdock:
     name: Run rRock docking
     description: >-
@@ -998,8 +1140,6 @@ jobs:
                       Binding affinity predicted by smina docking
                     required: true
                     active: true
-              service-execution:
-                service_ref: 'https://discourse.squonk.it/t/job-run-smina/78'
               derived-from: ligands
       options:
         type: object

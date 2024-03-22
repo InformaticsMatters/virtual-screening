@@ -24,9 +24,18 @@ import utils, rdkit_utils
 from dm_job_utilities.dm_log import DmLog
 
 
-def run(input, outfile, mode='hac', include_3d=False, delimiter=None, id_column=None, omit_fields=False,
-        read_header=False, write_header=False,
-        read_records=50, interval=1000):
+def run(input,
+        outfile,
+        mode='hac',
+        include_3d=False,
+        delimiter=None,
+        id_column=None,
+        mol_column=0,
+        omit_fields=False,
+        read_header=False,
+        write_header=False,
+        read_records=50,
+        interval=1000):
 
     if include_3d:
         if not (input.endswith('.sdf') or input.endswith('.sdf.gz')):
@@ -46,8 +55,12 @@ def run(input, outfile, mode='hac', include_3d=False, delimiter=None, id_column=
     t0 = time.time()
 
     # setup the reader
-    reader = rdkit_utils.create_reader(input, id_column=id_column, read_records=read_records,
-                                       read_header=read_header, delimiter=delimiter)
+    reader = rdkit_utils.create_reader(input,
+                                       id_column=id_column,
+                                       mol_column=mol_column,
+                                       read_records=read_records,
+                                       read_header=read_header,
+                                       delimiter=delimiter)
     extra_field_names = reader.get_extra_field_names()
 
     calc_field_names = [str(name) for name in calc.descriptors]
@@ -57,7 +70,9 @@ def run(input, outfile, mode='hac', include_3d=False, delimiter=None, id_column=
     writer = rdkit_utils.create_writer(outfile,
                                        extra_field_names=extra_field_names,
                                        calc_prop_names=calc_field_names,
-                                       delimiter=delimiter)
+                                       delimiter=delimiter,
+                                       id_column=id_column,
+                                       mol_column=mol_column)
 
     id_col_type, id_col_value = utils.is_type(id_column, int)
 
@@ -119,14 +134,18 @@ def run(input, outfile, mode='hac', include_3d=False, delimiter=None, id_column=
 
         writer.write(cann_smi, biggest, id, props, values)
 
+    writer.close()
+    reader.close()
+
     t1 = time.time()
     utils.log('Processing took {} secs'.format(round(t1 - t0)))
 
 
 def main():
 
-    # Example:
+    # Examples:
     #   python -m im_mordred.descriptor_generator -i data/10.smi -o descriptors.smi -d tab
+    #   python -m im_mordred.descriptor_generator -i data/10+H.smi -o descriptors.smi -d tab --id_column 1 --read-header --writeheader
 
     # ----- command line args definitions ---------------------------------------------
 
@@ -146,6 +165,8 @@ def main():
     # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
     parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
     parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
+    parser.add_argument('--mol-column', type=int, default=0,
+                        help="Column index for molecule when using delineated text formats (zero based integer)")
     parser.add_argument('--read-header', action='store_true',
                         help="Read a header line with the field names when reading .smi or .txt")
     parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
@@ -159,7 +180,7 @@ def main():
     delimiter = utils.read_delimiter(args.delimiter)
 
     run(args.input, args.output, mode=args.fragment_method, include_3d=args.include_3d,
-        omit_fields=args.omit_fields ,delimiter=delimiter, id_column=args.id_column,
+        omit_fields=args.omit_fields, delimiter=delimiter, id_column=args.id_column, mol_column=args.mol_column,
         read_header=args.read_header, write_header=args.write_header,
         read_records=args.read_records, interval=args.interval)
 

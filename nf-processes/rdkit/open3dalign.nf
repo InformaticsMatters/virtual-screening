@@ -26,7 +26,7 @@ process open3dalign {
       ${params.threshold ? '--threshold ' + params.threshold : ''}
 
       # count the number of outputs - for some strange reason the fgrep command fails is the file is empty
-      if [ -s 'o3da_${inputs.name}'
+      if [ -s 'o3da_${inputs.name}' ]
       then
         COUNT=\$(fgrep -c '\$\$\$\$' 'o3da_${inputs.name}')
       else
