@@ -19,10 +19,10 @@ name: build
 on:
   push:
     branches-ignore:
-    - 'master'
+    - 'main'
   pull_request:
     branches:
-    - 'master'
+    - 'main'
   schedule:
   # Build every day at 6:01am...
   - cron: '1 6 * * *'
