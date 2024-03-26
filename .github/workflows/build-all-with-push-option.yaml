@@ -1,0 +1,104 @@
+---
+name: build-all-with-push-option
+
+# A callable workflow to build (and optionally) push container images.
+
+on:
+  workflow_call:
+    inputs:
+      image-tag:
+        type: string
+        required: true
+        default: latest
+      image-push:
+        type: boolean
+        required: false
+
+jobs:
+  build-prep:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: vs-prep
+      image-name: vs-prep
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-nextflow:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: nextflow
+      image-name: vs-nextflow
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-rdock:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: rdock
+      image-name: vs-rdock
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-smina:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: smina
+      image-name: vs-smina
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-oddt:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: oddt
+      image-name: vs-oddt
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-plants:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: plants
+      image-name: vs-plants
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-fragnet-search:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: fns
+      image-name: vs-fragnet-search
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-jaqpot:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: jaqpot
+      image-name: vs-jaqpot
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-moldb:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: moldb
+      image-name: vs-moldb
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-dmpk:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: dmpk
+      image-name: vs-dmpk
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
+  build-mordred:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    with:
+      dockerfile-suffix: mordred
+      image-name: mordred
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}

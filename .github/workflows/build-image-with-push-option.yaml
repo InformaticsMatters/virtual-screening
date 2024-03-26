@@ -1,0 +1,43 @@
+---
+name: build-and-push
+
+# A callable workflow to build (and optionally) push container images.
+
+on:
+  workflow_call:
+    inputs:
+      dockerfile-suffix:
+        type: string
+        required: true
+      image-owner:
+        type: string
+        required: false
+        default: informaticsmatters
+      image-name:
+        type: string
+        required: true
+      image-tag:
+        type: string
+        required: true
+        default: latest
+      image-push:
+        type: boolean
+        required: false
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build
+      run: docker build -f Dockerfile-${{ inputs.dockerfile-suffix }} . -t ${{ inputs.image-owner }}/${{ inputs.image-name }}:${{ inputs.image-tag }}
+    - name: Login
+      if: ${{ inputs.image-push == true }}
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Push
+      if: ${{ inputs.image-push == true }}
+      run: docker push ${{ inputs.image-owner }}/${{ inputs.image-name }}:${{ inputs.image-tag }}

@@ -30,6 +30,6 @@ jobs:
 
   call-build-without-push:
     needs: call-test
-    uses: ./.github/workflows/build-with-push-option.yaml
+    uses: ./.github/workflows/build-all-with-push-option.yaml
     with:
       image-tag: latest

@@ -31,8 +31,7 @@ jobs:
 
   call-build-without-push:
     needs: call-test
-    uses: ./.github/workflows/build-with-push-option.yaml
+    uses: ./.github/workflows/build-all-with-push-option.yaml
     secrets: inherit
     with:
       image-tag: latest
-      image-push: true
