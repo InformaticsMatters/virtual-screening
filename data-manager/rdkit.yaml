@@ -1384,6 +1384,7 @@ jobs:
         - writeHeader
         - separator
         - idColumn
+        - readRecords
         - threshold
         - descriptor
         - metric
