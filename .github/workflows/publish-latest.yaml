@@ -1,7 +1,8 @@
 ---
 name: publish-stable
 
-# Actions that take place to create a 'stabkle' image.
+# Actions that take place on tags.
+# Here we build a 'stable' image, regardless of tag value.
 
 # -----------------
 # Control variables (GitHub Secrets)
@@ -22,18 +23,15 @@ name: publish-stable
 on:
   push:
     branches:
-    - main
-  schedule:
-  # Build the default branch (typically this branch, main) every day at 6:01am...
-  - cron: '1 6 * * *'
+    - staging
 
 jobs:
   call-test:
     uses: ./.github/workflows/test.yaml
 
-  call-build-with-push:
+  call-build-without-push:
     uses: ./.github/workflows/build-with-push-option.yaml
     secrets: inherit
     with:
-      image-tag: stable
+      image-tag: latest
       image-push: true
