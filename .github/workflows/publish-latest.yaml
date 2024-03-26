@@ -30,6 +30,7 @@ jobs:
     uses: ./.github/workflows/test.yaml
 
   call-build-without-push:
+    needs: call-test
     uses: ./.github/workflows/build-with-push-option.yaml
     secrets: inherit
     with:
