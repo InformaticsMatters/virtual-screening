@@ -182,7 +182,7 @@ class SdfReader:
 class SmilesReader:
 
     def __init__(self, input, read_header, delimiter, id_column, mol_column, recs_to_read):
-        self.delimiter = delimiter
+        self.delimiter = delimiter if delimiter is not None else ' '
         if mol_column is None:
             if id_column == 0:
                 self.mol_column = 1

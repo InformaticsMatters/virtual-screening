@@ -1363,11 +1363,15 @@ jobs:
     command: >-
       /code/cluster_butina.py --input '{{ inputFile }}'
       --output {{ outputFile }}
+      {% if readHeader is defined and readHeader %}--read-header{% endif %}
+      {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
+      {% if separator is defined %}--delimiter {{ separator }}{% endif %}
+      {% if idColumn is defined %}--id-column {{ idColumn }}{% endif %}
       --threshold {{ threshold }}
       --descriptor {{ descriptor }}
       --metric {{ metric }}
       --fragment-method {{ fragment }}
-      {% if output_frag %}--output-fragment{% endif %}
+      {% if output_frag is defined and output_frag %}--output-fragment{% endif %}
       {% if number is defined %}--num {{ number }}{% endif %}
       {% if exclude is defined %}--exclude {{ exclude }}{% endif %}
       {% if field is defined %}--field {{ field }}{% endif %}
@@ -1376,6 +1380,10 @@ jobs:
       order:
         options:
         - outputFile
+        - readHeader
+        - writeHeader
+        - separator
+        - idColumn
         - threshold
         - descriptor
         - metric
@@ -1416,13 +1424,35 @@ jobs:
         - descriptor
         - metric
         - fragment
-        - output_frag
         properties:
           outputFile:
             title: Output file
             type: string
             default: clustered.sdf
             pattern: "^[A-Za-z0-9_/\\.\\-]+\\.(smi|sdf)$"
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          writeHeader:
+            title: Output has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          readRecords:
+            title: Number of records to read field names
+            type: integer
+            default: 100
           threshold:
             title: Thereshold
             type: number
@@ -1492,6 +1522,26 @@ jobs:
           exitCode: 0
           outputs:
           - name: foo/clustered-mols.sdf
+            checks:
+            - exists: true
+      simple-execution-smi2smi:
+        inputs:
+          inputFile: data/100.smi
+        options:
+          outputFile: foo/clustered-mols.smi
+          separator: tab
+          idColumn: 1
+          readHeader: false
+          writeHeader: true
+          threshold: 0.5
+          descriptor: rdkit
+          metric: tanimoto
+          fragment: hac
+          output_frag: false
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/clustered-mols.smi
             checks:
             - exists: true
       simple-execution-sdf2smi:
