@@ -35,3 +35,4 @@ jobs:
     secrets: inherit
     with:
       image-tag: latest
+      image-push: true
