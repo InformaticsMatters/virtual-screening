@@ -168,7 +168,7 @@ jobs:
             title: SDF file
             mime-types:
             - chemical/x-mdl-sdfile
-            creates: '{{ sdfout }}'
+            creates: '{{ outputFile }}'
             type: file
             annotation-properties:
               fields-descriptor:
