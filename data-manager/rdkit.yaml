@@ -112,10 +112,8 @@ jobs:
             - lineCount: 100
 
   generate-low-energy-conformers:
-    name: Generate 3D conformers (sharded)
-    description: >-
-      Generate a low energy 3D conformers of molecules. Inputs are defined
-      by the prep-enum-conf-lists job and outputs are written to the sharded file system.
+    name: Generate 3D conformers
+    description: Generate a low energy 3D conformers of molecules
     version: '1.0.0'
     category: virtual screening
     keywords:
