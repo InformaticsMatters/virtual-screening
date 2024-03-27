@@ -6,7 +6,7 @@ collection: mordred
 
 jobs:
   descriptor-generator:
-    name: 2D Mordred descriptor generation
+    name: 2D/3D Mordred descriptor generation
     description: >-
       Generate Mordred descriptors for molecules
     version: '1.0.0'
@@ -24,7 +24,7 @@ jobs:
     command: >-
       python -m im_mordred.descriptor_generator -i '{{ inputFile }}' -o '{{ outputFile }}'
       {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
-      {% if calc3d is defined %}--include-3d {{ calc3d }}{% endif %}
+      {% if calc3d is defined and calc3d%}--include-3d{% endif %}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
@@ -72,7 +72,7 @@ jobs:
             title: Output file name
             type: string
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
-            default: mordred-descriptors.smi
+            default: mordred-descriptors.sdf
           fragment:
             title: Fragment method
             type: string
@@ -82,7 +82,7 @@ jobs:
             - mw
             - none
           calc3d:
-            title: Calculate 3D descriptors
+            title: Calculate 3D descriptors (requires 3D structures)
             type: boolean
           readHeader:
             title: Input has header line (text formats only)
