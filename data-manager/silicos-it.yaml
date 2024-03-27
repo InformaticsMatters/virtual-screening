@@ -22,7 +22,7 @@ jobs:
     - 3d
     image:
       name: 3dechem/silicos-it
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -139,7 +139,7 @@ jobs:
     - 3d
     image:
       name: 3dechem/silicos-it
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
