@@ -38,7 +38,7 @@ When using delimited text files the molecules are read and written as SMILES.
 * **Output has header line**: when writing delimited text files writer the first line as a header line containing the field names (3, 4).
 * **Separator for text formats**:  The delimiter used for delimited text files. Tab is recommended (3).
 * **Index or name to use for ID field**:  Optional field specifying the index (delimited text files, zero based) or name (SD file) for the field that will be used as the ID of the record (e.g. written as the first line of the SD file record).
-* **Number of records to read field names**: When reading an input file read this number of records to determine the fields that are present (5, 6).
+* **Number of records to read field names**: When reading an input file read this number of records to determine the fields that are present (5).
 
 ## Outputs
 
@@ -54,9 +54,11 @@ written as SMILES.
 (2). 3D descriptors can only be generated from molecules with 3D coordinates in a SD-file 
 (3). These options apply only to delimited text files and are ignored for SD files.
 (4). If the input does not have a header line the field names are not know, so ones are created using the pattern *field1*, *field2* ...
-(5). These options apply only to SD files and are ignored for delimited text files.
-(6). There is no way of knowing all the fields that are present in a SD file without reading the data, and not all
-fields have to be present in every record. This means that new fields can be encountered as you process the file. Normally you can get the full list of fields by reading a small number of records, but this is not guaranteed. By default 100 records are read which is usually enough, but in rare cases you might need to read more. A new field could in theory appear in the last record!
+(5). There is no way of knowing all the fields that are present in a SD file without reading the data, and not all
+fields have to be present in every record. This means that new fields can be encountered as you process the file.
+Normally you can get the full list of fields by reading a small number of records, but this is not guaranteed. 
+By default 100 records are read which is usually enough, but in rare cases you might need to read more.
+A new field could in theory appear in the last record!
 
 ## Related topics
 
