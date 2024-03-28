@@ -27,7 +27,7 @@ jobs:
     - candidate-selection
     image:
       name: informaticsmatters/vs-fragnet-search
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -145,7 +145,7 @@ jobs:
     - synthons
     image:
       name: informaticsmatters/vs-fragnet-search
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -229,7 +229,7 @@ jobs:
     - candidate-selection
     image:
       name: informaticsmatters/vs-fragnet-search
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true

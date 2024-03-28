@@ -19,7 +19,7 @@ jobs:
     - sucos
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
