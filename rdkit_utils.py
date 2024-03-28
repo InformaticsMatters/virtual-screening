@@ -150,6 +150,8 @@ class SdfReader:
         try:
             props = []
             mol = next(self.reader)
+            if mol is None:
+                return None, None, None, None
             smi = Chem.MolToSmiles(mol)
             if self.id_col:
                 if mol.HasProp(self.id_col):
@@ -166,8 +168,7 @@ class SdfReader:
                     props.append(mol.GetProp(name))
                 else:
                     props.append(None)
-            t = (mol, smi, id, props)
-            return t
+            return mol, smi, id, props
 
         except StopIteration:
             return None
@@ -370,7 +371,8 @@ def updateChargeFlagInAtomBlock(mb):
     This function is based on work by Jose Manuel Gally that can be found here:
     See https://sourceforge.net/p/rdkit/mailman/message/36425493/
     """
-    f="{:>10s}"*3+"{:>2}{:>4s}"+"{:>3s}"*11
+    # f="{:>10s}"*3 + "{:>2}{:>4s}" + "{:>3s}"*11
+    f = "{:>10s}"*3 + " {:>2}" + "{:>3s}"*12
     chgs = []    # list of charges
     lines = mb.split("\n")
     #if mb[0] == '' or mb[0] == "\n":
@@ -383,7 +385,7 @@ def updateChargeFlagInAtomBlock(mb):
         if l[0:6] == "M  CHG":
             records = l.split()[3:]    # M  CHG X is not needed for parsing, the info we want comes afterwards
             # record each charge into a list
-            for i in range(0,len(records),2):
+            for i in range(0,len(records), 2):
                 idx = records[i]
                 chg = records[i+1]
                 chgs.append((int(idx), int(chg)))    # sort tuples by first element?
@@ -430,9 +432,9 @@ def updateChargeFlagInAtomBlock(mb):
                     charge = '1'
                 else:
                     utils.log("ERROR! " + str(lines[0]) + "unknown charge flag: " + str(chg[1]))
-                    break
+                    charge = '0'
                 # update modatom block line
-                lines[i] = f.format(x,y,z,symb,massDiff,charge,sp,hc,scb,v,hd,nu1,nu2,aamn,irf,ecf)
+                lines[i] = f.format(x, y, z, symb, massDiff, charge, sp, hc, scb, v, hd, nu1, nu2, aamn, irf, ecf)
             i+=1
     upmb = "\n".join(lines)
     return(upmb)

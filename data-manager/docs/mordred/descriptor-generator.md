@@ -49,17 +49,18 @@ It is perfectly OK to use `.smi` when generating 3D descriptors, but the 3D coor
 written as SMILES.
 
 ## Notes
-(1). If the molecules have multiple fragments many of the descriptors will not be generated correctly, so only use the 
+1. If the molecules have multiple fragments many of the descriptors will not be generated correctly, so only use the 
 'none' option if you are certain that all molecules only contain a single fragment.
-(2). 3D descriptors can only be generated from molecules with 3D coordinates in a SD-file 
-(3). These options apply only to delimited text files and are ignored for SD files.
-(4). If the input does not have a header line the field names are not know, so ones are created using the pattern *field1*, *field2* ...
-(5). There is no way of knowing all the fields that are present in a SD file without reading the data, and not all
+2. 3D descriptors can only be generated from molecules with 3D coordinates in a SD-file .
+3. These options apply only to delimited text files and are ignored for SD files.
+4. If the input does not have a header line the field names are not know, so ones are created using the pattern *field1*, *field2* ...
+5. There is no way of knowing all the fields that are present in a SD file without reading the data, and not all
 fields have to be present in every record. This means that new fields can be encountered as you process the file.
 Normally you can get the full list of fields by reading a small number of records, but this is not guaranteed. 
-By default 100 records are read which is usually enough, but in rare cases you might need to read more.
+By default, 100 records are read which is usually enough, but in rare cases you might need to read more.
 A new field could in theory appear in the last record!
 
 ## Related topics
 
-- [generate-low-energy-conformers job](../rdkit/generate-low-energy-conformers.md) can be used to generate conformers.
+- [enumerate-candidates job](../im-virtual-screening/enumerate-candidates.md) and
+[generate-low-energy-conformers job](../rdkit/generate-low-energy-conformers.md) can be used to generate conformers.
