@@ -21,7 +21,7 @@ Reads a file of SMILES and generates low energy conformers for each molecule usi
 See also le_conformers_for_mol.py that provides a simpler way to generate conformers for a single molecule using the
 same methodology that this module uses.
 """
-import os, argparse, traceback, time, gzip
+import os, sys, argparse, traceback, time, gzip
 
 import utils, rdkit_utils
 from dm_job_utilities.dm_log import DmLog
@@ -119,7 +119,6 @@ def execute(input, output, minimize_cycles=500,
     utils.expand_path(output)
 
     input_count = 0
-    enumerated_count = 0
     conformer_count = 0
     error_count = 0
 
@@ -129,50 +128,60 @@ def execute(input, output, minimize_cycles=500,
     # read the input records and write the output
     with gzip.open(output, 'wt') if output.endswith('.gz') else open(output, 'wt') as out:
         while True:
-            t = reader.read()
-            # break if no more data to read
-            if not t:
-                break
-            mol, smi, id, props = t
-
-            input_count += 1
-
-            if interval and input_count % interval == 0:
-                DmLog.emit_event("Processed {} records".format(input_count))
-
-            if not mol:
-                error_count += 1
-                DmLog.emit_event("Failed to read molecule for record", input_count)
-                continue
-
-            conf_count_for_mol = 0
-
             try:
+                t = reader.read()
+                # break if no more data to read
+                if not t:
+                    break
+                mol, smi, id, props = t
+
+                input_count += 1
+
+                if interval and input_count % interval == 0:
+                    DmLog.emit_event("Processed {} records".format(input_count))
+
+                if not mol:
+                    error_count += 1
+                    DmLog.emit_event("Failed to read molecule for record", input_count)
+                    continue
+
+                conf_count_for_mol = 0
+
                 molh = Chem.AddHs(mol)
 
                 mol_with_confs = gen_conformers(molh, rms_threshold, minimize_cycles, remove_hydrogens,
                                                 num_conformers=num_conformers)
+
                 for idx in range(mol_with_confs.GetNumConformers()):
+                    try:
+                        if id is not None:
+                            mol_with_confs.SetProp('ID', id)
+                            mol_with_confs.SetProp('_Name', id + '_' + str(conf_count_for_mol + 1))
+                        else:
+                            mol_with_confs.SetProp('_Name', str(input_count) + '_' + str(conf_count_for_mol + 1))
 
-                    if id is not None:
-                        mol_with_confs.SetProp('ID', id)
-                        mol_with_confs.SetProp('_Name', id + '_' + str(conf_count_for_mol + 1))
-                    else:
-                        mol_with_confs.SetProp('_Name', str(input_count) + '_' + str(conf_count_for_mol + 1))
+                        mol_with_confs.SetIntProp("CONF_NUM", conf_count_for_mol + 1)
+                        mol_with_confs.SetDoubleProp('Energy',
+                                                     mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'))
+                        mol_with_confs.SetDoubleProp('Energy_Delta',
+                                                     mol_with_confs.GetConformer(idx).GetDoubleProp(
+                                                         'Energy_Delta'))
 
-                    mol_with_confs.SetIntProp("CONF_NUM", conf_count_for_mol + 1)
-                    mol_with_confs.SetDoubleProp('Energy',
-                                                 mol_with_confs.GetConformer(idx).GetDoubleProp('Energy'))
-                    mol_with_confs.SetDoubleProp('Energy_Delta',
-                                                 mol_with_confs.GetConformer(idx).GetDoubleProp(
-                                                     'Energy_Delta'))
+                        sdf_block = Chem.SDWriter.GetText(mol_with_confs, confId=idx)
+                        chg_block = rdkit_utils.updateChargeFlagInAtomBlock(sdf_block)
+                        out.write(chg_block)
 
-                    sdf_block = Chem.SDWriter.GetText(mol_with_confs, confId=idx)
-                    chg_block = rdkit_utils.updateChargeFlagInAtomBlock(sdf_block)
-                    out.write(chg_block)
+                        conformer_count += 1
+                        conf_count_for_mol += 1
 
-                    conformer_count += 1
-                    conf_count_for_mol += 1
+                    except KeyboardInterrupt:
+                        utils.log('Interrupted')
+                        sys.exit(0)
+                    except:
+                        utils.log('Error processing input {}, conformer {}'.format(input_count, conformer_count + 1))
+                        error_count += 1
+                        traceback.print_exc()
+
                 mol_with_confs.ClearProp('ID')
                 mol_with_confs.ClearProp('CONF_NUM')
                 mol_with_confs.ClearProp('Energy')
@@ -190,7 +199,7 @@ def execute(input, output, minimize_cycles=500,
     reader.close()
     DmLog.emit_cost(conformer_count)
 
-    return input_count, enumerated_count, conformer_count, error_count
+    return input_count, conformer_count, error_count
 
 
 ### start main execution #########################################
@@ -198,7 +207,7 @@ def execute(input, output, minimize_cycles=500,
 def main():
 
     # Example:
-    #   python3 le_conformers.py -i bar.smi
+    #   python le_conformers.py -i bar.smi -o baz.sdf
 
     ### command line args definitions #########################################
 
@@ -229,7 +238,7 @@ def main():
     delimiter = utils.read_delimiter(args.delimiter)
 
     start = time.time()
-    input_count, enumerated_count, conformer_count, error_count = \
+    input_count, conformer_count, error_count = \
         execute(args.input, args.output,
                 delimiter=delimiter,
                 id_column=args.id_column,
@@ -244,7 +253,7 @@ def main():
                 )
     end = time.time()
 
-    DmLog.emit_event('Inputs:', input_count, 'Enumerated:', enumerated_count,
+    DmLog.emit_event('Inputs:', input_count,
                      'Conformers:', conformer_count, 'Errors:', error_count, 'Time (s):', end - start)
 
 

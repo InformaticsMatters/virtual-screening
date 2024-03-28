@@ -92,6 +92,7 @@ def add_molecule(mydict, mol, code):
 def execute(input, output, delimiter=' ',
             id_column=None, mol_column=0,
             read_header=False, read_records=100,
+            fragment='hac',
             enumerate_chirals=False,
             enumerate_charges=False, enumerate_tautomers=False,
             combinatorial=False,
@@ -137,6 +138,10 @@ def execute(input, output, delimiter=' ',
 
             if interval and count % interval == 0:
                 DmLog.emit_event("Processed {} records".format(count))
+
+            if fragment != 'none':
+                mol = rdkit_utils.fragment(mol, fragment)
+                smi = Chem.MolToSmiles(mol)
 
             # if we have HAC filters apply them
             hac = mol.GetNumHeavyAtoms()
@@ -219,7 +224,7 @@ def execute(input, output, delimiter=' ',
 def main():
 
     # Example:
-    #   ./enumerate.py -i bar.smi --enumerate-tautomers --enumerate-chirals --enumerate-charges
+    #   ./enumerate.py -i data/1000.smi -o bar.sdf --enumerate-tautomers --enumerate-chirals --enumerate-charges
 
     ### command line args definitions #########################################
 
@@ -234,7 +239,8 @@ def main():
                         help="Read a header line with the field names when reading .smi or .txt")
     parser.add_argument('--read-records', default=100, type=int,
                         help="Read this many records to determine the fields that are present")
-
+    parser.add_argument('-f', '--fragment', choices=['hac', 'mw', 'none'], default='hac',
+                        help='Strategy for picking largest fragment (mw or hac or none')
     parser.add_argument('--enumerate-charges', help='Enumerate charge forms', action='store_true')
     parser.add_argument('--enumerate-chirals', help='Enumerate undefined chiral centers', action='store_true')
     parser.add_argument('--enumerate-tautomers', help='Enumerate undefined chiral centers', action='store_true')
@@ -262,6 +268,7 @@ def main():
     mol_column = args.mol_column
     read_header = args.read_header
     read_records = args.read_records
+    fragment = args.fragment
     enumerate_charges = args.enumerate_charges
     enumerate_chirals = args.enumerate_chirals
     enumerate_tautomers = args.enumerate_tautomers
@@ -291,6 +298,7 @@ def main():
         execute(input, output,
                 delimiter=delimiter, id_column=id_column, mol_column=mol_column,
                 read_header=read_header, read_records=read_records,
+                fragment=fragment,
                 enumerate_chirals=enumerate_chirals,
                 enumerate_charges=enumerate_charges,
                 enumerate_tautomers=enumerate_tautomers,
