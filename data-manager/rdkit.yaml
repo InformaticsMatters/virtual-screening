@@ -700,6 +700,8 @@ jobs:
       /code/rdkit_dedup.py --input '{{ inputFile }}'
       --outfile '{{ outputFile }}'
       {% if mode is defined and mode %}--mode {{ mode }}{% endif %}
+      {% if minHac is defined %}--min-hac {{ minHac }}{% endif %}
+      {% if maxHac is defined %}--max-hac {{ maxHac }}{% endif %}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
@@ -711,6 +713,8 @@ jobs:
         options:
         - outputFile
         - mode
+        - minHac
+        - maxHac
         - readHeader
         - writeHeader
         - separator
@@ -761,6 +765,12 @@ jobs:
             - hac
             - mw
             - none
+          minHac:
+            title: Minimum heavy atom count
+            type: integer
+          maxHac:
+            title: Maximum heavy atom count
+            type: integer
           readHeader:
             title: Input has header line (text formats only)
             type: boolean
@@ -798,6 +808,21 @@ jobs:
             checks:
             - exists: true
             - lineCount: 9999
+      hac-selection:
+        inputs:
+          inputFile: data/10000.smi
+        options:
+          outputFile: out/results.smi
+          mode: hac
+          minHac: 14
+          maxHac: 28
+        checks:
+          exitCode: 0
+          outputs:
+          - name: out/results.smi
+            checks:
+            - exists: true
+            - lineCount: 6233
 
   sa-score:
     name: Synthetic accessibility score
