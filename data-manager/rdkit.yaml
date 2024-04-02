@@ -130,6 +130,7 @@ jobs:
       fix-permissions: true
     command: >-
       /code/le_conformers.py --input '{{ inputFile }}' --output '{{ outputFile }}'
+      {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
       {% if numConformers is defined %}--num-conformers {{ numConformers }}{% endif %}
       {% if minimizeCycles is defined %}--minimize-cycles {{ minimizeCycles }}{% endif %}
       {% if rmsThreshold is defined %}--rms-threshold {{ rmsThreshold }}{% endif %}
@@ -142,6 +143,7 @@ jobs:
       order:
         options:
         - outputFile
+        - fragment
         - numConformers
         - minimizeCycles
         - rmsThreshold
@@ -195,6 +197,14 @@ jobs:
             title: Output file name (.sdf)
             type: string
             default: conformers.sdf
+          fragment:
+            title: Fragment method
+            type: string
+            default: hac
+            enum:
+            - hac
+            - mw
+            - none
           numConformers:
             title: Max number of conformers to generate
             type: integer
@@ -231,6 +241,7 @@ jobs:
           inputFile: data/10.smi
         options:
           outputFile: foo/results.sdf
+          fragment: hac
           numConformers: 5
           minimizeCycles: 300
           rmsThreshold: 0.8

@@ -741,6 +741,7 @@ jobs:
       fix-permissions: true
     command: >-
       /code/enumerate.py --input '{{ inputFile }}' --output '{{ outputFile }}'
+      {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
       {% if enumerateCharges is defined and enumerateCharges %}--enumerate-charges{% endif %}
       {% if enumerateChirals is defined and enumerateChirals %}--enumerate-chirals{% endif %}
       {% if enumerateTautomers is defined and enumerateTautomers %}--enumerate-tautomers{% endif %}
@@ -764,6 +765,7 @@ jobs:
       order:
         options:
         - outputFile
+        - fragment
         - enumerateCharges
         - enumerateChirals
         - enumerateTautomers
@@ -825,6 +827,14 @@ jobs:
             title: Output file name (.sdf)
             type: string
             default: enumerated-mols.sdf
+          fragment:
+            title: Fragment method
+            type: string
+            default: hac
+            enum:
+            - hac
+            - mw
+            - none
           enumerateCharges:
             title: Enumerate charge forms
             type: boolean
@@ -897,7 +907,7 @@ jobs:
           inputFile: data/10.smi
         options:
           outputFile: foo/results.sdf
-          hac: true
+          fragment: hac
           enumerateCharges: true
           enumerateChirals: true
           enumerateTautomers: true

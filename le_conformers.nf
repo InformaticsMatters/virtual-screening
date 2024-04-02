@@ -15,26 +15,27 @@ limitations under the License.
 
 nextflow.enable.dsl=2
 
-params.inputs = 'need-confs.smi'
-params.data_dir = 'molecules/sha256'
+params.input = 'molecules.sdf'
+params.output = 'conformers.sdf'
 
-inputs_smi = file(params.inputs)
+input = file(params.input)
 
 // includes
 include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { split_sdf } from './nf-processes/file/split_sdf.nf'
 include { gen_conformers } from './nf-processes/rdkit/gen_conformers.nf'
 
 // workflow definitions
 workflow generate_conformers {
 
     take:
-    inputs_smi
+    input
 
     main:
-    split_txt(inputs_smi)
+    split_txt(input)
     gen_conformers(split_txt.out.flatten())
 }
 
 workflow {
-    generate_conformers(inputs_smi)
+    generate_conformers(input)
 }
