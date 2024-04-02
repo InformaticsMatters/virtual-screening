@@ -239,7 +239,7 @@ def main():
                         help="Read a header line with the field names when reading .smi or .txt")
     parser.add_argument('--read-records', default=100, type=int,
                         help="Read this many records to determine the fields that are present")
-    parser.add_argument('-f', '--fragment', choices=['hac', 'mw', 'none'], default='hac',
+    parser.add_argument('-f', '--fragment-method', choices=['hac', 'mw', 'none'], default='hac',
                         help='Strategy for picking largest fragment (mw or hac or none')
     parser.add_argument('--enumerate-charges', help='Enumerate charge forms', action='store_true')
     parser.add_argument('--enumerate-chirals', help='Enumerate undefined chiral centers', action='store_true')
@@ -268,7 +268,7 @@ def main():
     mol_column = args.mol_column
     read_header = args.read_header
     read_records = args.read_records
-    fragment = args.fragment
+    fragment = args.fragment_method
     enumerate_charges = args.enumerate_charges
     enumerate_chirals = args.enumerate_chirals
     enumerate_tautomers = args.enumerate_tautomers

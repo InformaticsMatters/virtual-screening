@@ -110,7 +110,7 @@ def gen_conformers(mol, rms_threshold, minimize_cycles, remove_hydrogens, num_co
     return final_mol
 
 
-def execute(input, output, minimize_cycles=500,
+def execute(input, output, minimize_cycles=500, fragment='hac',
             delimiter=' ', id_column=None, mol_column=0, read_records=100, read_header=False,
             remove_hydrogens=False, rms_threshold=1.0, num_conformers=None, interval=None):
 
@@ -144,6 +144,10 @@ def execute(input, output, minimize_cycles=500,
                     error_count += 1
                     DmLog.emit_event("Failed to read molecule for record", input_count)
                     continue
+
+                if fragment != 'none':
+                    mol = rdkit_utils.fragment(mol, fragment)
+                    smi = Chem.MolToSmiles(mol)
 
                 conf_count_for_mol = 0
 
@@ -224,6 +228,8 @@ def main():
     parser.add_argument('--read-records', default=100, type=int,
                         help="Read this many records to determine the fields that are present")
 
+    parser.add_argument('-f', '--fragment-method', choices=['hac', 'mw', 'none'], default='hac',
+                        help='Strategy for picking largest fragment (mw or hac or none')
     parser.add_argument('-n', '--num-conformers', type=int,
                         help="Number of conformers to generate. If not specified the Inhibox rules are used")
     parser.add_argument('-m', '--minimize-cycles', type=int, default=500, help="Number of MMFF minimisation cycles")
@@ -245,6 +251,7 @@ def main():
                 mol_column=args.mol_column,
                 read_records=args.read_records,
                 read_header=args.read_header,
+                fragment=args.fragment_method,
                 num_conformers=args.num_conformers,
                 minimize_cycles=args.minimize_cycles,
                 remove_hydrogens=args.remove_hydrogens,
