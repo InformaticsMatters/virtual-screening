@@ -34,6 +34,8 @@ def process(input,
             read_header=False,
             write_header=False,
             read_records=100,
+            min_hac=None,
+            max_hac=None,
             interval=0):
 
     utils.expand_path(outfile)
@@ -61,6 +63,7 @@ def process(input,
     # read the input records and write the output
     canon_smiles = {}
     id_col_type, id_col_value = utils.is_type(id_column, int)
+    excluded = 0
     while True:
         t = reader.read()
         # break if no more data to read
@@ -91,7 +94,7 @@ def process(input,
             DmLog.emit_event("Failed to process record", count)
             continue
 
-        # deduplicate
+        # select and deduplicate
         try:
             if mode == 'none':
                 biggest = mol
@@ -99,6 +102,15 @@ def process(input,
             else:
                 biggest = rdkit_utils.fragment(mol, mode)
                 cann_smi = Chem.MolToSmiles(biggest)
+
+            hac = biggest.GetNumHeavyAtoms()
+            if min_hac is not None and min_hac > hac:
+                excluded += 1
+                continue
+            if max_hac is not None and max_hac < hac:
+                excluded += 1
+                continue
+
             if cann_smi in canon_smiles:
                 DmLog.emit_event("Molecule {} is duplicate of molecule {}".format(count, canon_smiles.get(cann_smi)))
                 duplicates += 1
@@ -111,24 +123,27 @@ def process(input,
                     biggest.ClearProp(name)
                 props = []
 
+            # write the output
+            writer.write(smi, biggest, id, props, [])
+
+        except KeyboardInterrupt:
+            utils.log('Interrupted')
+            sys.exit(0)
         except:
             errors += 1
             DmLog.emit_event('Failed to process record', count)
             # traceback.print_exc()
             continue
 
-        # write the output
-        writer.write(smi, biggest, id, props, [])
-
     writer.close()
     reader.close()
 
-    return count, errors, duplicates
+    return count, errors, duplicates, excluded
 
 
 def main():
     # Example usage:
-    #   ./rdkit_dedup.py -i data/11100.smi --outfile out.smi --delimiter tab --id-column 1 --interval 100
+    #   ./rdkit_dedup.py -i data/10000.smi --outfile out.smi --delimiter tab --id-column 1 --min-hac 16 --max-hac 25 --interval 1000
 
     ### command line args definitions #########################################
 
@@ -149,6 +164,8 @@ def main():
                         help="Read this many records to determine the fields that are present")
     parser.add_argument('-m', '--mode', choices=['hac', 'mw', 'none'], default='hac',
                         help='Strategy for picking largest fragment (mw or hac or none')
+    parser.add_argument("--min-hac", type=int, help="Minimum heavy atom count to consider")
+    parser.add_argument("--max-hac", type=int, help="Maximum heavy atom count to consider")
 
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
@@ -159,19 +176,20 @@ def main():
     delimiter = utils.read_delimiter(args.delimiter)
 
     t0 = time.time()
-    count, errors, duplicates = process(
+    count, errors, duplicates, excluded = process(
         args.input, args.outfile, mode=args.mode, delimiter=delimiter,
         id_column=args.id_column, mol_column=args.mol_column, omit_fields=args.omit_fields,
         read_header=args.read_header, write_header=args.write_header,
-        read_records=args.read_records, interval=args.interval)
+        read_records=args.read_records,
+        min_hac=args.min_hac, max_hac=args.max_hac, interval=args.interval)
     t1 = time.time()
     # Duration? No less than 1 second?
     duration_s = int(t1 - t0)
     if duration_s < 1:
         duration_s = 1
 
-    DmLog.emit_event('Processed {} records in {} seconds. {} errors. {} duplicates'.format(
-        count, duration_s, errors, duplicates))
+    DmLog.emit_event('Processed {} records in {} seconds. {} errors. {} duplicates, {} excluded'.format(
+        count, duration_s, errors, duplicates, excluded))
     # Emit final 'total' cost, replacing all prior costs
     DmLog.emit_cost(count)
 
