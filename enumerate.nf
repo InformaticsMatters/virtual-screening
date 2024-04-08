@@ -38,7 +38,7 @@ params.max_charge = null
 params.num_charges = null
 */
 // files
-input = file(params.inputs) // smiles or sdf with molecules to enumerate
+input = file(params.input) // smiles or sdf with molecules to enumerate
 
 // includes
 print("INPUT:" +  params.input)

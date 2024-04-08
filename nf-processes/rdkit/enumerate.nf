@@ -13,16 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+params.fragment = 'hac'
+params.enumerate_charges = true
+params.enumerate_chirals = true
+params.enumerate_tautomers = true
+params.combinatorial = false
 params.interval = 100
 params.try_embedding = true
 params.add_hydrogens = false
-params.max_tautomers = 25
+params.max_tautomers = null
 params.id_column = null
 params.delimiter = null
 params.min_hac = null
 params.max_hac = null
-params.min_ph = 5
-params.max_ph = 9
+params.min_ph = null // default is 5
+params.max_ph = null // default is 9
 params.min_charge = null
 params.max_charge = null
 params.num_charges = null
@@ -40,10 +45,14 @@ process enumerate {
 
     """
     python -m enumerate -i $inputs -o enumerated-${inputs.name}.sdf --interval $params.interval\
-      --enumerate-tautomers --enumerate-chirals --enumerate-charges\
-      --max-tautomers $params.max_tautomers\
-      ${params.id_column ? '--id-column ' + params.id_column : ''}\
-      ${params.delimiter ? '--delimiter ' + params.delimiter : ''}\
+      ${params.enumerate_charges ? '--enumerate-charges' : ''}\
+      ${params.enumerate_chirals ? '--enumerate-chirals' : ''}\
+      ${params.enumerate_tautomers ? '--enumerate-tautomers' : ''}\
+      ${params.combinatorial ? '--combinatorial' : ''}\
+      ${params.max_tautomers ? '--max-tautomers ' + params.max_tautomers : ''}\
+      ${params.fragment ? '--fragment \'' + params.fragment + '\'' : ''}\
+      ${params.id_column ? '--id-column \'' + params.id_column + '\'' : ''}\
+      ${params.delimiter ? '--delimiter \'' + params.delimiter + '\'' : ''}\
       ${params.min_hac ? '--min-hac ' + params.min_hac : ''}\
       ${params.max_hac ? '--max-hac ' + params.max_hac : ''}\
       ${params.min_ph ? '--min-ph ' + params.min_ph : ''}\

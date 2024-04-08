@@ -120,7 +120,6 @@ jobs:
     - rdkit
     - ligand preparation
     - conformer
-    - nextflow
     - 3d
     image:
       name: informaticsmatters/vs-prep
@@ -160,6 +159,7 @@ jobs:
             title: Molecules to process
             mime-types:
             - chemical/x-csv
+            - chemical/x-mdl-sdfile
             type: file
       outputs:
         type: object
@@ -1826,3 +1826,160 @@ jobs:
             checks:
             - exists: true
             - lineCount: 79
+
+  generate-low-energy-conformers-multi:
+    name: Generate 3D conformers
+    description: Generate a low energy 3D conformers of molecules (parallel execution)
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    - conformer
+    - nextflow
+    - 3d
+    image:
+      name: informaticsmatters/vs-prep
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/le_conformers.nf
+      --input '{{ inputFile }}' --output '{{ outputFile }}'
+      {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
+      {% if numConformers is defined %}--num_conformers {{ numConformers }}{% endif %}
+      {% if minimizeCycles is defined %}--minimize_cycles {{ minimizeCycles }}{% endif %}
+      {% if rmsThreshold is defined %}--rms_threshold {{ rmsThreshold }}{% endif %}
+      {% if removeHydrogens is defined and removeHydrogens%}--removehs{% endif %}
+      {% if readHeader is defined and readHeader %}--read_header{% endif %}
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
+      {% if idColumn is defined %}--id_column '{{ idColumn }}'{% endif %}
+      {% if chunkSize is defined and chunkSize %}--chunk_size '{{ chunkSize }}'{% endif %}
+      --interval 100
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+    variables:
+      order:
+        options:
+        - outputFile
+        - fragment
+        - numConformers
+        - minimizeCycles
+        - rmsThreshold
+        - removeHydrogens
+        - readHeader
+        - separator
+        - idColumn
+        - chunkSize
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to process
+            mime-types:
+            - chemical/x-csv
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          outfile:
+            title: SDF file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Open3DAlign alignment
+                fields:
+                  ID:
+                    type: string
+                    description: Input molecule ID
+                  CONF_NUM:
+                    type: integer
+                    description: Conformer number
+                  Energy:
+                    type: number
+                    description: The energy of the conformer
+                  Energy_Delta:
+                    type: number
+                    description: Energy difference to the molecule's lowest energy conformer
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name (.sdf)
+            type: string
+            default: conformers.sdf
+          fragment:
+            title: Fragment method
+            type: string
+            default: hac
+            enum:
+            - hac
+            - mw
+            - none
+          numConformers:
+            title: Max number of conformers to generate
+            type: integer
+          minimizeCycles:
+            title: Number of minimisation cycles
+            type: integer
+            default: 500
+          rmsThreshold:
+            title: RMS threshold for excluding conformers
+            type: number
+            default: 1.0
+          removeHydrogens:
+            title: Remove hydrogens from the outputs
+            type: boolean
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          chunkSize:
+            title: Size of chunks to split
+            type: int
+            minValue: 100
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/100.smi
+        options:
+          outputFile: foo/results.sdf
+          fragment: hac
+          numConformers: 5
+          minimizeCycles: 300
+          rmsThreshold: 0.8
+          removeHydrogens: true
+          readHeader: false
+          separator: tab
+          idColumn: 1
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/results.sdf
+            checks:
+            - exists: true

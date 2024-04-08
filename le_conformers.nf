@@ -15,7 +15,7 @@ limitations under the License.
 
 nextflow.enable.dsl=2
 
-params.inputs = 'molecules.sdf'
+params.input = 'molecules.sdf'
 params.output = 'conformers.sdf'
 
 params.publish_dir = './'
@@ -24,13 +24,15 @@ params.publish_dir = './'
 params.chunk_size = 1000 // chunk size for splitting
 params.header = false    // smiles input has header line
 
+params.num_conformers = null
 params.removehs = false
 params.minimize_cycles = 500
 params.rms_threshold = 1.0
+params.delimiter = null
 params.id_column = null
 */
 
-inputs = file(params.inputs)
+inputs = file(params.input)
 
 // includes
 if (inputs.name.endsWith('.sdf') || inputs.name.endsWith('.sdf.gz')) {
