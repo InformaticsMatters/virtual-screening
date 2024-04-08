@@ -1961,7 +1961,7 @@ jobs:
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
           chunkSize:
             title: Size of chunks to split
-            type: int
+            type: integer
             minValue: 100
     tests:
       simple-execution:
