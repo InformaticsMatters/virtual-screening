@@ -1962,6 +1962,7 @@ jobs:
           chunkSize:
             title: Size of chunks to split
             type: integer
+            default: 1000
             minValue: 100
     tests:
       simple-execution:
