@@ -1744,7 +1744,7 @@ jobs:
     - 3d
     - nextflow
     image:
-      name: informaticsmatters/vs-prep
+      name: informaticsmatters/vs-nextflow
       tag: latest
       project-directory: /data
       working-directory: /data
