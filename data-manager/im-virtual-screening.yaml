@@ -760,7 +760,7 @@ jobs:
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
-      --interval 1000
+      --interval 100
     variables:
       order:
         options:

@@ -137,7 +137,7 @@ jobs:
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
       {% if idColumn is defined %}--id-column '{{ idColumn }}'{% endif %}
-      --interval 1000
+      --interval 100
     variables:
       order:
         options:
