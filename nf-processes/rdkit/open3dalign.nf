@@ -5,7 +5,7 @@ params.threshold = 0
 
 process open3dalign {
 
-    container 'informaticsmatters/vs-prep:latest'
+    container 'informaticsmatters/vs-prep:stable'
 
     input:
     path inputs // .sdf

@@ -6,7 +6,7 @@ params.count = 10000
 
 process extract_need_enum {
 
-    container 'informaticsmatters/vs-moldb:latest'
+    container 'informaticsmatters/vs-moldb:stable'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:
@@ -22,7 +22,7 @@ process extract_need_enum {
 
 process extract_need_conf {
 
-    container 'informaticsmatters/vs-moldb:latest'
+    container 'informaticsmatters/vs-moldb:stable'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:

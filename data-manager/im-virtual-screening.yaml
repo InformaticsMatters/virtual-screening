@@ -735,7 +735,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: stable
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -806,7 +806,7 @@ jobs:
             annotation-properties:
               fields-descriptor:
                 origin: squonk2-job
-                description: Open3DAlign alignment
+                description: Enumerate microstates, tautomers and undefined chiral centres
                 fields:
                   enum_code:
                     type: string
@@ -1729,3 +1729,229 @@ jobs:
           - name: results-best.sdf
             checks:
             - exists: false
+
+  enumerate-candidates-multi:
+    name: Enumerate microstates, tautomers and undefined chiral centres
+    description: >-
+      Enumerate microstates, tautomers and undefined chiral centres (parallel execution)
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - rdkit
+    - ligand preparation
+    - enumeration
+    - dimorphite_dl
+    - 3d
+    - nextflow
+    image:
+      name: informaticsmatters/vs-nextflow
+      tag: 'stable'
+      project-directory: /data
+      working-directory: /data
+      type: nextflow
+      fix-permissions: true
+    command: >-
+      nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
+      run {{ CODE_DIRECTORY|default('/code') }}/enumerate.nf
+      --input '{{ inputFile }}' --output '{{ outputFile }}'
+      {% if fragment is defined %}--fragment_method '{{ fragment }}'{% endif %}
+      {% if enumerateCharges is defined and enumerateCharges %}--enumerate_charges{% endif %}
+      {% if enumerateChirals is defined and enumerateChirals %}--enumerate_chirals{% endif %}
+      {% if enumerateTautomers is defined and enumerateTautomers %}--enumerate_tautomers{% endif %}
+      {% if combinatorial is defined and combinatorial %}--combinatorial{% endif %}
+      {% if minHac is defined %}--min_hac {{ minHac }}{% endif %}
+      {% if maxHac is defined %}--max_hac {{ maxHac }}{% endif %}
+      {% if minPh is defined %}--min_ph {{ minPh }}{% endif %}
+      {% if maxPh is defined %}--max_ph {{ maxPh }}{% endif %}
+      {% if maxTautomers is defined%}--max_tautomers {{ maxTautomers }}{% endif %}
+      {% if minCharge is defined%}--min_charge {{ minCharge }}{% endif %}
+      {% if maxCharge is defined%}--max_charge {{ maxCharge }}{% endif %}
+      {% if numCharges is defined%}--num_charges {{ numCharges }}{% endif %}
+      {% if addHydrogens is defined and addHydrogens %}--add_hydrogens{% endif %}
+      {% if tryEmbedding is defined and tryEmbedding %}--try_embedding{% endif %}
+      {% if readHeader is defined and readHeader %}--read_header{% endif %}
+      {% if writeHeader is defined and writeHeader %}--write_header{% endif %}
+      {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
+      {% if idColumn is defined %}--id_column '{{ idColumn }}'{% endif %}
+      {% if chunkSize is defined and chunkSize %}--chunk_size '{{ chunkSize }}'{% endif %}
+      --interval 100
+      -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
+      -with-report {{ DM_INSTANCE_DIRECTORY }}/report.html
+    variables:
+      order:
+        options:
+        - outputFile
+        - fragment
+        - enumerateCharges
+        - enumerateChirals
+        - enumerateTautomers
+        - combinatorial
+        - minHac
+        - maxHac
+        - minPh
+        - maxPh
+        - maxTautomers
+        - minCharge
+        - maxCharge
+        - numCharges
+        - addHydrogens
+        - tryEmbedding
+        - readHeader
+        - separator
+        - idColumn
+        - chunkSize
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Molecules to enumerate
+            mime-types:
+            - chemical/x-csv
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          enumerated:
+            title: Enumerated molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Enumerate microstates, tautomers and undefined chiral centres
+                fields:
+                  enum_code:
+                    type: string
+                    description: The type of enumeration (B, T, M, C, X)
+                  std_smi:
+                    type: string
+                    description: The canonical SMILES of the input molecule
+                  enum_smi:
+                    type: string
+                    description: The canonical SMILES of the enumerated molecule
+              derived-from: inputs
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file name (.sdf)
+            type: string
+            default: enumerated-mols.sdf
+          fragment:
+            title: Fragment method
+            type: string
+            default: hac
+            enum:
+            - hac
+            - mw
+            - none
+          enumerateCharges:
+            title: Enumerate charge forms
+            type: boolean
+            default: true
+          enumerateChirals:
+            title: Enumerate undefined chiral centres
+            type: boolean
+            default: true
+          enumerateTautomers:
+            title: Enumerate tautomers
+            type: boolean
+            default: true
+          combinatorial:
+            title: Combinatorial enumeration of charges and tautomers
+            type: boolean
+            default: false
+          minHac:
+            title: Minimum heavy atom count
+            type: integer
+          maxHac:
+            title: Maximum heavy atom count
+            type: integer
+          minPh:
+            title: Minimum pH for charge enumeration
+            type: number
+            default: 5
+          maxPh:
+            title: Maximum pH for charge enumeration
+            type: number
+            default: 9
+          maxTautomers:
+            title: Maximum number of tautomers to generate
+            type: integer
+            default: 25
+          minCharge:
+            title: Minimum charge on molecule
+            type: integer
+          maxCharge:
+            title: Maximum charge on molecule
+            type: integer
+          numCharges:
+            title: Maximum number of atoms with a charge
+            type: integer
+          addHydrogens:
+            title: Add explicit hydrogens to output
+            type: boolean
+          tryEmbedding:
+            title: Try to embed a 3D molecule to verify the stereochemisty is sane
+            type: boolean
+            default: true
+          readHeader:
+            title: Input has header line (text formats only)
+            type: boolean
+          separator:
+            title: Separator for text formats
+            type: string
+            default: tab
+            enum:
+            - tab
+            - comma
+            - space
+            - pipe
+          idColumn:
+            title: Index (text) or name (SDF) to use for the ID field
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\- ]+$"
+          chunkSize:
+            title: Size of chunks to split
+            type: integer
+            default: 1000
+            minValue: 100
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/100.smi
+        options:
+          outputFile: foo/results.sdf
+          fragment: hac
+          enumerateCharges: true
+          enumerateChirals: true
+          enumerateTautomers: true
+          combinatorial: false
+          minHac: 15
+          maxHac: 20
+          numSP3: true
+          minPh: 6
+          maxPh: 8
+          maxTautomers: 5
+          minCharge: -2
+          maxCharge: 2
+          numCharges: 2
+          addHydrogens: true
+          tryEmbedding: true
+          readHeader: false
+          separator: tab
+          idColumn: 1
+          chunkSize: 10
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/results.sdf
+            checks:
+            - exists: true

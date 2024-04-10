@@ -9,6 +9,7 @@ params.epsilon = 0.5
 
 process search_phar {
 
+    // latest is the only tag they have. Not been updated for 7 years.
     container '3dechem/silicos-it:latest'
 
     input:

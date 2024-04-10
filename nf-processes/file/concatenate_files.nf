@@ -6,7 +6,7 @@ params.optional = false
 
 process concatenate_files {
 
-    container 'informaticsmatters/vs-prep:latest'
+    container 'informaticsmatters/vs-prep:stable'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:

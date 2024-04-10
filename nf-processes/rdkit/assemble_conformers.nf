@@ -6,7 +6,7 @@ params.interval = 10000
 
 process assemble {
 
-    container 'informaticsmatters/vs-prep:latest'
+    container 'informaticsmatters/vs-prep:stable'
 
     input:
     path input // .smi
