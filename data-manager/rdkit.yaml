@@ -20,7 +20,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -123,7 +123,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: latest
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -268,7 +268,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -369,7 +369,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -476,7 +476,7 @@ jobs:
     - properties
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -692,7 +692,7 @@ jobs:
     - properties
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -836,7 +836,7 @@ jobs:
     - sa_score
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -956,7 +956,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1173,7 +1173,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1256,7 +1256,7 @@ jobs:
     - alignment
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1390,7 +1390,7 @@ jobs:
     - fingerprint
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1624,7 +1624,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1715,7 +1715,7 @@ jobs:
     - library
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1840,7 +1840,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: latest
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       type: nextflow

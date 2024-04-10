@@ -17,7 +17,7 @@ params.chunk_size = 1000
 
 process split_sdf {
 
-    container 'informaticsmatters/vs-rdock:latest'
+    container 'informaticsmatters/vs-rdock:stable'
 
     input:
     path molecules

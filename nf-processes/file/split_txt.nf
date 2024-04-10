@@ -21,7 +21,7 @@ params.chunk_size = 1000
 
 process split_txt {
 
-    container 'informaticsmatters/vs-prep:latest'
+    container 'informaticsmatters/vs-prep:stable'
 
     input:
     file inputs

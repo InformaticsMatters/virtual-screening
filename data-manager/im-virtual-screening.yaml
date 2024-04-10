@@ -66,7 +66,7 @@ jobs:
     - test
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -143,7 +143,7 @@ jobs:
     - openbabel
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -206,7 +206,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -294,7 +294,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-rdock
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -362,7 +362,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-oddt
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -466,7 +466,7 @@ jobs:
     doc-url: im-virtual-screening/rdock-filter-sdf.md
     image:
       name: informaticsmatters/vs-rdock
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -570,7 +570,7 @@ jobs:
     doc-url: im-virtual-screening/rdock-filter-sdf.md
     image:
       name: informaticsmatters/vs-rdock
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -679,7 +679,7 @@ jobs:
     - format
     image:
       name: informaticsmatters/vs-prep
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -735,7 +735,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: latest
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -949,7 +949,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1077,7 +1077,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1200,7 +1200,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1268,7 +1268,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-plants
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1415,7 +1415,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-plants
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1534,7 +1534,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'latest'
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1745,7 +1745,7 @@ jobs:
     - nextflow
     image:
       name: informaticsmatters/vs-nextflow
-      tag: latest
+      tag: 'stable'
       project-directory: /data
       working-directory: /data
       type: nextflow

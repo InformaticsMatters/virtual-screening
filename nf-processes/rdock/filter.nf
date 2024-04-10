@@ -13,7 +13,7 @@ params.publish_dir_mode = 'copy'
 */
 process sd_sort_and_top {
 
-    container 'informaticsmatters/vs-rdock:latest'
+    container 'informaticsmatters/vs-rdock:stable'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:
@@ -33,7 +33,7 @@ and sort those best results.
 */
 process sd_best_sorted {
 
-    container 'informaticsmatters/vs-rdock:latest'
+    container 'informaticsmatters/vs-rdock:stable'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:
@@ -55,7 +55,7 @@ and sort those best results and keep the top n (params.top)
 */
 process sd_best_sorted_top {
 
-    container 'informaticsmatters/vs-rdock:latest'
+    container 'informaticsmatters/vs-rdock:stable'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:

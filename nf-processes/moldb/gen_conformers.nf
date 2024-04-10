@@ -7,7 +7,7 @@ params.interval = 100
 
 process gen_conformers {
 
-    container 'informaticsmatters/vs-moldb:latest'
+    container 'informaticsmatters/vs-moldb:stable'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:
