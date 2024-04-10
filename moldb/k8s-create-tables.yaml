@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: moldb-create-tables
-    image: informaticsmatters/vs-moldb:latest
+    image: informaticsmatters/vs-moldb:stable
     command: [ 'python', '-m', 'moldb.create_db' ]
     env:
     - name: POSTGRES_SERVER
