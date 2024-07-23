@@ -1,4 +1,4 @@
-FROM informaticsmatters/vs-rdkit-base:latest
+FROM informaticsmatters/vs-rdkit-base:stable
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.

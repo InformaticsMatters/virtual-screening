@@ -17,11 +17,10 @@
 
 import argparse, os, gzip, time
 
-import utils, rdkit_utils
+import utils, rdkit_utils, rdkit_calcs
+
 from dm_job_utilities.dm_log import DmLog
 
-from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors, Crippen
 
 calc_props = {
     'hac': ('RDK_hac', 'Calculate heavy atom count'),
@@ -34,7 +33,6 @@ calc_props = {
     'logp': ('RDK_logp', 'Calculate logP'),
     'tpsa': ('RDK_tpsa', 'Calculate topological polar surface area')
 }
-
 
 def process(input,
             outfile,
@@ -111,33 +109,25 @@ def process(input,
         try:
             values = []
             if 'hac' in calcs:
-                values.append(mol.GetNumHeavyAtoms())
+                values.append(rdkit_calcs.calc_hac(mol))
             if 'num_rot_bonds' in calcs:
-                values.append(rdMolDescriptors.CalcNumRotatableBonds(mol))
+                values.append(rdkit_calcs.calc_num_rot_bonds(mol))
             if 'num_rings' in calcs:
-                values.append(rdMolDescriptors.CalcNumRings(mol))
+                values.append(rdkit_calcs.calc_num_rings(mol))
             if 'num_aro_rings' in calcs:
-                values.append(rdMolDescriptors.CalcNumAromaticRings(mol))
+                values.append(rdkit_calcs.calc_num_aro_rings(mol))
             if 'num_cc' in calcs or 'num_undef_cc' in calcs:
-                num_cc, num_undef_cc = rdkit_utils.get_num_chiral_centers(mol)
+                num_cc, num_undef_cc = rdkit_calcs.calc_num_cc(mol)
                 if 'num_cc' in calcs:
                     values.append(num_cc)
                 if 'num_undef_cc' in calcs:
                     values.append(num_undef_cc)
             if 'num_sp3' in calcs:
-                values.append(rdkit_utils.get_num_sp3_centres(mol))
+                values.append(rdkit_calcs.calc_num_sp3(mol))
             if 'logp' in calcs:
-                logp = Crippen.MolLogP(mol)
-                # logp values have a silly number of decimal places
-                if logp is not None:
-                    values.append("%.2f" % logp)
-                else:
-                    values.append(None)
+                values.append(rdkit_calcs.calc_logp_crippen(mol))
             if 'tpsa' in calcs:
-                tpsa = rdMolDescriptors.CalcTPSA(mol)
-                # tpsa values have a silly number of decimal places
-                if tpsa is not None:
-                    values.append("%.2f" % tpsa)
+                values.append(rdkit_calcs.calc_tpsa(mol))
 
         except:
             errors += 1

@@ -7,12 +7,18 @@ version: '3.0'
 # IMAGE_TAG=1.0.0 docker-compose push
 #
 # ----
-# NOTE: This file is for copnvenience, it does not feature in the CI build process.
+# NOTE: This file is for convenience, it does not feature in the CI build process.
 # ----  The CI Build (GitHib's Actions) DOES NOT use Docker Compose.
 #       It builds each image individually and pushes it to Docker Hub.
 #       If you add or remove entries here, update the repository's workflow files.
 
 services:
+
+  rdkit-base:
+    build:
+      context: .
+      dockerfile: Dockerfile-rdkit-base
+    image: informaticsmatters/vs-rdkit-base:${IMAGE_TAG:-latest}
 
   prep:
     build:
