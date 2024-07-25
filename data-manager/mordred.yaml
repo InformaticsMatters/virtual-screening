@@ -17,7 +17,7 @@ jobs:
     - descriptors
     image:
       name: informaticsmatters/mordred
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true

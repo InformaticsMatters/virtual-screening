@@ -20,7 +20,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -123,7 +123,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -268,7 +268,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -369,7 +369,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -476,22 +476,23 @@ jobs:
     - properties
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
     command: >-
       /code/rdkit_props.py --input '{{ inputFile }}'
       --outfile '{{ outputFile }}'
-      {% if hac is defined and hac %}--hac{% endif %}
-      {% if numRotBonds is defined and numRotBonds %}--num-rot-bonds{% endif %}
-      {% if numRings is defined and numRings %}--num-rings{% endif %}
-      {% if numAroRings is defined and numAroRings %}--num-aro-rings{% endif %}
-      {% if numChiralCentres is defined and numChiralCentres %}--num-cc{% endif %}
-      {% if numUndefChiralCentres is defined and numUndefChiralCentres %}--num-undef-cc{% endif %}
-      {% if numSP3 is defined and numSP3 %}--num-sp3{% endif %}
-      {% if logp is defined and logp %}--logp{% endif %}
-      {% if tpsa is defined and tpsa %}--tpsa{% endif %}
+      --calcs
+      {% if hac is defined and hac %}hac{% endif %}
+      {% if numRotBonds is defined and numRotBonds %}num_rot_bonds{% endif %}
+      {% if numRings is defined and numRings %}num_rings{% endif %}
+      {% if numAroRings is defined and numAroRings %}num_aro_rings{% endif %}
+      {% if numChiralCentres is defined and numChiralCentres %}num_cc{% endif %}
+      {% if numUndefChiralCentres is defined and numUndefChiralCentres %}num_undef_cc{% endif %}
+      {% if numSP3 is defined and numSP3 %}num_sp3{% endif %}
+      {% if logp is defined and logp %}logp{% endif %}
+      {% if tpsa is defined and tpsa %}tpsa{% endif %}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
@@ -692,14 +693,14 @@ jobs:
     - properties
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
     command: >-
       /code/rdkit_props.py --input '{{ inputFile }}'
       --outfile '{{ outputFile }}'
-      {% for calc in calculations %} --'{{ calc | replace('_', '-') }}'{% endfor %}
+      --calc{% for calc in calculations %} '{{ calc }}'{% endfor %}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
@@ -790,6 +791,11 @@ jobs:
                     description: Topological polar surface area
                     required: true
                     active: true
+                  SAScore:
+                    type: number
+                    description: Synthetic accessibility score
+                    required: true
+                    active: true
               derived-from: inputFile
       options:
         type: object
@@ -824,6 +830,8 @@ jobs:
                 title: Crippen logP
               - const: tpsa
                 title: Topological polar surface area
+              - const: sa_score
+                title: Synthetic accessibility score
           readHeader:
             title: Input has header line (text formats only)
             type: boolean
@@ -863,6 +871,7 @@ jobs:
           - num_sp3
           - logp
           - tpsa
+          - sa_score
         checks:
           exitCode: 0
           outputs:
@@ -881,7 +890,7 @@ jobs:
     - properties
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1025,7 +1034,7 @@ jobs:
     - sa_score
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1145,7 +1154,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1362,7 +1371,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1445,7 +1454,7 @@ jobs:
     - alignment
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1579,7 +1588,7 @@ jobs:
     - fingerprint
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1813,7 +1822,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1904,7 +1913,7 @@ jobs:
     - library
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -2029,7 +2038,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow

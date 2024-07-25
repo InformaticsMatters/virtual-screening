@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2022 Informatics Matters Ltd.
+# Copyright 2024 Informatics Matters Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ http://www.jcheminf.com/content/1/1/8
 import argparse, time, os, pickle, traceback, math
 from sigfig import round
 
-import utils, rdkit_utils
+import utils, rdkit_utils, rdkit_calcs
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
@@ -57,68 +57,8 @@ def numBridgeheadsAndSpiro(mol, ri=None):
     return nBridgehead, nSpiro
 
 
-def calculateScore(m):
-    if _fscores is None:
-        readFragmentScores()
-
-    # fragment score
-    fp = rdMolDescriptors.GetMorganFingerprint(m,
-                                               2)  # <- 2 is the *radius* of the circular fingerprint
-    fps = fp.GetNonzeroElements()
-    score1 = 0.
-    nf = 0
-    for bitId, v in fps.items():
-        nf += v
-        sfp = bitId
-        score1 += _fscores.get(sfp, -4) * v
-    score1 /= nf
-
-    # features score
-    nAtoms = m.GetNumAtoms()
-    nChiralCenters = len(Chem.FindMolChiralCenters(m, includeUnassigned=True))
-    ri = m.GetRingInfo()
-    nBridgeheads, nSpiro = numBridgeheadsAndSpiro(m, ri)
-    nMacrocycles = 0
-    for x in ri.AtomRings():
-        if len(x) > 8:
-            nMacrocycles += 1
-
-    sizePenalty = nAtoms**1.005 - nAtoms
-    stereoPenalty = math.log10(nChiralCenters + 1)
-    spiroPenalty = math.log10(nSpiro + 1)
-    bridgePenalty = math.log10(nBridgeheads + 1)
-    macrocyclePenalty = 0.
-    # ---------------------------------------
-    # This differs from the paper, which defines:
-    #  macrocyclePenalty = math.log10(nMacrocycles+1)
-    # This form generates better results when 2 or more macrocycles are present
-    if nMacrocycles > 0:
-        macrocyclePenalty = math.log10(2)
-
-    score2 = 0. - sizePenalty - stereoPenalty - spiroPenalty - bridgePenalty - macrocyclePenalty
-
-    # correction for the fingerprint density
-    # not in the original publication, added in version 1.1
-    # to make highly symmetrical molecules easier to synthetise
-    score3 = 0.
-    if nAtoms > len(fps):
-        score3 = math.log(float(nAtoms) / len(fps)) * .5
-
-    sascore = score1 + score2 + score3
-
-    # need to transform "raw" value into scale between 1 and 10
-    min = -4.0
-    max = 2.5
-    sascore = 11. - (sascore - min + 1) / (max - min) * 9.
-    # smooth the 10-end
-    if sascore > 8.:
-        sascore = 8. + math.log(sascore + 1. - 9.)
-    if sascore > 10.:
-        sascore = 10.0
-    elif sascore < 1.:
-        sascore = 1.0
-
-    return sascore
+def calculateScore(mol):
+    return rdkit_calcs.calc_sa_score(mol)
 
 
 def process(input,
@@ -194,10 +134,10 @@ def process(input,
             if sa_score is not None:
                 sa_score = round(sa_score, sigfigs=3)
 
-        except:
+        except Exception as e:
             errors += 1
-            DmLog.emit_event('Failed to process record', count)
-            traceback.print_exc()
+            DmLog.emit_event('Failed to process record', count, str(e))
+            # traceback.print_exc()
             continue
 
         # write the output

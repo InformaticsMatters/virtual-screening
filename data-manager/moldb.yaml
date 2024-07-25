@@ -29,7 +29,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -80,7 +80,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -181,7 +181,7 @@ jobs:
     - library
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -307,7 +307,7 @@ jobs:
     - molecular properties
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -391,7 +391,7 @@ jobs:
     - stereoisomers
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -489,7 +489,7 @@ jobs:
     - conformers
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -586,7 +586,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -691,7 +691,7 @@ jobs:
     - stereoisomers
     image:
       name: informaticsmatters/vs-moldb
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -820,7 +820,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-moldb
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -947,7 +947,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: 'stable'
+      tag: 'latest'
       project-directory: /data
       working-directory: /data
       type: simple

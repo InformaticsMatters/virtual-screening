@@ -23,16 +23,19 @@ from dm_job_utilities.dm_log import DmLog
 
 
 calc_props = {
-    'hac': ('RDK_hac', 'Calculate heavy atom count'),
-    'num_rot_bonds': ('RDK_numRotBonds', 'Calculate number of rotatable bonds'),
-    'num_rings': ('RDK_numRings', 'Calculate number of rings'),
-    'num_aro_rings': ('RDK_numAroRings', 'Calculate number of aromatic rings'),
-    'num_cc': ('RDK_numChiralCentres', 'Calculate number of chiral centres'),
-    'num_undef_cc': ('RDK_numUndefChiralCentres', 'Calculate number of undefined chiral centres'),
-    'num_sp3': ('RDK_numSP3', 'Calculate number of sp3 hybridised carbon atoms'),
-    'logp': ('RDK_logp', 'Calculate logP'),
-    'tpsa': ('RDK_tpsa', 'Calculate topological polar surface area')
+    # calc key: (result prop name, prop description, function to call, index in result if multiple results)
+    'hac': ('RDK_hac', 'Calculate heavy atom count', rdkit_calcs.calc_hac, None),
+    'num_rot_bonds': ('RDK_numRotBonds', 'Calculate number of rotatable bonds', rdkit_calcs.calc_num_rot_bonds, None),
+    'num_rings': ('RDK_numRings', 'Calculate number of rings', rdkit_calcs.calc_num_rings, None),
+    'num_aro_rings': ('RDK_numAroRings', 'Calculate number of aromatic rings', rdkit_calcs.calc_num_aro_rings, None),
+    'num_cc': ('RDK_numChiralCentres', 'Calculate number of chiral centres', rdkit_calcs.calc_num_cc, 0),
+    'num_undef_cc': ('RDK_numUndefChiralCentres', 'Calculate number of undefined chiral centres', rdkit_calcs.calc_num_cc, 1),
+    'num_sp3': ('RDK_numSP3', 'Calculate number of sp3 hybridised carbon atoms', rdkit_calcs.calc_num_sp3, None),
+    'logp': ('RDK_logp', 'Calculate logP', rdkit_calcs.calc_logp_crippen, None),
+    'tpsa': ('RDK_tpsa', 'Calculate topological polar surface area', rdkit_calcs.calc_tpsa, None),
+    'sa_score': ('SAScore', 'Synthetic accessibility score', rdkit_calcs.calc_sa_score, None)
 }
+
 
 def process(input,
             outfile,
@@ -47,6 +50,9 @@ def process(input,
             interval=0):
 
     utils.log('Using calculations:', calcs)
+    for calc in calcs:
+        if calc not in calc_props:
+            utils.log('calculation', calc, 'is not supported')
 
     utils.expand_path(outfile)
 
@@ -73,6 +79,7 @@ def process(input,
                                        delimiter=delimiter)
 
     id_col_type, id_col_value = utils.is_type(id_column, int)
+
     # read the input records and write the output
     while True:
         t = reader.read()
@@ -108,30 +115,23 @@ def process(input,
         # calculate the molecular props
         try:
             values = []
-            if 'hac' in calcs:
-                values.append(rdkit_calcs.calc_hac(mol))
-            if 'num_rot_bonds' in calcs:
-                values.append(rdkit_calcs.calc_num_rot_bonds(mol))
-            if 'num_rings' in calcs:
-                values.append(rdkit_calcs.calc_num_rings(mol))
-            if 'num_aro_rings' in calcs:
-                values.append(rdkit_calcs.calc_num_aro_rings(mol))
-            if 'num_cc' in calcs or 'num_undef_cc' in calcs:
-                num_cc, num_undef_cc = rdkit_calcs.calc_num_cc(mol)
-                if 'num_cc' in calcs:
-                    values.append(num_cc)
-                if 'num_undef_cc' in calcs:
-                    values.append(num_undef_cc)
-            if 'num_sp3' in calcs:
-                values.append(rdkit_calcs.calc_num_sp3(mol))
-            if 'logp' in calcs:
-                values.append(rdkit_calcs.calc_logp_crippen(mol))
-            if 'tpsa' in calcs:
-                values.append(rdkit_calcs.calc_tpsa(mol))
+            results_dict = {}
+            for calc in calcs:
+                if calc in calc_props:
+                    tup = calc_props[calc]
+                    func = tup[2]
+                    result = results_dict.get(func)
+                    if not result:
+                        result = func(mol)
+                        results_dict[func] = result
+                    if tup[3] is None:
+                        values.append(result)
+                    else:
+                        values.append(result[tup[3]])
 
-        except:
+        except Exception as e:
             errors += 1
-            DmLog.emit_event('Failed to process record', count)
+            DmLog.emit_event('Failed to process record', count, str(e))
             continue
 
         if omit_fields:
@@ -151,7 +151,7 @@ def process(input,
 def main():
     # Example usage:
     #   ./rdkit_props.py -i data/1000.smi --outfile out.sdf -a --delimiter tab --id-column 1 --interval 100
-    #   ./rdkit_props.py -i data/1000.smi --outfile out.smi --write-header -a --delimiter tab --id-column 1 --interval 100
+    #   ./rdkit_props.py -i data/1000.smi --outfile out.smi --write-header -c logp tpsa --delimiter tab --id-column 1 --interval 100
 
     ### command line args definitions #########################################
 
@@ -173,9 +173,10 @@ def main():
     parser.add_argument('--read-records', default=100, type=int,
                         help="Read this many records to determine the fields that are present")
 
-    parser.add_argument('-a', '--all', action='store_true', help="Calculate all properties")
-    for key in calc_props:
-        parser.add_argument('--' + key.replace('_', '-'), action='store_true', help=calc_props[key][1])
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-a', '--all', action='store_true', help="Calculate all properties")
+    calc_choices = [k for k in calc_props]
+    group.add_argument('-c', '--calcs', nargs='+', choices=calc_choices, help="Calculators to use")
 
     parser.add_argument("--interval", type=int, help="Reporting interval")
 
@@ -185,10 +186,7 @@ def main():
     if args.all:
         calcs_to_use = calc_props.keys()
     else:
-        calcs_to_use = []
-        for key in calc_props:
-            if hasattr(args, key) and getattr(args, key):
-                calcs_to_use.append(key)
+        calcs_to_use = args.calcs
 
     # special processing of delimiter to allow it to be set as a name
 
