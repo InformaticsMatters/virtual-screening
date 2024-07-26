@@ -14,7 +14,7 @@ WORKDIR ${HOME}
 RUN pip install \
   neo4j-driver==4.4.11 \
   im-standardize-molecule==0.1.0 \
-  im-data-manager-job-utilities==1.1.1
+  im-data-manager-job-utilities==1.2.0
 
 COPY fn_*.py utils.py ./
 

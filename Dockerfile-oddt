@@ -14,7 +14,7 @@ ENV HOME=/code
 WORKDIR ${HOME}
 
 RUN pip install wheel six &&\
-  pip install im-data-manager-job-utilities==1.1.1\
+  pip install im-data-manager-job-utilities==1.2.0\
   git+https://github.com/oddt/oddt.git@master
 
 COPY *.py ./

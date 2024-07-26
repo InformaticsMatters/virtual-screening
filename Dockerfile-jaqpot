@@ -4,7 +4,7 @@ RUN apt-get -y update &&\
   apt-get -y install procps &&\
   apt-get clean
 
-RUN pip install im-data-manager-job-utilities==1.0.1
+RUN pip install im-data-manager-job-utilities==1.2.0
 
 ENV HOME=/code
 WORKDIR ${HOME}

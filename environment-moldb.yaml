@@ -9,4 +9,4 @@ dependencies:
 - rdkit=2021.03.5
 - pip:
   - im-standardize-molecule==0.1.0
-  - im-data-manager-job-utilities==1.1.0
+  - im-data-manager-job-utilities==1.2.0

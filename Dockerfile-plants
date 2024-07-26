@@ -16,4 +16,4 @@ RUN apt-get update &&\
 COPY pharmacophore.py utils.py /code/
 
 RUN chmod a+x /code/*.py &&\
-    pip install im-data-manager-job-utilities==1.1.1
+    pip install im-data-manager-job-utilities==1.2.0

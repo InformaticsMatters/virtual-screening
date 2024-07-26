@@ -12,4 +12,4 @@ dependencies:
   - nextflow == 21.10.6
   - pip:
     - im-jote
-    - im-data-manager-job-utilities==1.0.1
+    - im-data-manager-job-utilities==1.2.0
