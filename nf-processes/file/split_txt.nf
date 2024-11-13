@@ -19,9 +19,11 @@ params.suffix = '.txt'
 params.header = false // if true then skip the first line
 params.chunk_size = 1000
 
+tag = 'latest'
+
 process split_txt {
 
-    container 'informaticsmatters/vs-prep:stable'
+    container 'informaticsmatters/vs-prep:latest'
 
     input:
     file inputs

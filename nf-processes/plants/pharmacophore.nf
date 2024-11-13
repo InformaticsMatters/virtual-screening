@@ -10,7 +10,7 @@ params.delimiter = null
 
 process pharmacophore {
 
-    container 'informaticsmatters/vs-plants:stable'
+    container 'informaticsmatters/vs-plants:latest'
 
     input:
     path inputs // .sdf or .smi

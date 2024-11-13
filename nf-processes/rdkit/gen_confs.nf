@@ -23,7 +23,7 @@ params.interval = 10
 
 process gen_conformers {
 
-    container 'informaticsmatters/vs-prep:stable'
+    container 'informaticsmatters/vs-prep:latest'
 
     input:
     file inputs

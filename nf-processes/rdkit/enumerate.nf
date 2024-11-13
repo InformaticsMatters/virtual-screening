@@ -34,7 +34,7 @@ params.num_charges = null
 
 process enumerate {
 
-    container 'informaticsmatters/vs-prep:stable'
+    container 'informaticsmatters/vs-prep:latest'
 
     input:
     file inputs

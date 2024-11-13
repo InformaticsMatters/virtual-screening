@@ -56,7 +56,7 @@ workflow enumerate_forms {
     extract_need_enum(specification)
     split_txt(extract_need_enum.out)
     enumerate(split_txt.out.flatten())
-    load_enum(enumerate.out)
+    load_enum(enumerate.out[0])
 
     extract_need_enum.out.subscribe {
         now = dateFormat.format(new java.util.Date())
@@ -73,7 +73,7 @@ workflow enumerate_forms {
     }
 
     enumerate_count = 0
-    enumerate.out.subscribe {
+    enumerate.out[1].subscribe {
         now = dateFormat.format(new java.util.Date())
         enumerate_count++
         log.info("$now # PROGRESS -DONE- $wrkflw:enumerate $enumerate_count")

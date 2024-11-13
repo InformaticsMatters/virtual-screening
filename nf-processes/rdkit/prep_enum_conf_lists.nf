@@ -5,7 +5,7 @@ params.interval = 10000
 
 process prep_lists {
 
-    container 'informaticsmatters/vs-prep:stable'
+    container 'informaticsmatters/vs-prep:latest'
 
     input:
     path inputs // .smi

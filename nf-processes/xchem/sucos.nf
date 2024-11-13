@@ -5,7 +5,7 @@ params.tanimoto = false
 
 process sucos {
 
-    container 'informaticsmatters/vs-prep:stable'
+    container 'informaticsmatters/vs-prep:latest'
 
     input:
     path inputs // .sdf

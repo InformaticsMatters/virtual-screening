@@ -13,6 +13,6 @@ RUN apt-get -y update &&\
 ENV PYTHONUNBUFFERED=1
 
 # pip install RDKit
-RUN pip install rdkit==2023.3.2 sigfig==1.3.2
+RUN pip install rdkit==2023.3.2 numpy==1.26.*
 
 

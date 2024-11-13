@@ -8,7 +8,7 @@ params.output_file = 'reformatted'
 
 process convert_format {
 
-    container 'informaticsmatters/vs-prep:stable'
+    container 'informaticsmatters/vs-prep:latest'
     scratch params.scratch
 
     input:

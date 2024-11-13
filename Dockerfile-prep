@@ -16,7 +16,8 @@ ENV HOME=/code
 WORKDIR ${HOME}
 
 # install our requirements. RDKit is present in base container, OBabel is apt installed earlier
-RUN pip install scikit-learn==1.2.2\
+RUN pip install sigfig==1.3.2\
+  scikit-learn==1.2.2\
   pdb2pqr==3.6.1\
   im-standardize-molecule==0.1.0\
   im-data-manager-job-utilities==1.2.0

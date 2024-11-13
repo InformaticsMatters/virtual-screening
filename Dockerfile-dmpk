@@ -16,7 +16,7 @@ ENV PYTHONPATH=/code
 ENV HOME=/code
 WORKDIR ${HOME}
 
-RUN pip install matplotlib==3.7.1 im-data-manager-job-utilities==1.2.0
+RUN pip install numpy==1.26.* matplotlib==3.7.1 im-data-manager-job-utilities==1.2.0
 
 COPY utils.py ./
 COPY dmpk/*.py ./dmpk/
