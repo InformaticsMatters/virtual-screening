@@ -700,7 +700,7 @@ jobs:
     command: >-
       /code/rdkit_props.py --input '{{ inputFile }}'
       --outfile '{{ outputFile }}'
-      --calc{% for calc in calculations %} '{{ calc }}'{% endfor %}
+      --calcs{% for calc in calculations %} '{{ calc }}'{% endfor %}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}

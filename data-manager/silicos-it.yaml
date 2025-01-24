@@ -18,6 +18,7 @@ jobs:
     - similarity
     - shape
     - silicos-it
+    - silicos
     - filter
     - 3d
     image:
@@ -135,6 +136,7 @@ jobs:
     - similarity
     - pharmacophore
     - silicos-it
+    - silicos
     - filter
     - 3d
     image:

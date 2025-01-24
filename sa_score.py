@@ -31,7 +31,6 @@ from sigfig import round
 import utils, rdkit_utils, rdkit_calcs
 from dm_job_utilities.dm_log import DmLog
 
-from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 
 _fscores = None
