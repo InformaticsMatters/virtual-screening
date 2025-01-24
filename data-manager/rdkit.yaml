@@ -1592,6 +1592,7 @@ jobs:
       project-directory: /data
       working-directory: /data
       fix-permissions: true
+      memory: 5Gi
     command: >-
       /code/cluster_butina.py --input '{{ inputFile }}'
       --output {{ outputFile }}

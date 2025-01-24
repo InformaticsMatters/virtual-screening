@@ -1,5 +1,5 @@
 ---
-name: im-vs-prep
+name: im-vs-prep-staging
 channels:
   - conda-forge
 dependencies:
