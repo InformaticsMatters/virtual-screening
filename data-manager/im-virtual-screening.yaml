@@ -817,7 +817,7 @@ jobs:
                   enum_smi:
                     type: string
                     description: The canonical SMILES of the enumerated molecule
-              derived-from: inputs
+              derived-from: inputFile
       options:
         type: object
         required:
