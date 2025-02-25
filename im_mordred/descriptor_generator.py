@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# Generates Mordred descriptors for molecules.
+
 import argparse, datetime, time, sys, os
 
 from mordred import Calculator, descriptors
@@ -142,6 +145,9 @@ def run(input,
 
 
 def main():
+
+    # Run using conda env created from environment-im-mordred.yaml
+    #   or docker environment created from Dockerfile-mordred
 
     # Examples:
     #   python -m im_mordred.descriptor_generator -i data/10.smi -o descriptors.smi -d tab
