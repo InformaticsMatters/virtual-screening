@@ -10,6 +10,7 @@ RUN yum -y update &&\
 RUN pip install --trusted-host pypi.org --trusted-host pypi.python.org im-data-manager-job-utilities==1.2.0
 
 COPY prepare_rdock.py rdock_*.sh /code/
+COPY scripts/split-sdf.sh /usr/local/bin/
 RUN chmod 755 /code/prepare_rdock.py
 
 USER rdock
