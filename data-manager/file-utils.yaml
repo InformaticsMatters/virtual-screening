@@ -23,6 +23,10 @@ jobs:
     command: >-
       split-sdf.sh {{ inputFile }} {{ count }} {{ outputFile }}
     variables:
+      order:
+        options:
+        - count
+        - outputFile
       inputs:
         type: object
         required:
