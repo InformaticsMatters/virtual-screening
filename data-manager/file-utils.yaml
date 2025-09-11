@@ -14,6 +14,7 @@ jobs:
     keywords:
     - sdf
     - splitter
+    - file
     image:
       name: informaticsmatters/vs-rdock
       tag: latest
@@ -36,12 +37,11 @@ jobs:
             title: SDFile to split
             mime-types:
             - chemical/x-mdl-sdfile
-            type: file
       outputs:
         type: object
         properties:
           outputFile:
-            title: Output files
+            title: Output file base name
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}_*.sdf'
@@ -74,3 +74,78 @@ jobs:
           - name: mychunk_00001.sdf
             checks:
             - exists: true
+
+  concatenator:
+    name: Concatenate files
+    description: >-
+      Takes a number of input files and concatenates them into a single output file
+    version: '1.0.0'
+    category: file utils
+    keywords:
+      - concatenate
+      - combine
+      - file
+    image:
+      name: informaticsmatters/vs-prep
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      python concatenator.py -f '{{ filesGlob }}' -d '{{ dirsGlob }}' {{ outputFile }}
+    variables:
+      order:
+        options:
+          - filesGlob
+          - outputFile
+          - header
+          - binary
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output files
+            creates: '{{ outputFile }}'
+            type: files
+      options:
+        type: object
+        required:
+          - filesGlob
+          - outputFile
+        properties:
+          filesGlob:
+            title: Input files
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-\\?\\*]+$"
+          dirsGlob:
+            title: Dirs to search
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-\\?\\*]+$"
+          outputFile:
+            title: Output file name
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Handle header line
+            type: string
+            enum:
+              - ignore
+              - retain
+          binary:
+            title: Treat as binary
+            type: boolean
+            default: false
+
+#    tests:
+#      simple-execution:
+#        options:
+#          outputFile: outfile.smi
+#          filesGlob: 10*.smi
+#          dirGlob: data
+#        checks:
+#          exitCode: 0
+#          outputs:
+#            - name: outfile.smi
+#              checks:
+#                - exists: true
+#                - lineCount: 111110
