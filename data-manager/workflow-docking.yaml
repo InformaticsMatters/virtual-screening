@@ -47,14 +47,14 @@ steps:
       job: concatenator
       version: "1.0.0"
       variables:
-        filesGlob: .instance-*/calculated.sdf
+        filesGlob: .instance-*/enumerated.sdf
     plumbing:
+      - variable: inputFile
+        from-step:
+          name: enumerate
+          variable: outputFile
       - variable: outputFile
         from-workflow:
           variable: resultsFile
-      - variable: inputFile
-        from-step:
-          name: calculate
-          variable: outputFile
       - variable: outputFile
         to-project:
