@@ -4,6 +4,41 @@ kind-version: "2025.2"
 name: rdock-docking-workflow
 description: >-
   Workflow that performs docking using rDock
+variables:
+  inputs:
+    type: object
+    required:
+      - inputFile
+    properties:
+      inputFile: # example would be data/candidates.sdf
+        title: SDFile to process
+        mime-types:
+          - chemical/x-mdl-sdfile
+  outputs:
+    type: object
+    required:
+      - outputFile
+    properties:
+      outputFile:
+      title: Output file name
+      mime-types:
+        - chemical/x-mdl-sdfile
+      creates: '{{ outputFile }}'
+      type: file
+  options:
+    type: object
+    required:
+      - count
+    properties:
+      count:
+        title: Chunk size
+        type: integer
+        default: 100
+        minimum: 1
+      maxHac:
+        title: Max heavy atom count
+        type: integer
+        default: 25
 
 steps:
   - name: split
@@ -13,14 +48,16 @@ steps:
       job: sdf-splitter
       version: "1.0.0"
       variables:
-        count: 100
-        outputFile: outputFile
+        outputFile: split_
     plumbing:
       - variable: inputFile
         from-workflow:
-          variable: candidateMolecules
+          variable: inputFile
       - variable: inputFile
         from-project:
+      - variable: count
+        from-workflow:
+          variable: count
 
   - name: enumerate
     description: Enumerate candidate molecules
@@ -29,13 +66,16 @@ steps:
       job: enumerate-candidates
       version: "1.0.0"
       variables:
-        maxHac: 25
+        minHac: 8
         outputFile: enumerated.sdf
     plumbing:
       - variable: inputFile
         from-step:
           name: split
           variable: outputFile
+      - variable: maxHac
+        from-workflow:
+          variable: maxHac
 
   # there would be a rDock step here,
   # but we don't yet have this as a job (only part of Nextflow workflow)
@@ -55,6 +95,6 @@ steps:
           variable: outputFile
       - variable: outputFile
         from-workflow:
-          variable: resultsFile
+          variable: outputFile
       - variable: outputFile
         to-project:
