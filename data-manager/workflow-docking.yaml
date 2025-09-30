@@ -53,8 +53,6 @@ steps:
       - variable: inputFile
         from-workflow:
           variable: inputFile
-      - variable: inputFile
-        from-project:
       - variable: count
         from-workflow:
           variable: count
@@ -96,5 +94,3 @@ steps:
       - variable: outputFile
         from-workflow:
           variable: outputFile
-      - variable: outputFile
-        to-project:
