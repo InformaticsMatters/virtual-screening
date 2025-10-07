@@ -345,6 +345,129 @@ jobs:
             type: string
             default: docking
 
+  rdock:
+    name: Docking using rdock
+    description: >-
+      Dock ligands using rdock
+    version: '1.0.0'
+    category: virtual screening
+    keywords:
+    - docking
+    - rdock
+    - 3d
+    image:
+      name: informaticsmatters/vs-rdock
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    command: >-
+      rdock.sh
+      -r '{{ receptor }}'
+      {% if prmFile is defined %}-p '{{ prmFile }}'{% endif %}
+      -a '{{ cavityFile }}'
+      -m '{{ mode }}'
+      -n {{ count }}
+      -c '{{ candidates }}'
+      -o '{{ outputFile }}'
+
+    variables:
+      inputs:
+        type: object
+        required:
+        - candidates
+        - receptor
+        - prmFile
+        - cavityFile
+        properties:
+          candidates:
+            title: Input SD-file
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+          receptor:
+            title: Receptor (.mol2 file)
+            mime-types:
+            - chemical/x-mol2
+            type: file
+          prmFile:
+            title: Docking configuration (.prm file)
+            mime-types:
+            - squonk/x-rdock-prm
+            type: file
+          cavityFile:
+            title: Cavity file (.as file)
+            mime-types:
+            - squonk/x-rdock-as
+            type: file
+      outputs:
+        type: object
+        properties:
+          outputFile:
+            title: Output file
+            mime-types:
+            - chemical/x-pdb
+            creates: '{{ outputFile }}.sd'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          count:
+            title: Number of dockings
+            type: number
+            default: 25
+          mode:
+            title: Docking mode
+            type: string
+            enum:
+            - dock
+            - minimise
+            - score
+          outputFile:
+            title: Base filename for output (do not include the extension)
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+    tests:
+      simple-execution-with-prm:
+        inputs:
+          candidates: data/candidates-10.sdf
+          receptor: data/dhfr-receptor-ph7.mol2
+          prmFile: data/docking.prm
+          cavityFile: data/docking.as
+        options:
+          outputFile: results
+          count: 1
+          mode: dock
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+          - name: results.log
+            checks:
+            - exists: true
+      simple-execution-without-prm:
+        inputs:
+          candidates: data/candidates-10.sdf
+          receptor: data/dhfr-receptor-ph7.mol2
+          cavityFile: data/docking.as
+        options:
+          outputFile: results
+          count: 1
+          mode: dock
+        checks:
+          exitCode: 0
+          outputs:
+          - name: results.sdf
+            checks:
+            - exists: true
+          - name: results.log
+            checks:
+            - exists: true
+
   ultrafast-shape-recognition:
     name: USR shape similarity
     description: >-
