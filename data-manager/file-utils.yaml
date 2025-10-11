@@ -37,6 +37,7 @@ jobs:
             title: SDFile to split
             mime-types:
             - chemical/x-mdl-sdfile
+            type: file
       outputs:
         type: object
         properties:
