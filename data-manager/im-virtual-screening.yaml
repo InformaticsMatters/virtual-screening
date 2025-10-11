@@ -647,7 +647,7 @@ jobs:
           top:
             title: Keep best n records
             type: integer
-            minValue: 1
+            minimum: 1
     tests:
       simple-sort:
         inputs:
@@ -757,7 +757,7 @@ jobs:
           top:
             title: Keep best n records
             type: integer
-            minValue: 1
+            minimum: 1
     tests:
       group-and-sort:
         inputs:
@@ -2045,7 +2045,7 @@ jobs:
             title: Size of chunks to split
             type: integer
             default: 1000
-            minValue: 100
+            minimum: 100
     tests:
       simple-execution:
         inputs:
