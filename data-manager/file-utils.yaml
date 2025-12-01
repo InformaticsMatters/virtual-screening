@@ -94,7 +94,7 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      python concatenator.py -f '{{ inputFile }}' -d '{{ dirsGlob }}' {{ outputFile }}
+      /code/concatenator.py -f '{{ inputFile }}' -d '{{ dirsGlob }}' {{ outputFile }}
     variables:
       order:
         options:
