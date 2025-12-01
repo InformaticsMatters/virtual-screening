@@ -10,7 +10,7 @@ from dm_job_utilities.dm_log import DmLog
 def find_files(input_file, dirs_glob):
 
     files = glob.glob(f"{dirs_glob}/{input_file}")
-    DmLog.emit_event("Found {} files using {}".format(len(files), files_glob))
+    DmLog.emit_event("Found {} files using {}/{}".format(len(files), dirs_glob, input_file))
     return files
 
 
