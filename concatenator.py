@@ -5,14 +5,15 @@ import shutil
 from dm_job_utilities.dm_log import DmLog
 
 
-def find_files(files_glob):
-    files = glob.glob(files_glob)
+def find_files(input_file, dirs_glob):
+
+    files = glob.glob(f"{dirs_glob}/{input_file}")
     DmLog.emit_event("Found {} files using {}".format(len(files), files_glob))
     return files
 
 
-def concat_binary(files_glob, output):
-    files = find_files(files_glob)
+def concat_binary(input_file, dirs_glob, output):
+    files = find_files(input_file, dirs_glob)
     with (open(output, 'wb') as outfile):
         file_count = 0
         for file in files:
@@ -23,8 +24,8 @@ def concat_binary(files_glob, output):
         DmLog.emit_event("Wrote {} files".format(file_count))
 
 
-def concat_text(files_glob, header, output):
-    files = find_files(files_glob)
+def concat_text(input_file, dirs_glob, header, output):
+    files = find_files(input_file, dirs_glob)
     output_count = 0
     with (open(output, 'w') as outfile):
         file_count = 0
@@ -48,18 +49,16 @@ def concat_text(files_glob, header, output):
 def main():
 
     # Examples:
-    #   python -m concatenator -f "*.sdf"
-    #   python -m concatenator -f "abcd*/output.sdf"
-    #   python -m concatenator -f "*.smi" --header ignore
-    #   python -m concatenator -f "*.bin" --binary
+    #   python -m concatenator -f "output.sdf" -d "input-*"
     #
-    # NOTE: that if using globs for the files argument this must be escaped (e.g. abcd\*) or put in
+    # NOTE: when using globs for the files argument this must be escaped (e.g. abcd\*) or put in
     # quotes (e.g. "abcd*") so that they are not expanded by the shell.
     # NOTE: when using the --binary argument the --header argument is ignored.
 
     # command line args definitions #########################################
     parser = argparse.ArgumentParser(description='Concatenate files')
-    parser.add_argument('-f', '--files', required=True, help="Name(s) of files to look for (glob allowed)")
+    parser.add_argument('-f', '--input-file', required=True, help="Name of the file to concatenate")
+    parser.add_argument('-d', '--dirs-glob', required=True, help="Glob of directories to search")
     parser.add_argument('-o', '--output', required=True, help="Name(s) of output file")
     parser.add_argument('--header', choices=["ignore", "retain"],
                         help="Files have a header line, and what to do with it. If 'retain' the header of the first file is retained")
@@ -69,9 +68,9 @@ def main():
     DmLog.emit_event("Concatenate files: ", args)
 
     if args.binary:
-        concat_binary(args.files, args.output)
+        concat_binary(args.input_file, args.dirs_glob, args.output)
     else:
-        concat_text(args.files, args.header, args.output)
+        concat_text(args.input_file, args.dirs_glob, args.header, args.output)
 
 
 if __name__ == "__main__":

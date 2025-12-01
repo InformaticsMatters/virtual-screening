@@ -94,3 +94,6 @@ steps:
       - variable: outputFile
         from-workflow:
           variable: outputFile
+      - variable: dirsGlob
+        from-predefined:
+          variable: instance-link-glob

@@ -79,7 +79,8 @@ jobs:
   concatenator:
     name: Concatenate files
     description: >-
-      Takes a number of input files and concatenates them into a single output file
+      Takes the name of an input file (expected top be in a number of directories)
+      and concatenates each instance found into a single output file
     version: '1.0.0'
     category: file utils
     keywords:
@@ -93,31 +94,36 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      python concatenator.py -f '{{ filesGlob }}' -d '{{ dirsGlob }}' {{ outputFile }}
+      python concatenator.py -f '{{ inputFile }}' -d '{{ dirsGlob }}' {{ outputFile }}
     variables:
       order:
         options:
-          - filesGlob
           - outputFile
           - header
           - binary
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: SDFile to combine
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: files
       outputs:
         type: object
         properties:
           outputFile:
             title: Output files
             creates: '{{ outputFile }}'
-            type: files
+            type: file
       options:
         type: object
         required:
-          - filesGlob
+          - dirsGlob
           - outputFile
         properties:
-          filesGlob:
-            title: Input files
-            type: string
-            pattern: "^[A-Za-z0-9_/\\.\\-\\?\\*]+$"
           dirsGlob:
             title: Dirs to search
             type: string
