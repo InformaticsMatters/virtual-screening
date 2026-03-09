@@ -918,8 +918,7 @@ jobs:
             - pipe
           idColumn:
             title: Index (text) or name (SDF) to use for the ID field
-            type:
-            - string
+            type: string
             pattern: "^[A-Za-z0-9_\\.\\- ]+$"
           readRecords:
             title: Number of records to read field names
@@ -1963,7 +1962,7 @@ jobs:
             title: Size of chunks to split
             type: integer
             default: 1000
-            minValue: 100
+            minimum: 100
     tests:
       simple-execution:
         inputs:

@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
