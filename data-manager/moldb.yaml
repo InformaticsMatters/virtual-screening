@@ -271,8 +271,8 @@ jobs:
             title: Chunk size for splitting
             type: integer
             default: 100000
-            minValue: 10000
-            maxValue: 1000000
+            minimum: 10000
+            maximum: 1000000
     tests:
       simple-load:
         nextflow-config-file: nextflow-moldb.config
@@ -352,13 +352,13 @@ jobs:
             title: Max number of molecules to process
             type: integer
             default: 1000000
-            maxValue: 5000000
+            maximum: 5000000
           chunk_size:
             title: Chunk size for splitting
             type: integer
             default: 50000
-            minValue: 10000
-            maxValue: 1000000
+            minimum: 10000
+            maximum: 1000000
     tests:
       simple-calc:
         nextflow-config-file: nextflow-moldb.config
@@ -451,13 +451,13 @@ jobs:
             title: Max number of molecules to process
             type: integer
             default: 100000
-            maxValue: 5000000
+            maximum: 5000000
           chunk_size:
             title: Chunk size for splitting
             type: integer
             default: 10000
-            minValue: 10000
-            maxValue: 1000000
+            minimum: 10000
+            maximum: 1000000
     tests:
       simple-enum:
         nextflow-config-file: nextflow-moldb.config
@@ -549,13 +549,13 @@ jobs:
             title: Max number of molecules to process
             type: integer
             default: 100000
-            maxValue: 5000000
+            maximum: 5000000
           chunk_size:
             title: Chunk size for splitting
             type: integer
             default: 10000
-            minValue: 10000
-            maxValue: 1000000
+            minimum: 10000
+            maximum: 1000000
     tests:
       simple-confs:
         nextflow-config-file: nextflow-moldb.config
@@ -768,7 +768,7 @@ jobs:
             title: Max number of molecules to extract
             type: integer
             default: 100000
-            maxValue: 5000000
+            maximum: 5000000
           incl_taut:
             title: Include tautomers
             type: boolean
@@ -897,7 +897,7 @@ jobs:
             title: Max number of molecules to extract
             type: integer
             default: 100000
-            maxValue: 5000000
+            maximum: 5000000
           incl_taut:
             title: Include tautomers
             type: boolean
