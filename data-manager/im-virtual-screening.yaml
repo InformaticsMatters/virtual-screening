@@ -937,7 +937,7 @@ jobs:
   # nextflow jobs
   ####################
   run-rdock:
-    name: Run rRock docking
+    name: Run rDock docking
     description: >-
       Run rDock docking.
     version: '1.0.0'
