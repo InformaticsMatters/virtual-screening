@@ -13,6 +13,8 @@ RUN apt-get -y update &&\
 ENV PYTHONUNBUFFERED=1
 
 # pip install RDKit
-RUN pip install rdkit==2023.3.2
+# numpy is pinned below 2 because this rdkit release predates NumPy 2.0
+# and its compiled extensions are not ABI-compatible with it
+RUN pip install "numpy<2" rdkit==2023.3.2
 
 
