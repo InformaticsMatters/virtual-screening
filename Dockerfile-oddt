@@ -16,6 +16,7 @@ WORKDIR ${HOME}
 
 RUN pip install wheel six &&\
   pip install im-data-manager-job-utilities==1.1.1\
+  im-rdkit-utilities==1.0.0\
   git+https://github.com/oddt/oddt.git@master
 
 COPY *.py ./
