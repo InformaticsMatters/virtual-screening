@@ -8,7 +8,11 @@ FROM informaticsmatters/vs-rdkit-base:latest
 
 # openbabel does not install easily with PIP, and we don't have conda so we must use apt to install.
 # this installs version 3.1.1
-RUN apt-get -y install openbabel python3-openbabel &&\
+# apt-get update is required here (rather than relying on the base image's
+# package index) because the bullseye-security mirror periodically prunes
+# superseded point-release .debs, leaving a stale index full of 404s.
+RUN apt-get -y update &&\
+  apt-get -y install openbabel python3-openbabel &&\
   apt-get clean
 
 ENV PYTHONPATH=/code
