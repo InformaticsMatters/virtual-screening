@@ -18,7 +18,6 @@ WORKDIR ${HOME}
 
 # numpy is pinned below 2 because this matplotlib release predates
 # NumPy 2.0 and its compiled extensions are not ABI-compatible with it
-RUN pip install "numpy<2" matplotlib==3.7.1 sigfig im-data-manager-job-utilities>=1.4.0
+RUN pip install "numpy<2" matplotlib==3.7.1 sigfig "im-data-manager-job-utilities>=1.4.0"
 
-COPY utils.py ./
 COPY dmpk/*.py ./dmpk/
