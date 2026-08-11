@@ -725,7 +725,7 @@ jobs:
     name: Enumerate microstates, tautomers and undefined chiral centres
     description: >-
       Enumerate microstates, tautomers and undefined chiral centres.
-    version: '1.0.0'
+    version: '1.0.1'
     category: virtual screening
     keywords:
     - rdkit
@@ -740,7 +740,7 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/enumerate.py --input '{{ inputFile }}' --output '{{ outputFile }}'
+      /code/enumerate.py -i '{{ inputFile }}' -o '{{ outputFile }}'
       {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
       {% if enumerateCharges is defined and enumerateCharges %}--enumerate-charges{% endif %}
       {% if enumerateChirals is defined and enumerateChirals %}--enumerate-chirals{% endif %}

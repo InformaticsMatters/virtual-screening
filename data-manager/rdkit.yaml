@@ -114,7 +114,7 @@ jobs:
   generate-low-energy-conformers:
     name: Generate 3D conformers
     description: Generate a low energy 3D conformers of molecules
-    version: '1.0.0'
+    version: '1.0.1'
     category: virtual screening
     keywords:
     - rdkit
@@ -128,7 +128,7 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/le_conformers.py --input '{{ inputFile }}' --output '{{ outputFile }}'
+      /code/le_conformers.py -i '{{ inputFile }}' -o '{{ outputFile }}'
       {% if fragment is defined %}--fragment-method '{{ fragment }}'{% endif %}
       {% if numConformers is defined %}--num-conformers {{ numConformers }}{% endif %}
       {% if minimizeCycles is defined %}--minimize-cycles {{ minimizeCycles }}{% endif %}
@@ -469,7 +469,7 @@ jobs:
     name: Molecular property calculations
     description: >-
       Calculates molecular properties using RDKit
-    version: '1.0.0'
+    version: '1.0.1'
     category: molecular properties
     keywords:
     - rdkit
@@ -481,8 +481,8 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/rdkit_props.py --input '{{ inputFile }}'
-      --outfile '{{ outputFile }}'
+      /code/rdkit_props.py -i '{{ inputFile }}'
+      -o '{{ outputFile }}'
       {% if hac is defined and hac %}--hac{% endif %}
       {% if numRotBonds is defined and numRotBonds %}--num-rot-bonds{% endif %}
       {% if numRings is defined and numRings %}--num-rings{% endif %}
@@ -685,7 +685,7 @@ jobs:
     name: Deduplicate molecules
     description: >-
       Deduplicate molecules using RDKit
-    version: '1.0.1'
+    version: '1.0.2'
     category: molecular properties
     keywords:
     - rdkit
@@ -697,8 +697,8 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/rdkit_dedup.py --input '{{ inputFile }}'
-      --outfile '{{ outputFile }}'
+      /code/rdkit_dedup.py -i '{{ inputFile }}'
+      -o '{{ outputFile }}'
       {% if mode is defined and mode %}--mode {{ mode }}{% endif %}
       {% if minHac is defined %}--min-hac {{ minHac }}{% endif %}
       {% if maxHac is defined %}--max-hac {{ maxHac }}{% endif %}
@@ -828,7 +828,7 @@ jobs:
     name: Synthetic accessibility score
     description: >-
       Calculates a synthetic accessibility score based on the approach of Ertl and Schuffenhauer
-    version: '1.0.0'
+    version: '1.0.1'
     category: molecular properties
     keywords:
     - rdkit
@@ -841,8 +841,8 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/sa_score.py --input '{{ inputFile }}'
-      --outfile '{{ outputFile }}'
+      /code/sa_score.py -i '{{ inputFile }}'
+      -o '{{ outputFile }}'
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter '{{ separator }}'{% endif %}
@@ -944,7 +944,7 @@ jobs:
       Filters molecules by molecular similarity using RDKit.
       A number of descriptors and metrics are available.
       Query molecule(s) are specified from a project file or as SMILES.
-    version: '1.0.0'
+    version: '1.0.1'
     category: comp chem
     keywords:
     - rdkit
@@ -960,9 +960,9 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/screen.py --input '{{ inputFile }}'
+      /code/screen.py -i '{{ inputFile }}'
       --queries-file '{{ queries }}'
-      --output '{{ outputFileName }}'
+      -o '{{ outputFileName }}'
       {% if headerInputs is defined %}--read-header{% endif %}
       {% if headerQueries is defined %}--queries-read-header{% endif %}
       {% if headerOutputs is defined %}--write-header{% endif %}
@@ -1380,7 +1380,7 @@ jobs:
     name: Butina Clustering
     description: >-
       Cluster molecules with Butina and RDKit fingerprints
-    version: '1.0.0'
+    version: '1.0.1'
     category: comp chem
     keywords:
     - rdkit
@@ -1394,8 +1394,8 @@ jobs:
       working-directory: /data
       fix-permissions: true
     command: >-
-      /code/cluster_butina.py --input '{{ inputFile }}'
-      --output {{ outputFile }}
+      /code/cluster_butina.py -i '{{ inputFile }}'
+      -o {{ outputFile }}
       {% if readHeader is defined and readHeader %}--read-header{% endif %}
       {% if writeHeader is defined and writeHeader %}--write-header{% endif %}
       {% if separator is defined %}--delimiter {{ separator }}{% endif %}
