@@ -18,6 +18,7 @@ import argparse, time
 import traceback
 
 import utils, rdkit_utils
+from dm_job_utilities.cli import add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
@@ -272,29 +273,24 @@ def main():
 
     # Examples:
     #   python screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input data/10000.smi --delimiter tab -o foo.smi\
-    #     -d rdkit -m tanimoto
+    #     --descriptor rdkit -m tanimoto
     #   python screen.py --queries-file data/10.smi --input data/10000.smi --delimiter tab --id-column 1 -o foo.smi \
-    #     -d rdkit -m tanimoto --queries-delimiter tab --threshold 0.4
+    #     --descriptor rdkit -m tanimoto --queries-delimiter tab --threshold 0.4
 
     parser = argparse.ArgumentParser(description='screen')
+    rdkit_utils.add_common_molecule_io_args(parser, output_required=True)
+    add_reporting_args(parser)
+    # this Job has always defaulted to tab, and its manifest passes
+    # --delimiter only when the user sets it
+    parser.set_defaults(delimiter='\t')
     inputs = parser.add_mutually_exclusive_group(required=True)
     inputs.add_argument('-s', '--smiles', nargs='+', help="Query SMILES")
     inputs.add_argument('--queries-file', help="File with query molecules")
     parser.add_argument('--queries-delimiter', help="Delimiter for queries file (text format)")
     parser.add_argument('--queries-read-header', action='store_true',
                         help="Does the queries file contain a header line (text format)")
-    parser.add_argument('-i', '--input', required=True, help="SMILES file with molecules to search")
-    parser.add_argument('--delimiter', default='\t', help="Delimiter")
-    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
-    parser.add_argument('--mol-column', type=int, default=0,
-                        help="Column index for molecule when using delineated text formats (zero based integer)")
-    parser.add_argument('--read-header', action='store_true', help="Read a header line with the field names")
-    parser.add_argument('-o', '--output', required=True, help="Output file as SMILES")
-    parser.add_argument('--write-header', action='store_true', help='Write a header line')
-    parser.add_argument('--read-records', default=100, type=int,
-                        help="Read this many records to determine the fields that are present")
 
-    parser.add_argument('-d', '--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit',
+    parser.add_argument('--descriptor', type=str.lower, choices=list(descriptors.keys()), default='rdkit',
                         help='Descriptor or fingerprint type (default rdkit)')
     parser.add_argument('-m', '--metric', type=str.lower, choices=list(metrics.keys()), default='tanimoto',
                         help='Similarity metric (default tanimoto)')
@@ -303,7 +299,6 @@ def main():
     parser.add_argument("--alpha", type=float, default=1.0, help="Tversky alpha parameter")
     parser.add_argument("--beta", type=float, default=0.0, help="Tversky beta parameter")
     parser.add_argument("--nbits", type=int, default=None, help="Number of bits if using Morgan as bit vector e.g. 1024")
-    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     DmLog.emit_event("screen: ", args)
