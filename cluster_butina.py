@@ -235,22 +235,10 @@ def main():
 
     # command line args definitions #########################################
     parser = argparse.ArgumentParser(description='RDKit Butina Cluster')
-    parser.add_argument('-i', '--input', required=True, help="File with molecules to cluster (.sdf or .smi)")
-    parser.add_argument('-o', '--output', required=True, help="Output file (.sdf or .smi)")
+    rdkit_utils.add_common_molecule_io_args(parser, output_required=True)
 
-    parser.add_argument('-k', '--omit-fields', action='store_true',
-                        help="Don't include fields from the input in the output")
 
     # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
-    parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
-    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
-    parser.add_argument('--mol-column', type=int, default=0,
-                        help="Column index for molecule when using delineated text formats (zero based integer)")
-    parser.add_argument('--read-header', action='store_true',
-                        help="Read a header line with the field names when reading .smi or .txt")
-    parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
-    parser.add_argument('--read-records', default=100, type=int,
-                        help="Read this many records to determine the fields that are present")
 
     parser.add_argument('-t', '--threshold', type=float, default=0.7,
                         help='similarity clustering threshold (1.0 means identical)')

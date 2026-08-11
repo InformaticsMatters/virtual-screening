@@ -24,6 +24,7 @@ same methodology that this module uses.
 import os, sys, argparse, traceback, time, gzip
 
 import utils, rdkit_utils
+from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
@@ -114,6 +115,8 @@ def execute(input, output, minimize_cycles=500, fragment='hac',
             delimiter=' ', id_column=None, mol_column=0, read_records=100, read_header=False,
             remove_hydrogens=False, rms_threshold=1.0, num_conformers=None, interval=None):
 
+    reporter = ProgressReporter(interval)
+
     DmLog.emit_event('Executing ...')
 
     utils.expand_path(output)
@@ -137,8 +140,7 @@ def execute(input, output, minimize_cycles=500, fragment='hac',
 
                 input_count += 1
 
-                if interval and input_count % interval == 0:
-                    DmLog.emit_event("Processed {} records".format(input_count))
+                reporter.report(input_count)
 
                 if not mol:
                     error_count += 1
@@ -216,17 +218,9 @@ def main():
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Enumerate conformers')
-    parser.add_argument('-i', '--input', required=True, help="Input file (.smi, .sdf)")
-    parser.add_argument('-o', '--output', required=True, help="Output file (.sdf)")
+    rdkit_utils.add_common_molecule_io_args(parser, output_required=True)
+    add_reporting_args(parser)
 
-    parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
-    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
-    parser.add_argument('--mol-column', type=int, default=0,
-                        help="Column index for molecule when using delineated text formats (zero based integer)")
-    parser.add_argument('--read-header', action='store_true',
-                        help="Read a header line with the field names when reading .smi or .txt")
-    parser.add_argument('--read-records', default=100, type=int,
-                        help="Read this many records to determine the fields that are present")
 
     parser.add_argument('-f', '--fragment-method', choices=['hac', 'mw', 'none'], default='hac',
                         help='Strategy for picking largest fragment (mw or hac or none')
@@ -236,7 +230,6 @@ def main():
     parser.add_argument('-t', '--rms-threshold', type=float, default=1.0, help="RMS threshold for excluding conformers")
     parser.add_argument('--remove-hydrogens', action='store_true', help='Remove hydrogens from the output')
 
-    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     DmLog.emit_event("le_conformers: ", args)

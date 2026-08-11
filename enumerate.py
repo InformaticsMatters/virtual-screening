@@ -27,6 +27,7 @@ script patches the atom blocks to add the charge information. See rdkit_utils.py
 """
 import os, sys, argparse, traceback, uuid, gzip
 import utils, rdkit_utils
+from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
@@ -104,6 +105,8 @@ def execute(input, output, delimiter=' ',
             max_tautomers=25,
             interval=0):
 
+    reporter = ProgressReporter(interval)
+
     DmLog.emit_event('Executing ...')
 
     if enumerate_tautomers or combinatorial:
@@ -136,8 +139,7 @@ def execute(input, output, delimiter=' ',
 
             count += 1
 
-            if interval and count % interval == 0:
-                DmLog.emit_event("Processed {} records".format(count))
+            reporter.report(count)
 
             if fragment != 'none':
                 mol = rdkit_utils.fragment(mol, fragment)
@@ -229,16 +231,8 @@ def main():
     ### command line args definitions #########################################
 
     parser = argparse.ArgumentParser(description='Enumerate candidates')
-    parser.add_argument('-i', '--input', required=True, help="Input file (.smi, .sdf)")
-    parser.add_argument('-o', '--output', required=True, help="Output file (.sdf)")
-    parser.add_argument('-d', '--delimiter', default='\t', help="Delimiter")
-    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
-    parser.add_argument('--mol-column', type=int, default=0,
-                        help="Column index for molecule when using delineated text formats (zero based integer)")
-    parser.add_argument('--read-header', action='store_true',
-                        help="Read a header line with the field names when reading .smi or .txt")
-    parser.add_argument('--read-records', default=100, type=int,
-                        help="Read this many records to determine the fields that are present")
+    rdkit_utils.add_common_molecule_io_args(parser, output_required=True)
+    add_reporting_args(parser)
     parser.add_argument('-f', '--fragment-method', choices=['hac', 'mw', 'none'], default='hac',
                         help='Strategy for picking largest fragment (mw or hac or none')
     parser.add_argument('--enumerate-charges', help='Enumerate charge forms', action='store_true')
@@ -255,7 +249,6 @@ def main():
     parser.add_argument('--add-hydrogens', action='store_true', help='Include hydrogens in the output')
     parser.add_argument('--try-embedding', action='store_true', help='Try to embed a 3D molecule to verify the stereochemisty is sane')
     parser.add_argument("--max-tautomers", type=int, default=25, help="Maximum number of tautomers to generate")
-    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     DmLog.emit_event("enumerate_candidates: ", args)
