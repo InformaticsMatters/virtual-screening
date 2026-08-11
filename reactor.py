@@ -37,7 +37,7 @@ from itertools import product
 from rdkit import Chem
 from rdkit.Chem import AllChem, TemplateAlign
 
-import utils
+from dm_job_utilities import utils
 import rdkit_utils
 from dm_job_utilities.dm_log import DmLog
 

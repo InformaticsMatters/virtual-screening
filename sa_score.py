@@ -28,7 +28,8 @@ http://www.jcheminf.com/content/1/1/8
 import argparse, time, os, pickle, traceback, math
 from sigfig import round
 
-import utils, rdkit_utils
+import rdkit_utils
+from dm_job_utilities import utils
 from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 

@@ -14,7 +14,7 @@
 
 import argparse, time, os, random, string, traceback
 
-import utils
+from dm_job_utilities import utils
 from . import models
 
 from sqlalchemy import text

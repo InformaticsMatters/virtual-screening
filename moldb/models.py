@@ -21,7 +21,7 @@ from sqlalchemy.orm import declarative_base, declarative_mixin, relationship, se
 
 import sqlalchemy
 
-import utils
+from dm_job_utilities import utils
 
 utils.log('sqlalchemy version:', sqlalchemy.__version__)
 

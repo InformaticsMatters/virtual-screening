@@ -21,7 +21,7 @@ from rdkit import Chem
 from rdkit.Chem import rdMolAlign
 from rdkit.Chem import rdFMCS
 
-import utils
+from dm_job_utilities import utils
 
 
 def align(query_mol, inputs_sdf, outputs_sdf, query_atoms=None, keep_all=False, mcs_params={}, interval=None):

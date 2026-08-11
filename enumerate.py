@@ -26,7 +26,8 @@ script patches the atom blocks to add the charge information. See rdkit_utils.py
 
 """
 import os, sys, argparse, traceback, uuid, gzip
-import utils, rdkit_utils
+import rdkit_utils
+from dm_job_utilities import utils
 from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 

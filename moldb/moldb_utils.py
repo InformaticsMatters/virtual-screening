@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import utils
+from dm_job_utilities import utils
 
 def add_filter_args(parser):
     parser.add_argument('--min-hac', type=int, help="Min value for heavy atom count")

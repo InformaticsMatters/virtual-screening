@@ -18,7 +18,8 @@
 import argparse, os, gzip, time
 import traceback
 
-import utils, rdkit_utils
+import rdkit_utils
+from dm_job_utilities import utils
 from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 

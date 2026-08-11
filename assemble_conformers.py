@@ -24,7 +24,9 @@ It operates in 2 different modes, specified by the --mode argument:
 """
 
 import argparse, os, time, gzip
-import utils, rdkit_utils
+import rdkit_utils
+from dm_job_utilities import utils
+from digest_utils import get_path_from_digest
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
@@ -66,7 +68,7 @@ def execute(input, output, data_dir, mode,
                 uid = tokens[1]
                 digest = tokens[2]
                 parts = [data_dir]
-                parts.extend(utils.get_path_from_digest(digest))
+                parts.extend(get_path_from_digest(digest))
                 path = os.path.join(*parts)
                 if not os.path.isdir(path):
                     utils.log('WARNING, path', path, 'not found')

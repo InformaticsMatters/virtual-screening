@@ -23,7 +23,15 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-import utils
+from dm_job_utilities import utils
+from sigfig import round as _sigfig_round
+
+
+def sigfig_round(value, sigfigs):
+    """Round to N significant figures. warn=False keeps sigfig quiet when a
+    value carries fewer significant figures than requested, which is common
+    here and was silent under the previous implementation."""
+    return _sigfig_round(value, sigfigs=sigfigs, warn=False)
 
 
 def generatePlot(t_hf, t_hf_a, D, AUC, tn, quiet=False, plot_height=4, plot_width=10, font_size=12, basename='output'):
@@ -37,11 +45,11 @@ def generatePlot(t_hf, t_hf_a, D, AUC, tn, quiet=False, plot_height=4, plot_widt
     V_F = D/kel/AUC
 
     outputs = collections.OrderedDict()
-    outputs['Tmax(hr)'] = utils.round_to_significant_number(Tmax, 3)
-    outputs['Cmax(mg/L)'] = utils.round_to_significant_number(Cmax, 3)
-    outputs['Kel(hr-1)'] = utils.round_to_significant_number(kel, 3)
-    outputs['Ka(hr-1)'] = utils.round_to_significant_number(ka, 3)
-    outputs['V/F(L)'] = utils.round_to_significant_number(V_F, 3)
+    outputs['Tmax(hr)'] = sigfig_round(Tmax, 3)
+    outputs['Cmax(mg/L)'] = sigfig_round(Cmax, 3)
+    outputs['Kel(hr-1)'] = sigfig_round(kel, 3)
+    outputs['Ka(hr-1)'] = sigfig_round(ka, 3)
+    outputs['V/F(L)'] = sigfig_round(V_F, 3)
 
     if not quiet:
         utils.log('------------------------------------------------------------------------------------------')

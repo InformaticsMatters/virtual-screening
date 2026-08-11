@@ -101,7 +101,7 @@ import re, math, argparse, sys
 
 from rdkit import Chem
 
-import utils
+from dm_job_utilities import utils
 from dm_job_utilities.dm_log import DmLog
 
 
