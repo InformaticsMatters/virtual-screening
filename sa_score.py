@@ -29,6 +29,7 @@ import argparse, time, os, pickle, traceback, math
 from sigfig import round
 
 import utils, rdkit_utils
+from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
@@ -131,6 +132,8 @@ def process(input,
             read_records=100,
             interval=0):
 
+    reporter = ProgressReporter(interval)
+
     utils.expand_path(outfile)
 
     count = 0
@@ -177,8 +180,7 @@ def process(input,
 
         count += 1
 
-        if interval and count % interval == 0:
-            DmLog.emit_event("Processed {} records".format(count))
+        reporter.report(count)
         if count % 50000 == 0:
             # Emit a 'total' cost, replacing all prior costs
             DmLog.emit_cost(count)
@@ -215,19 +217,9 @@ def main():
     #   ./sa_score.py -i data/100.smi -o out.smi -d tab --id-column 1 --write-header
 
     parser = argparse.ArgumentParser(description='SA Score')
-    parser.add_argument('-i', '--input', required=True, help="Input file as SMILES or SDF")
-    parser.add_argument('-o', '--outfile', required=True, help="Output file as SMILES or SDF")
+    rdkit_utils.add_common_molecule_io_args(parser, output_required=True)
+    add_reporting_args(parser)
     # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
-    parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
-    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
-    parser.add_argument('--mol-column', type=int, default=0,
-                        help="Column index for molecule when using delineated text formats (zero based integer)")
-    parser.add_argument('--read-header', action='store_true',
-                        help="Read a header line with the field names when reading .smi or .txt")
-    parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
-    parser.add_argument('--read-records', default=100, type=int,
-                        help="Read this many records to determine the fields that are present")
-    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     DmLog.emit_event("rdk_props.py: ", args)
@@ -235,7 +227,7 @@ def main():
     delimiter = utils.read_delimiter(args.delimiter)
 
     t0 = time.time()
-    count, errors = process(args.input, args.outfile, delimiter, id_column=args.id_column, mol_column=args.mol_column,
+    count, errors = process(args.input, args.output, delimiter, id_column=args.id_column, mol_column=args.mol_column,
                             read_header=args.read_header, write_header=args.write_header,
                             read_records=args.read_records, interval=args.interval, )
     t1 = time.time()

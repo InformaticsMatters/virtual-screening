@@ -21,6 +21,7 @@ from mordred import Calculator, descriptors
 from rdkit import Chem
 
 import utils, rdkit_utils
+from dm_job_utilities.cli import ProgressReporter, add_reporting_args
 from dm_job_utilities.dm_log import DmLog
 
 
@@ -36,6 +37,8 @@ def run(input,
         write_header=False,
         read_records=50,
         interval=1000):
+
+    reporter = ProgressReporter(interval)
 
     if include_3d:
         if not (input.endswith('.sdf') or input.endswith('.sdf.gz')):
@@ -97,8 +100,7 @@ def run(input,
 
         count += 1
 
-        if interval and count % interval == 0:
-            DmLog.emit_event("Processed {} records".format(count))
+        reporter.report(count)
         if count % 50000 == 0:
             # Emit a 'total' cost, replacing all prior costs
             DmLog.emit_cost(count)
@@ -150,8 +152,8 @@ def main():
     # ----- command line args definitions ---------------------------------------------
 
     parser = argparse.ArgumentParser(description='Mordred 2D descriptors')
-    parser.add_argument('-i', '--input', required=True, help="Input file (.smi or .sdf)")
-    parser.add_argument('-o', '--output', default='descriptors2d.smi', help="Output file (.smi or .sdf")
+    rdkit_utils.add_common_molecule_io_args(parser, output_default="descriptors2d.smi")
+    add_reporting_args(parser)
 
     parser.add_argument('-f', '--fragment-method', choices=['hac', 'mw', 'none'], default='hac',
                         help='Strategy for picking largest fragment (mw or hac or none')
@@ -159,20 +161,8 @@ def main():
     parser.add_argument('-3', '--include-3d', action='store_true',
                         help="Include 3D descriptors (requires 3D molecules in SDF file)")
 
-    parser.add_argument('-k', '--omit-fields', action='store_true',
-                        help="Don't include fields from the input in the output")
 
     # to pass tab as the delimiter specify it as $'\t' or use one of the symbolic names 'comma', 'tab', 'space' or 'pipe'
-    parser.add_argument('-d', '--delimiter', help="Delimiter when using SMILES")
-    parser.add_argument('--id-column', help="Column for name field (zero based integer for .smi, text for SDF)")
-    parser.add_argument('--mol-column', type=int, default=0,
-                        help="Column index for molecule when using delineated text formats (zero based integer)")
-    parser.add_argument('--read-header', action='store_true',
-                        help="Read a header line with the field names when reading .smi or .txt")
-    parser.add_argument('--write-header', action='store_true', help='Write a header line when writing .smi or .txt')
-    parser.add_argument('--read-records', default=100, type=int,
-                        help="Read this many records to determine the fields that are present")
-    parser.add_argument("--interval", type=int, help="Reporting interval")
 
     args = parser.parse_args()
     DmLog.emit_event("descriptor_calc: ", args)
