@@ -16,7 +16,7 @@
 
 import argparse, datetime, time
 
-import utils
+from dm_job_utilities import utils
 from . import models, filter, moldb_utils
 
 from dm_job_utilities.dm_log import DmLog

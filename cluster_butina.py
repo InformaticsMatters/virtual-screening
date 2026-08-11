@@ -20,7 +20,7 @@ from rdkit import DataStructs, rdBase
 from rdkit.Chem import AllChem, MACCSkeys
 from rdkit.ML.Cluster import Butina
 
-import utils
+from dm_job_utilities import utils
 import rdkit_utils
 from dm_job_utilities.dm_log import DmLog
 

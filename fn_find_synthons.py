@@ -25,7 +25,7 @@ Use the fragment network to find synthons of particular molecule
 
 import os, argparse, time
 
-import utils
+from dm_job_utilities import utils
 from dm_job_utilities.dm_log import DmLog
 from standardize_molecule import standardize_to_noniso_smiles
 

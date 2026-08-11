@@ -14,7 +14,7 @@
 
 
 import os, glob, argparse, time
-import utils
+from dm_job_utilities import utils
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session

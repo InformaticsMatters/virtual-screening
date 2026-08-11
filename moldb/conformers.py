@@ -20,7 +20,7 @@ See also le_conformers_for_mol.py that provides a simpler way to generate confor
 same methodology that this module uses.
 """
 import os, argparse, traceback, time, gzip
-import utils
+from dm_job_utilities import utils
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem

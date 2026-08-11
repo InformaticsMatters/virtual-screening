@@ -29,7 +29,7 @@ import numpy as np
 from rdkit import rdBase, RDConfig
 from rdkit.Chem import AllChem, rdShapeHelpers
 from rdkit.Chem.FeatMaps import FeatMaps
-import utils
+from dm_job_utilities import utils
 import rdkit_utils
 from dm_job_utilities.dm_log import DmLog
 

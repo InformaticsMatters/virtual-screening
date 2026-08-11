@@ -81,7 +81,8 @@ from __future__ import print_function
 import argparse, traceback
 import json, sys
 
-import utils, interact
+import interact
+from dm_job_utilities import utils
 from dm_job_utilities.dm_log import DmLog
 
 import oddt

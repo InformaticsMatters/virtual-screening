@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import utils
+from dm_job_utilities import utils
 from dm_job_utilities.dm_log import DmLog
 from openbabel import pybel, openbabel
 from jinja2 import Template

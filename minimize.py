@@ -16,7 +16,7 @@
 
 
 import sys, argparse, time
-import utils
+from dm_job_utilities import utils
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem

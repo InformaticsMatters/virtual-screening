@@ -16,8 +16,8 @@
 
 
 import argparse, os
-import utils
-from utils import get_path_from_digest
+from dm_job_utilities import utils
+from digest_utils import get_path_from_digest
 from dm_job_utilities.dm_log import DmLog
 
 

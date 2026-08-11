@@ -16,7 +16,8 @@
 
 
 import time, argparse
-import utils, le_conformers
+import le_conformers
+from dm_job_utilities import utils
 from dm_job_utilities.dm_log import DmLog
 
 from rdkit import Chem
