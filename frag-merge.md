@@ -38,7 +38,7 @@ tht mean they will be reasonably 'lead like'.
 ## Find similar molecules
 
 ```
-./screen.py --smiles 'CC(=O)NC1=CN=CC=C1C' 'CC(NC(=O)C)c1cccc(Cl)c1' --input frag-merge/mols.smi --output frag-merge/screened.smi --metric tversky --descriptor morgan2 --nbits 1024 --interval 10000 --sim-index 5 --threshold 0.3
+./screen.py --smiles 'CC(=O)NC1=CN=CC=C1C' 'CC(NC(=O)C)c1cccc(Cl)c1' -i frag-merge/mols.smi -o frag-merge/screened.smi --metric tversky --descriptor morgan2 --nbits 1024 --interval 10000 --sim-index 5 --threshold 0.3
 ...
 ...
 2021-11-06T13:47:09+00:00 # INFO -EVENT- Processed 4560000 records, 4362 hits

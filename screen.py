@@ -273,9 +273,9 @@ def execute(query_smis,
 def main():
 
     # Examples:
-    #   python screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' --input data/10000.smi --delimiter tab -o foo.smi\
+    #   python screen.py --smiles 'O=C(Nc1ccc(Cl)cc1)c1ccccn1' -i data/10000.smi --delimiter tab -o foo.smi\
     #     --descriptor rdkit -m tanimoto
-    #   python screen.py --queries-file data/10.smi --input data/10000.smi --delimiter tab --id-column 1 -o foo.smi \
+    #   python screen.py --queries-file data/10.smi -i data/10000.smi --delimiter tab --id-column 1 -o foo.smi \
     #     --descriptor rdkit -m tanimoto --queries-delimiter tab --threshold 0.4
 
     parser = argparse.ArgumentParser(description='screen')
