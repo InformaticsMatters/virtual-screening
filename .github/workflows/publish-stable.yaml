@@ -1,7 +1,8 @@
 ---
 name: publish-stable
 
-# Actions that take place to create a 'stabkle' image.
+# Actions that take place on the 'main' branch (and nightly).
+# Here we build and push a series of 'stable' images.
 
 # -----------------
 # Control variables (GitHub Secrets)
