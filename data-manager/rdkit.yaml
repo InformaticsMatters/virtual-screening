@@ -944,7 +944,7 @@ jobs:
       Filters molecules by molecular similarity using RDKit.
       A number of descriptors and metrics are available.
       Query molecule(s) are specified from a project file or as SMILES.
-    version: '1.0.1'
+    version: '1.0.2'
     category: comp chem
     keywords:
     - rdkit
@@ -1048,7 +1048,7 @@ jobs:
                       Geometric mean of similarities
                     required: true
                     active: true
-                derived-from: inputFile
+              derived-from: inputFile
       options:
         type: object
         required:
