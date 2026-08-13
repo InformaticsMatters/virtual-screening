@@ -20,14 +20,14 @@ jobs:
     name: Fragment network expansion
     description: >-
       Expand a set of molecules using the fragment network
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - fragment-network
     - candidate-selection
     image:
       name: informaticsmatters/vs-fragnet-search
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -137,7 +137,7 @@ jobs:
     name: Fragment network find synthons
     description: >-
       Find the "synthons" of a molecule
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - fragment-network
@@ -145,7 +145,7 @@ jobs:
     - synthons
     image:
       name: informaticsmatters/vs-fragnet-search
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -222,14 +222,14 @@ jobs:
     name: Fragment network expansion
     description: >-
       Expand a set of molecules using the fragment network
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - fragment-network
     - candidate-selection
     image:
       name: informaticsmatters/vs-fragnet-search
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true

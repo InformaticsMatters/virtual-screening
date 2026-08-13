@@ -27,3 +27,4 @@ jobs:
         jote --manifest manifest-silicos-it.yaml --dry-run --allow-no-tests
         jote --manifest manifest-dmpk.yaml --dry-run
         jote --manifest manifest-im-mordred.yaml --dry-run
+        jote --manifest manifest-moldb.yaml --dry-run

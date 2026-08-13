@@ -9,7 +9,7 @@ jobs:
     name: Estimation of absorption
     description: >-
       Estimation of absorption from t1/2 and Tmax after po administration (one-compartment)
-    version: '1.0.0'
+    version: '2.0.0'
     category: dmpk
     keywords:
     - dmpk
@@ -18,7 +18,7 @@ jobs:
     - kel
     image:
       name: informaticsmatters/vs-dmpk
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true

@@ -11,7 +11,7 @@ yourself for some reason this is how...
 
 To build the container images run this:
 
-    $ IMAGE_TAG=1.0.0 docker-compose build 
+    $ IMAGE_TAG=2.0.0 docker-compose build 
 
 Or, to build using the `latest` tag: -
 

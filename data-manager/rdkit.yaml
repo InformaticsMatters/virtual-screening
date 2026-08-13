@@ -10,7 +10,7 @@ jobs:
     description: >-
       Select a diverse subset of molecules using the RDKit MaxMin Picker.
       Morgan 2 fingerprints and Tanimoto distance is used.
-    version: '1.0.0'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - rdkit
@@ -20,7 +20,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -114,7 +114,7 @@ jobs:
   generate-low-energy-conformers:
     name: Generate 3D conformers
     description: Generate a low energy 3D conformers of molecules
-    version: '1.0.1'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - rdkit
@@ -123,7 +123,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -260,7 +260,7 @@ jobs:
     name: Generate 3D conformers of a molecule
     description: >-
       Generate a low energy 3D conformers. The input is a molfile or SMILES. The output is a SD file.
-    version: '1.0.0'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - rdkit
@@ -268,7 +268,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -358,7 +358,7 @@ jobs:
     name: 3D alignment using Open3DAlign
     description: >-
       Aligns conformers to a target molecule, with optional filtering
-    version: '1.0.0'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - open3Dalign
@@ -369,7 +369,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -469,14 +469,14 @@ jobs:
     name: Molecular property calculations
     description: >-
       Calculates molecular properties using RDKit
-    version: '1.0.1'
+    version: '2.0.0'
     category: molecular properties
     keywords:
     - rdkit
     - properties
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -685,14 +685,14 @@ jobs:
     name: Deduplicate molecules
     description: >-
       Deduplicate molecules using RDKit
-    version: '1.0.2'
+    version: '2.0.0'
     category: molecular properties
     keywords:
     - rdkit
     - properties
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -828,7 +828,7 @@ jobs:
     name: Synthetic accessibility score
     description: >-
       Calculates a synthetic accessibility score based on the approach of Ertl and Schuffenhauer
-    version: '1.0.1'
+    version: '2.0.0'
     category: molecular properties
     keywords:
     - rdkit
@@ -836,7 +836,7 @@ jobs:
     - sa_score
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -944,7 +944,7 @@ jobs:
       Filters molecules by molecular similarity using RDKit.
       A number of descriptors and metrics are available.
       Query molecule(s) are specified from a project file or as SMILES.
-    version: '1.0.2'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - rdkit
@@ -955,7 +955,7 @@ jobs:
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1161,7 +1161,7 @@ jobs:
     name: Energy minimize molecules
     description: >-
       Energy minimize molecules using RDKit and the MMFF94 force field
-    version: '1.0.0'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - rdkit
@@ -1172,7 +1172,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1247,7 +1247,7 @@ jobs:
     name: Align molecules
     description: >-
       Align molecules to a template molecule using MCS to determine matching atoms
-    version: '1.0.0'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - rdkit
@@ -1255,7 +1255,7 @@ jobs:
     - alignment
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1380,7 +1380,7 @@ jobs:
     name: Butina Clustering
     description: >-
       Cluster molecules with Butina and RDKit fingerprints
-    version: '1.0.1'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - rdkit
@@ -1389,7 +1389,7 @@ jobs:
     - fingerprint
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1616,14 +1616,14 @@ jobs:
     name: Filter SD-file based on its properties
     description: >-
       Filter the records of a SD-file based or field property values
-    version: '1.0.0'
+    version: '2.0.0'
     category: miscellaneous
     keywords:
     - rdkit
     - filter
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1705,7 +1705,7 @@ jobs:
     name: Reaction enumeration using RDKit
     description: >-
       Enumerate products using RDKit. Inputs are a reaction SMARTS string and SMILES files with reactants.
-    version: '1.0.0'
+    version: '2.0.0'
     category: molecular libraries
     keywords:
     - rdkit
@@ -1714,7 +1714,7 @@ jobs:
     - library
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1829,7 +1829,7 @@ jobs:
   generate-low-energy-conformers-multi:
     name: Generate 3D conformers
     description: Generate a low energy 3D conformers of molecules (parallel execution)
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - rdkit
@@ -1839,7 +1839,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow

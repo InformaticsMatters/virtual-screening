@@ -15,7 +15,7 @@ params.num_charges = null
 
 process enumerate {
 
-    container 'informaticsmatters/vs-moldb:stable'
+    container 'informaticsmatters/vs-moldb:2.0.0'
 
     input:
     file inputs

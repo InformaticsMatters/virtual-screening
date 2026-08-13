@@ -10,7 +10,7 @@ jobs:
     description: >-
       Generate shape overlay scores using SuCOS.
       The molecules need to be already aligned.
-    version: '1.0.0'
+    version: '2.0.0'
     category: comp chem
     keywords:
     - rdkit
@@ -19,7 +19,7 @@ jobs:
     - sucos
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
