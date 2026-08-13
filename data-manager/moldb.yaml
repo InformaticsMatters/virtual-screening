@@ -73,7 +73,7 @@ jobs:
     name: MolDB count rows
     description: >-
       Verify there are the expected number of rows in a database table
-    version: '1.0.0'
+    version: '1.0.1'
     # no category as this is only used as part of testing
     keywords:
     - moldb
@@ -110,20 +110,28 @@ jobs:
       {% if count is defined %}--expected-rows {{ count }}{% endif %}
       {% if min_rows is defined %}--min-rows {{ min_rows }}{% endif %}
       {% if max_rows is defined %}--max-rows {{ max_rows }}{% endif %}
-    options:
-      type: object
-      required:
-      - table
-      - count
-      - min_rows
-      - max_rows
-      properties:
-        table:
-          title: Table name
-          pattern: "^[A-Za-z0-9_\\.\\-]+$"
-        count:
-          title: Expected row count
-          type: integer
+    variables:
+      options:
+        type: object
+        # Only 'table' is always needed. The command guards the other three
+        # with '{% if ... is defined %}': a caller supplies either 'count'
+        # (exact) or 'min_rows'/'max_rows' (a range), not all of them.
+        required:
+        - table
+        properties:
+          table:
+            title: Table name
+            type: string
+            pattern: "^[A-Za-z0-9_\\.\\-]+$"
+          count:
+            title: Expected row count
+            type: integer
+          min_rows:
+            title: Minimum row count
+            type: integer
+          max_rows:
+            title: Maximum row count
+            type: integer
     tests:
       supply:
         run-groups:
