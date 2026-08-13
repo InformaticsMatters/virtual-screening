@@ -3,8 +3,6 @@ kind: DataManagerJobDefinition
 kind-version: '2021.1'
 name: MolDB tools
 collection: moldb
-repository-url: https://github.com/InformaticsMatters/virtual-screening/moldb.yaml
-repository-tag: '1.0.0'
 
 test-groups:
 - name: moldb
