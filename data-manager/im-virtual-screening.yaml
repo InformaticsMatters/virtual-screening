@@ -60,13 +60,13 @@ jobs:
     name: Test failures
     description: >-
       Simple job that allows how errors are handled to be tested
-    version: '1.0.0'
+    version: '2.0.0'
     category: miscellaneous
     keywords:
     - test
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -136,14 +136,14 @@ jobs:
     description: >-
       Convert molecular formats using OpenBabel. Can be used to prepare a protein for docking.
       See the docs for more info of all the options.
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - protein preparation
     - openbabel
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -197,7 +197,7 @@ jobs:
       Prepare a protein for docking by using pdb2pqr. This can replace missing heavy atoms
       and protonate the protein at a specific pH taking into account the local environment
       of titratable groups, such as the hydrogen bonding network.
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - protein preparation
@@ -206,7 +206,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -286,7 +286,7 @@ jobs:
     name: rDock prepare
     description: >-
       Prepare rDock configuration file (.prm file) and the cavity definition (.as file).
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - protein preparation
@@ -294,7 +294,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-rdock
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -349,7 +349,7 @@ jobs:
     name: USR shape similarity
     description: >-
       Filters molecules using 3D shape similarity and the USR, Electroshape or USRCAT algorithms
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - oddt
@@ -362,7 +362,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-oddt
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -456,7 +456,7 @@ jobs:
     description: >-
       Sorts records in a SD-file, optionally keeping top n.
       Do not use for very large files.
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - rdock
@@ -466,7 +466,7 @@ jobs:
     doc-url: im-virtual-screening/rdock-filter-sdf.md
     image:
       name: informaticsmatters/vs-rdock
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -560,7 +560,7 @@ jobs:
     name: Filter the contents of a SDF
     description: >-
       Filters records in a SD-file, sorted within consecutive groups, sorting the results and optionally keeping the top n.
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - rdock
@@ -570,7 +570,7 @@ jobs:
     doc-url: im-virtual-screening/rdock-filter-sdf.md
     image:
       name: informaticsmatters/vs-rdock
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -672,14 +672,14 @@ jobs:
     name: Convert SDF to JSON format
     description: >-
       Converts a SD file to Squonk JSON format
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - convert
     - format
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -725,7 +725,7 @@ jobs:
     name: Enumerate microstates, tautomers and undefined chiral centres
     description: >-
       Enumerate microstates, tautomers and undefined chiral centres.
-    version: '1.0.1'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - rdkit
@@ -735,7 +735,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -940,7 +940,7 @@ jobs:
     name: Run rDock docking
     description: >-
       Run rDock docking.
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - rdock
@@ -949,7 +949,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1068,7 +1068,7 @@ jobs:
     name: Run smina docking
     description: >-
       Run smina docking.
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - smina
@@ -1077,7 +1077,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1191,7 +1191,7 @@ jobs:
     name: ODDT rescoring and interactions
     description: >-
       Generate rescoring functions and interactions using ODDT.
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - oddt
@@ -1200,7 +1200,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1259,7 +1259,7 @@ jobs:
     name: Align molecules to fragments using PLANTS
     description: >-
       Job that performs flexible alignment of candidate molecules to fragments using PLANTS
-    version: '1.0.0'
+    version: '2.0.0'
     category: ligand based virtual screening
     keywords:
     - plants
@@ -1268,7 +1268,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-plants
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1406,7 +1406,7 @@ jobs:
     name: Align SMILES to fragments using PLANTS
     description: >-
       Job that performs flexible alignment of candidate molecules to fragments using PLANTS
-    version: '1.0.0'
+    version: '2.0.0'
     category: ligand based virtual screening
     keywords:
     - plants
@@ -1415,7 +1415,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-plants
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1524,7 +1524,7 @@ jobs:
     description: >-
       Workflow that does parallel flexible alignment of candidate molecules to fragments using PLANTS, followed by
       scoring with open3Dalign.
-    version: '1.0.0'
+    version: '2.0.0'
     category: ligand based virtual screening
     keywords:
     - plants
@@ -1534,7 +1534,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -1734,7 +1734,7 @@ jobs:
     name: Enumerate microstates, tautomers and undefined chiral centres
     description: >-
       Enumerate microstates, tautomers and undefined chiral centres (parallel execution)
-    version: '1.0.0'
+    version: '2.0.0'
     category: virtual screening
     keywords:
     - rdkit
@@ -1745,7 +1745,7 @@ jobs:
     - nextflow
     image:
       name: informaticsmatters/vs-nextflow
-      tag: 'stable'
+      tag: '2.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow

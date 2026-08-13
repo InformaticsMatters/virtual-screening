@@ -3,7 +3,7 @@ params.outfile = 'outputs.smi'
 
 process extract_molprops {
 
-    container 'informaticsmatters/vs-moldb:stable'
+    container 'informaticsmatters/vs-moldb:2.0.0'
 
     output:
     file params.outfile

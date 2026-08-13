@@ -5,7 +5,7 @@ params.interval = 10000
 
 process calc_molprops {
 
-    container 'informaticsmatters/vs-moldb:stable'
+    container 'informaticsmatters/vs-moldb:2.0.0'
     if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
 
     input:
