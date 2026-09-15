@@ -6,6 +6,15 @@ FROM informaticsmatters/vs-rdkit-base:2.0.0
 #           for execution, and so we must ensure the code runs
 #           as any user.
 
+# Debian 11 (bullseye) is now EOL and no longer served from the live
+# deb.debian.org mirrors. Switch to the snapshot.debian.org mirror that
+# Debian's own image ships (commented out) as a fallback for this, and
+# stop apt rejecting its now-expired Release file.
+RUN sed -i -e 's|^# deb http://snapshot|deb http://snapshot|' \
+           -e 's|^deb http://deb.debian.org|# deb http://deb.debian.org|' \
+           /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot
+
 RUN apt-get -y update &&\
   apt-get -y install git &&\
   apt-get clean
