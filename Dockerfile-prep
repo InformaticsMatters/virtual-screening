@@ -8,9 +8,16 @@ FROM informaticsmatters/vs-rdkit-base:2.0.0
 
 # openbabel does not install easily with PIP, and we don't have conda so we must use apt to install.
 # this installs version 3.1.1
-# apt-get update is required here (rather than relying on the base image's
-# package index) because the bullseye-security mirror periodically prunes
-# superseded point-release .debs, leaving a stale index full of 404s.
+#
+# Debian 11 (bullseye) is now EOL and no longer served from the live
+# deb.debian.org mirrors. Switch to the snapshot.debian.org mirror that
+# Debian's own image ships (commented out) as a fallback for this, and
+# stop apt rejecting its now-expired Release file.
+RUN sed -i -e 's|^# deb http://snapshot|deb http://snapshot|' \
+           -e 's|^deb http://deb.debian.org|# deb http://deb.debian.org|' \
+           /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot
+
 RUN apt-get -y update &&\
   apt-get -y install openbabel python3-openbabel &&\
   apt-get clean

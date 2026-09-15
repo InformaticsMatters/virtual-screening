@@ -4,6 +4,16 @@ ENV PYTHONUNBUFFERED=1
 
 USER 0
 
+# Debian 11 (bullseye) is now EOL and no longer served from the live
+# deb.debian.org / security.debian.org mirrors. Switch to the
+# snapshot.debian.org mirror that Debian's own image ships (commented
+# out) as a fallback for this, and stop apt rejecting its now-expired
+# Release file.
+RUN sed -i -e 's|^# deb http://snapshot|deb http://snapshot|' \
+           -e '/^deb http:\/\/\(deb\|security\)\.debian\.org/ s|^|# |' \
+           /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot
+
 RUN apt-get update &&\
   apt-get -y install python3\
     python-is-python3\

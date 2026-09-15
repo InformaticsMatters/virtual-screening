@@ -1,10 +1,19 @@
-FROM debian:bullseye
+FROM debian:11.11
 LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
 #           Consequently we cannot know in advance the user or group id
 #           for execution, and so we must ensure the code runs
 #           as any user.
+
+# Debian 11 (bullseye) is now EOL and no longer served from the live
+# deb.debian.org mirrors. Switch to the snapshot.debian.org mirror that
+# Debian's own image ships (commented out) as a fallback for this, and
+# stop apt rejecting its now-expired Release file.
+RUN sed -i -e 's|^# deb http://snapshot|deb http://snapshot|' \
+           -e 's|^deb http://deb.debian.org|# deb http://deb.debian.org|' \
+           /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot
 
 RUN apt-get update &&\
  apt-get install -y --no-install-recommends\
