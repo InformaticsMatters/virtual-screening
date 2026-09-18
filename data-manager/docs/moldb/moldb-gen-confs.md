@@ -29,7 +29,7 @@ This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 * Nextflow workflow: [generate_confs.nf](/src/moldb/generate_confs.nf)
 * Python module for extracting molecules: [filter.py](/src/moldb/filter.py)
 * Python module for conformer generation: [conformers.py](/src/moldb/conformers.py)
-* Python module for loading molecules: [db_load.py](/src/moldb/db_load.py)
+* Python module for loading molecules: [load_confs.py](/src/moldb/load_confs.py)
 * Job definition: `jobs.moldb-gen-confs` in [moldb.yaml](/data-manager/moldb.yaml)
 
 ## How to run the job

@@ -19,7 +19,7 @@ The definition of which molecules that pass the threshold can be defined by the 
 ## Implementation details
 
 * Job implementation: [screen.py](/src/screen.py)
-* Job definition: `jobs.similarity-screen-rdkit`  in [rdkit.yaml](../rdkit.yaml)
+* Job definition: `jobs.similarity-screen-rdkit`  in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 

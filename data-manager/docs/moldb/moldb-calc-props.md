@@ -46,4 +46,4 @@ section [here](https://discourse.squonk.it/t/about-moldb/138).
 
 * [About MOlDB](https://discourse.squonk.it/t/about-moldb/138)
 * [moldb-load-library job](moldb-load-library.md)
-* [rdk-molprops job](../rdkit/rdk-molprops.md)
+* [rdkit-molprops job](../rdkit/rdkit-molprops.md)

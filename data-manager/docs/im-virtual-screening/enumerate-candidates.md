@@ -24,8 +24,8 @@ Typically the [generate-low-energy-conformers](../rdkit/generate-low-energy-conf
 
 ### Inputs
 
-* **Molecules to enumerate**:  typically the  *Molecules needing enumeration* output of the 
-[prep-enum-conf-lists](prep-enum-conf-lists.md) job.
+* **Molecules to enumerate**:  typically molecules extracted from MolDB with the
+[moldb-extract-molecules](../moldb/moldb-extract-molecules.md) job.
 
 ### Options
 

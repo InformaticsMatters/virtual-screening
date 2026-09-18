@@ -6,14 +6,14 @@ This describes how to run the `max-min-picker` job from the `virtual screening` 
 
 This job allows to select a diverse subset of molecules using the RDKit MaxMinPicker algorithm which picks molecules
 sequentially, with each new pick being as dissimilar as possible to the already picked molecules.
-Typically this job uses the output of the [filter](../im-virtual-screening/filter.md) job as its input.
+Typically this job uses the output of the [moldb-extract-molecules](../moldb/moldb-extract-molecules.md) job as its input.
 
 For more on the MaxMinPicker see this [blog post](http://rdkit.blogspot.com/2017/11/revisting-maxminpicker.html).
 
 ## Implementation details
 
 * Job implementation: [max_min_picker.py](/src/max_min_picker.py)
-* Job definition: `jobs.max-min-picker` in [rdkit.yaml](../rdkit.yaml)
+* Job definition: `jobs.max-min-picker` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 
@@ -35,4 +35,4 @@ For more on the MaxMinPicker see this [blog post](http://rdkit.blogspot.com/2017
 ## Related topics
 
 * [cluster-butina job](cluster-butina.md)
-* [filter job](../im-virtual-screening/filter.md)
+* [moldb-extract-molecules job](../moldb/moldb-extract-molecules.md)

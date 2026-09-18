@@ -21,8 +21,8 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [rdk_props.py](/src/rdk_props.py)
-* Job definition: `jobs.rdkit-molprops` in [rdkit.yaml](../rdkit.yaml)
+* Job implementation: [rdkit_props.py](/src/rdkit_props.py)
+* Job definition: `jobs.rdkit-molprops` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 
@@ -53,4 +53,4 @@ The file specified by the *Output file name* option is created containing all th
 
 ## Related topics
 
-- [shard job](../im-virtual-screening/shard.md) calculates many of the same properties.
+- [moldb-calc-props job](../moldb/moldb-calc-props.md) calculates many of the same properties.

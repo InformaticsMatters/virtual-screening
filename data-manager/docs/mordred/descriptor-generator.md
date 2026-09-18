@@ -14,8 +14,8 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [descriptor_calc.py](/src/im_mordred/descriptor_calc.py)
-* Job definition: `jobs.descriptor-generator` in [mordred.yaml](../mordred.yaml)
+* Job implementation: [descriptor_generator.py](/src/im_mordred/descriptor_generator.py)
+* Job definition: `jobs.descriptor-generator` in [mordred.yaml](/data-manager/mordred.yaml)
 * Original Modred repo (now unsupported): https://github.com/mordred-descriptor/mordred
 * Community supported repo: https://github.com/JacksonBurns/mordred-community
 

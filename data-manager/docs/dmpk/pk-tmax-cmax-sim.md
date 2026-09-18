@@ -37,7 +37,7 @@ Two files are generated:
 
 Example output would look like this:
 
-![pk_tmax_cmax_sim output](pk_tmax_cmax_sim.png)
+![pk_tmax_cmax_sim output](pk-tmax-cmax-sim.png)
 
 The corresponding text file would contain:
 ```
