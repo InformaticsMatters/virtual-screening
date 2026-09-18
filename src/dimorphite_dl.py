@@ -30,6 +30,11 @@ except ImportError:
     # Python3
     from io import StringIO
 
+# The substructure/pKa data file, which lives alongside this module.
+SITE_SUBSTRUCTURES_FILE = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "site_substructures.smarts"
+)
+
 # Always let the user know a help file is available.
 print("\nFor help, use: python dimorphite_dl.py --help")
 
@@ -570,10 +575,8 @@ class ProtSubstructFuncs:
         """
 
         subs = []
-        pwd = os.path.dirname(os.path.realpath(__file__))
 
-        site_structures_file = "{}/{}".format(pwd, "site_substructures.smarts")
-        with open(site_structures_file, 'r') as substruct:
+        with open(SITE_SUBSTRUCTURES_FILE, 'r') as substruct:
             for line in substruct:
                 line = line.strip()
                 sub = {}
@@ -884,8 +887,10 @@ class TestFuncs:
         ]
 
         # Load the average pKa values.
-        average_pkas = {l.split()[0].replace("*", ""):float(l.split()[3]) for l in open("site_substructures.smarts") if l.split()[0] not in ["Phosphate", "Phosphonate"]}
-        average_pkas_phos = {l.split()[0].replace("*", ""):[float(l.split()[3]), float(l.split()[6])] for l in open("site_substructures.smarts") if l.split()[0] in ["Phosphate", "Phosphonate"]}
+        with open(SITE_SUBSTRUCTURES_FILE) as f:
+            site_lines = f.readlines()
+        average_pkas = {l.split()[0].replace("*", ""):float(l.split()[3]) for l in site_lines if l.split()[0] not in ["Phosphate", "Phosphonate"]}
+        average_pkas_phos = {l.split()[0].replace("*", ""):[float(l.split()[3]), float(l.split()[6])] for l in site_lines if l.split()[0] in ["Phosphate", "Phosphonate"]}
 
         print("Running Tests")
         print("=============")
