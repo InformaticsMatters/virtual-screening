@@ -28,4 +28,4 @@ RUN pip install wheel six &&\
   "im-rdkit-utilities>=1.1.2"\
   git+https://github.com/oddt/oddt.git@master
 
-COPY *.py ./
+COPY src/*.py ./

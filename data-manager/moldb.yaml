@@ -215,7 +215,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/load_library.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/load_library.nf
       --inputs '{{ input }}'
       --library_name '{{ library }}'
       --name_col {{ id_col }}
@@ -341,7 +341,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/calc_molprops.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/calc_molprops.nf
       {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
       --count {{ count }}
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -425,7 +425,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/enumerate_mols.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/enumerate_mols.nf
       --specification '{{ specification }}'
       --count {{ count }}
       --chunk_size {{ chunk_size }}
@@ -523,7 +523,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/generate_confs.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/generate_confs.nf
       --specification {{ specification }}
       {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
       --count {{ count }}

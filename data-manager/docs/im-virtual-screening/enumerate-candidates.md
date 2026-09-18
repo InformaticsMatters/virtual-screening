@@ -17,7 +17,7 @@ Typically the [generate-low-energy-conformers](../rdkit/generate-low-energy-conf
 
 ## Implementation details
 
-* Python module: [enumerate.py](/enumerate.py)
+* Python module: [enumerate.py](/src/enumerate.py)
 * Job definition: `jobs.enumerate-candidates` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job

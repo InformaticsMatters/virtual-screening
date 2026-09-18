@@ -31,10 +31,10 @@ RUN curl -Ls -o nextflow https://github.com/nextflow-io/nextflow/releases/downlo
 ENV HOME=/code
 WORKDIR ${HOME}
 
-COPY *.nf ./
-COPY moldb/*.nf ./moldb/
+COPY src/*.nf ./
+COPY src/moldb/*.nf ./moldb/
 
-COPY nf-processes ./nf-processes
+COPY src/nf-processes ./nf-processes
 
 # Adjust permissions for RunAsAnyUser
 RUN chmod 777 ${HOME}

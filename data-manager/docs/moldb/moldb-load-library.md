@@ -18,7 +18,7 @@ set of molecules when you run the `moldb-enumerate-mols` and `moldb-gen-confs` j
 
 This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-* Job implementation: [load_library.nf](/moldb/load_library.nf)
+* Job implementation: [load_library.nf](/src/moldb/load_library.nf)
 * Job definition: `jobs.moldb-load-library` in [moldb.yaml](/data-manager/moldb.yaml)
 
 ## How to run the job

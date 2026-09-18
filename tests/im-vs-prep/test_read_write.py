@@ -5,12 +5,14 @@ def sdf_reader(file, id_col_name='_Name', recs_to_read=10):
     return rdkit_utils.SdfReader(file, id_col_name, recs_to_read=recs_to_read)
 
 
-def smi_reader(file, read_header, delimiter, id_col):
-    return rdkit_utils.SmilesReader(file, read_header, delimiter, id_col, 50)
+def smi_reader(file, read_header, delimiter, id_col, mol_col=0):
+    return rdkit_utils.SmilesReader(file, read_header, delimiter, id_col, mol_col, 50)
 
 
-def smi_writer(file, delimiter, extra_field_names):
-    return rdkit_utils.SmilesWriter(file, delimiter, extra_field_names)
+def smi_writer(file, delimiter, reader):
+    # Lay the ID and SMILES columns out as the reader found them
+    return rdkit_utils.SmilesWriter(file, delimiter, reader.get_extra_field_names(),
+                                    id_column=reader.id_column, mol_column=reader.mol_column)
 
 
 def test_smiles_reader_without_header_with_id():
@@ -124,7 +126,7 @@ def test_read_smiles_no_header_write_smiles_no_header(tmp_path):  # 1
     assert reader.field_names == ['SMILES', 'ID']
     assert reader.get_extra_field_names() == []
     out = tmp_path / 'foo.smi'
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     while True:
         t = reader.read()
         if not t:
@@ -150,7 +152,7 @@ def test_read_smiles_header_extra_fields_write_smiles_with_header(tmp_path):  # 
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID', 'A', 'B']
     assert reader.get_extra_field_names() == ['A', 'B']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -184,7 +186,7 @@ def test_read_smiles_header_extra_fields_write_smiles_with_header_omit(tmp_path)
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID', 'A', 'B']
     assert reader.get_extra_field_names() == ['A', 'B']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -218,7 +220,7 @@ def test_read_smiles_extra_fields_write_smiles_with_header(tmp_path):  # 4
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID', 'field3', 'field4']
     assert reader.get_extra_field_names() == ['field3', 'field4']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -252,7 +254,7 @@ def test_read_smiles_no_id_extra_fields_write_smiles_with_header(tmp_path):  # 5
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'field2', 'field3', 'field4']
     assert reader.get_extra_field_names() == ['field2', 'field3', 'field4']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -286,7 +288,7 @@ def test_read_smiles_no_id_extra_fields_write_smiles_with_header_omit(tmp_path):
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'field2', 'field3', 'field4']
     assert reader.get_extra_field_names() == ['field2', 'field3', 'field4']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -320,7 +322,7 @@ def test_read_smiles_no_header_write_smiles_with_header(tmp_path):  # 7
     assert reader.field_names == ['SMILES', 'ID']
     assert reader.get_extra_field_names() == []
     out = tmp_path / 'foo.smi'
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -354,7 +356,7 @@ def test_read_smiles_no_header_write_smiles_with_header_omit(tmp_path):  # 8
     assert reader.field_names == ['SMILES', 'ID']
     assert reader.get_extra_field_names() == []
     out = tmp_path / 'foo.smi'
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -388,7 +390,7 @@ def test_read_smiles_extra_fields_write_smiles_with_header_omit(tmp_path):  # 9
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID', 'field3', 'field4']
     assert reader.get_extra_field_names() == ['field3', 'field4']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -422,7 +424,7 @@ def test_read_smiles_no_header_extra_write_smiles_no_header(tmp_path):  # 10
     assert reader.field_names == ['SMILES', 'field2']
     assert reader.get_extra_field_names() == ['field2']
     out = tmp_path / 'foo.smi'
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -456,7 +458,7 @@ def test_read_smiles_no_header_write_smiles_no_header_omit(tmp_path):  # 11
     assert reader.field_names == ['SMILES', 'field2']
     assert reader.get_extra_field_names() == ['field2']
     out = tmp_path / 'foo.smi'
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -490,7 +492,7 @@ def test_read_smiles_header_fields_write_smiles_with_header(tmp_path):  # 12
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID']
     assert reader.get_extra_field_names() == []
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -524,7 +526,7 @@ def test_read_smiles_header_fields_write_smiles_with_header_omit(tmp_path):  # 1
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID']
     assert reader.get_extra_field_names() == []
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -558,7 +560,7 @@ def test_read_smiles_header_no_id_extra_fields_write_smiles_with_header(tmp_path
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID', 'A', 'B']
     assert reader.get_extra_field_names() == ['ID', 'A', 'B']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()
@@ -592,7 +594,7 @@ def test_read_smiles_header_no_id_extra_fields_write_smiles_with_header_omit(tmp
     out = tmp_path / 'foo.smi'
     assert reader.field_names == ['SMILES', 'ID', 'A', 'B']
     assert reader.get_extra_field_names() == ['ID', 'A', 'B']
-    writer = rdkit_utils.SmilesWriter(out, "\t", reader.get_extra_field_names())
+    writer = smi_writer(out, "\t", reader)
     count = 0
     while True:
         t = reader.read()

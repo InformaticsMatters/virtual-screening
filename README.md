@@ -16,6 +16,21 @@ More information can be found in the following docs:
 
 These tools are available under the [Apache2.0 license](LICENSE).
 
+## Source layout
+All the Python modules, Nextflow workflows and shell scripts live under `src/`,
+including the `moldb`, `im_mordred` and `dmpk` packages and the Nextflow
+processes in `src/nf-processes`. The Dockerfiles copy the contents of `src/` into
+`/code` in the images, so in a container the files are still at `/code/<file>`
+(e.g. `/code/screen.py`, `python -m moldb.filter`) and the Job Definitions refer
+to them by those paths. The Nextflow Jobs run their workflow from
+`{{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}`
+because `jote` sets `CODE_DIRECTORY` to the repository root when it tests them.
+
+To run the tools outside a container, put `src` on the `PYTHONPATH`: -
+
+    $ export PYTHONPATH=$PWD/src
+    $ python -m screen --help
+
 ## Building
 The image builds are accomplished using GitHib workflows in this repository.
 

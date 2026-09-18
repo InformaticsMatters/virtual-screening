@@ -9,7 +9,7 @@ field. The minimized molecules are aligned to the original molecule.
 
 ## Implementation details
 
-* Job implementation: [minimize.py](/minimize.py)
+* Job implementation: [minimize.py](/src/minimize.py)
 * Job definition: `jobs.minimize-mmff94` in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job

@@ -16,7 +16,7 @@ It uses RDKit FeatureMaps to determine the  feature complimentarity:
 
 ## Implementation details
 
-* Job implementation: [sucos.py](/sucos.py)
+* Job implementation: [sucos.py](/src/sucos.py)
 * Job definition: `sucos job` in [xchem.yaml](../xchem.yaml)
 
 ## How to run the job

@@ -12,7 +12,7 @@ For more on the MaxMinPicker see this [blog post](http://rdkit.blogspot.com/2017
 
 ## Implementation details
 
-* Job implementation: [max_min_picker.py](/max_min_picker.py)
+* Job implementation: [max_min_picker.py](/src/max_min_picker.py)
 * Job definition: `jobs.max-min-picker` in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job

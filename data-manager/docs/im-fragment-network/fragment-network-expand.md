@@ -9,7 +9,7 @@ count.
 
 ## Implementation details
 
-* Job implementation: [fn_synthon_expansion.py](/fn_synthon_expansion.py)
+* Job implementation: [fn_synthon_expansion.py](/src/fn_synthon_expansion.py)
 * Job definition: `jobs.fragment-network-synthon-expansion` in [fragnet-search.yaml](/data-manager/fragnet-search.yaml)
 
 ## How to run the job

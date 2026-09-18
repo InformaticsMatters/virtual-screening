@@ -9,7 +9,7 @@ From this report you can work out which molecues need property calculation, enum
 
 ## Implementation details
 
-* Job implementation: [filter.nf](/moldb/analyse.py)
+* Job implementation: [filter.nf](/src/moldb/analyse.py)
 * Job definition: `jobs.moldb-analyse` in [moldb.yaml](/data-manager/moldb.yaml)
 
 ## How to run the job
