@@ -78,15 +78,6 @@ jobs:
       image-tag: ${{ inputs.image-tag }}
       image-push: ${{ inputs.image-push }}
 
-  build-jaqpot:
-    uses: ./.github/workflows/build-image-with-push-option.yaml
-    secrets: inherit
-    with:
-      dockerfile-suffix: jaqpot
-      image-name: vs-jaqpot
-      image-tag: ${{ inputs.image-tag }}
-      image-push: ${{ inputs.image-push }}
-
   build-moldb:
     uses: ./.github/workflows/build-image-with-push-option.yaml
     secrets: inherit
