@@ -1,6 +1,4 @@
 ---
-version: '3.0'
-
 # Build and push with: -
 #
 # IMAGE_TAG=2.0.0 docker-compose build
