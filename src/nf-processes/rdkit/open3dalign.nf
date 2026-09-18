@@ -1,7 +1,6 @@
 params.interval = 1000
 params.crippen = false
 params.remove_hydrogens = true
-params.threshold = 0
 
 process open3dalign {
 
@@ -10,11 +9,13 @@ process open3dalign {
     input:
     path inputs // .sdf
     path query  // .sdf or .mol
+    val threshold // 0 or null for no threshold
 
     output:
     path "o3da_${inputs.name}"
-    env COUNT
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     /code/open3dalign.py\
       --inputs '$inputs'\
@@ -23,7 +24,7 @@ process open3dalign {
       --interval $params.interval\
       ${params.remove_hydrogens ? '--remove-hydrogens' : ''}\
       ${params.crippen ? '--crippen' : ''}\
-      ${params.threshold ? '--threshold ' + params.threshold : ''}
+      ${threshold ? '--threshold ' + threshold : ''}
 
       # count the number of outputs - for some strange reason the fgrep command fails is the file is empty
       if [ -s 'o3da_${inputs.name}' ]
@@ -32,5 +33,6 @@ process open3dalign {
       else
         COUNT=0
       fi
+      echo \$COUNT > count.txt
     """
 }

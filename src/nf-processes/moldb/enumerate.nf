@@ -18,12 +18,13 @@ process enumerate {
     container 'informaticsmatters/vs-moldb:2.0.0'
 
     input:
-    file inputs
+    path inputs
 
     output:
-    file "enumerated-*.cxsmi"
-    env COUNT
+    path "enumerated-*.cxsmi"
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     python -m moldb.enumerate -i $inputs -o enumerated-${inputs.name}.cxsmi --interval $params.interval\
       ${params.enumerate_charges ? '--enumerate-charges' : ''}\
@@ -41,5 +42,6 @@ process enumerate {
 
     # count the number of outputs
     COUNT=\$(wc -l < 'enumerated-${inputs.name}.cxsmi')
+    echo \$COUNT > count.txt
     """
 }

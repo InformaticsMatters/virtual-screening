@@ -1,23 +1,25 @@
 params.publish_dir = ''
 params.publish_dir_mode = 'copy'
-params.glob = '*.sdf'
-params.outputfile = 'results.sdf'
-params.optional = false
 
+/** Concatenate the files matching glob into outputfile.
+*/
 process concatenate_files {
 
     container 'informaticsmatters/vs-prep:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
     path part
+    val outputfile // e.g. 'results.sdf'
+    val glob       // e.g. 'docked_*.sdf'
 
     output:
-    path params.outputfile optional params.optional
+    path "${outputfile}"
 
+    script:
     """
-    DIR=\$(dirname "${params.outputfile}")
+    DIR=\$(dirname "${outputfile}")
     mkdir -p \$DIR
-    ls ${params.glob} | xargs cat >> ${params.outputfile}
+    ls ${glob} | xargs cat >> ${outputfile}
     """
 }

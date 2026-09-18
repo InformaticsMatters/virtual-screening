@@ -9,14 +9,15 @@ params.skip_lines = 0
 process standardize {
 
     container 'informaticsmatters/vs-moldb:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
-    file input
+    path input
 
     output:
-    file 'std_*'
+    path 'std_*'
 
+    script:
     """
     python -m moldb.standardize -i $input -o std_$input.name\
       --delimiter $params.delimiter\

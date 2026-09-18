@@ -16,7 +16,7 @@ limitations under the License.
 nextflow.enable.dsl=2
 
 
-params.input = 'molecules.smi'
+params.input = 'molecules.smi' // smiles or sdf with molecules to enumerate
 params.output = 'enumerated.sdf'
 
 params.publish_dir = './'
@@ -37,29 +37,18 @@ params.min_charge = null
 params.max_charge = null
 params.num_charges = null
 */
-// files
-input = file(params.input) // smiles or sdf with molecules to enumerate
 
 // includes
-print("INPUT:" +  params.input)
-if (input.name.endsWith('.sdf') || input.name.endsWith('.sdf.gz')) {
-    include { split_sdf as splitter } from './nf-processes/file/split_sdf.nf'
-} else {
-    include { split_txt as splitter } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
-}
+include { split_sdf } from './nf-processes/file/split_sdf.nf'
+include { split_txt } from './nf-processes/file/split_txt.nf'
 include { enumerate } from './nf-processes/rdkit/enumerate.nf'
-include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: params.output,
-    glob: 'enumerated-*.sdf')
+include { concatenate_files } from './nf-processes/file/concatenate_files.nf'
 
-dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
-dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-def curr_t() { dateFormat.format(new java.util.Date()) }
-int splits = 0
-
-def now = curr_t()
-def wrkflw = 'enumerate_mols'
-log.info("$now # PROGRESS -START- $wrkflw:splitter 1")
+def curr_t() {
+    def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+    dateFormat.setTimeZone(TimeZone.getTimeZone('UTC'))
+    return dateFormat.format(new java.util.Date())
+}
 
 
 // workflow definitions
@@ -69,36 +58,37 @@ workflow enumerate_mols {
     input
 
     main:
+    def wrkflw = 'enumerate_mols'
+    log.info("${curr_t()} # PROGRESS -START- $wrkflw:splitter 1")
 
-    splitter(input)
-    enumerate(splitter.out.flatten())
-    concatenate_files(enumerate.out[0].collect())
+    def is_sdf = input.name.endsWith('.sdf') || input.name.endsWith('.sdf.gz')
+    def parts = is_sdf ? split_sdf(input) : split_txt(input, '.smi')
+    enumerate(parts.flatten())
+    concatenate_files(enumerate.out[0].collect(), params.output, 'enumerated-*.sdf')
 
-    split_count = 0
-    splitter.out.flatten().subscribe {
-        now = curr_t()
-        if (split_count == 0) {
+    def split_count = new java.util.concurrent.atomic.AtomicInteger()
+    parts.flatten().subscribe { _part ->
+        def now = curr_t()
+        if (split_count.get() == 0) {
             log.info("$now # PROGRESS -DONE- $wrkflw:splitter 1")
         }
-        split_count++
-        log.info("$now # PROGRESS -START- $wrkflw:enumerate $split_count")
+        log.info("$now # PROGRESS -START- $wrkflw:enumerate ${split_count.incrementAndGet()}")
     }
 
-    int cost = 0
-    int enumerate_count = 0
-    enumerate.out[1].subscribe {
-        cost += new Integer(it)
-        enumerate_count += 1
-        now = curr_t()
-        log.info("$now # INFO -COST- $cost $enumerate_count")
-        log.info("$now # PROGRESS -DONE- $wrkflw:enumerate $enumerate_count")
-        if (enumerate_count == split_count) {
+    def cost = new java.util.concurrent.atomic.AtomicInteger()
+    def enumerate_count = new java.util.concurrent.atomic.AtomicInteger()
+    enumerate.out[1].subscribe { count_file ->
+        def total = cost.addAndGet(count_file.text.trim() as Integer)
+        def n = enumerate_count.incrementAndGet()
+        def now = curr_t()
+        log.info("$now # INFO -COST- $total $n")
+        log.info("$now # PROGRESS -DONE- $wrkflw:enumerate $n")
+        if (n == split_count.get()) {
             log.info("$now # PROGRESS -START- $wrkflw:concatenate_files 1")
         }
     }
-    concatenate_files.out.subscribe {
-        now = curr_t()
-        log.info("$now # PROGRESS -DONE- $wrkflw:concatenate_files 1")
+    concatenate_files.out.subscribe { _result ->
+        log.info("${curr_t()} # PROGRESS -DONE- $wrkflw:concatenate_files 1")
     }
 
     emit:
@@ -106,5 +96,6 @@ workflow enumerate_mols {
 }
 
 workflow {
-    enumerate_mols(input)
+    println("INPUT:" + params.input)
+    enumerate_mols(file(params.input))
 }

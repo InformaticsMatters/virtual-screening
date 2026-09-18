@@ -2,9 +2,6 @@
 The input and output formats are determined using the file extensions
 */
 params.scratch = false
-params.input_extensions = ['.pdb', '.mol2']
-params.output_extension = '.pdbqt'
-params.output_file = 'reformatted'
 
 process convert_format {
 
@@ -12,31 +9,30 @@ process convert_format {
     scratch params.scratch
 
     input:
-    file input
+    path input
+    val input_extensions // e.g. ['.pdb', '.mol2']
+    val output_extension // e.g. '.pdbqt'
+    val output_file      // the output file name without the extension
 
     output:
-    file params.output_file + params.output_extension
+    path "${output_file}${output_extension}"
 
     script:
-    found = false
-    params.input_extensions.each() {
-      if (input.name.endsWith(it))
-         found = true
-    }
-    if ( found )
-       """
-       echo 'Converting ${input.name} to ${params.output_extension} format'
-       obabel $input -O '${params.output_file + params.output_extension}'
-       """
+    def found = input_extensions.any { ext -> input.name.endsWith(ext) }
+    if (found)
+        """
+        echo 'Converting ${input.name} to ${output_extension} format'
+        obabel $input -O '${output_file}${output_extension}'
+        """
 
-    else if ( input.name.endsWith(params.output_extension) )
-      """
-      cp $input '${params.output_file + params.output_extension}'
-      """
+    else if (input.name.endsWith(output_extension))
+        """
+        cp $input '${output_file}${output_extension}'
+        """
 
     else
-      """
-      echo 'Input ${input.name} must be in one of ${params.input_extensions.join(' ')} formats'
-      exit 1
-      """
+        """
+        echo 'Input ${input.name} must be in one of ${input_extensions.join(' ')} formats'
+        exit 1
+        """
 }

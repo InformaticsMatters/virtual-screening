@@ -23,30 +23,20 @@ nextflow run open3dalign.nf --inputs data/candidates.sdf --query data/dhfr-ligna
 nextflow.enable.dsl=2
 
 // params
-// other ones that can be specified are: chunk_size, crippen, remove_hydrogens, threshold
+// other ones that can be specified are: chunk_size, crippen, remove_hydrogens
 params.scratch = false
 params.inputs = 'conformers.sdf'
 params.query = 'ligand.mol'
 params.output_filename = 'open3dalign.sdf'
 params.publish_dir = './'
 params.group_by_field = null
-
-// files
-inputs = file(params.inputs)
-query = file(params.query)
+params.threshold = 0
 
 // includes
 include { split_sdf } from './nf-processes/file/split_sdf.nf'
 include { open3dalign } from './nf-processes/rdkit/open3dalign.nf'
-include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: params.output_filename,
-    glob: 'o3da_*.sdf')
-include { sd_best_sorted as filter } from './nf-processes/rdock/filter.nf' addParams(
-    sort_field: 'o3da_score_rel',
-    sort_descending: true,
-    group_by_field: params.group_by_field,
-    outputfile: params.output_filename[0..-5] + '-best.sdf'
-)
+include { concatenate_files } from './nf-processes/file/concatenate_files.nf'
+include { sd_best_sorted as filter } from './nf-processes/rdock/filter.nf'
 
 // workflows
 workflow o3da {
@@ -57,17 +47,19 @@ workflow o3da {
 
     main:
     split_sdf(inputs)
-    open3dalign(split_sdf.out.flatten(), query)
-    concatenate_files(open3dalign.out.collect())
+    open3dalign(split_sdf.out.flatten(), query, params.threshold ?: 0)
+    concatenate_files(open3dalign.out[0].collect(), params.output_filename, 'o3da_*.sdf')
+    def filtered = channel.empty()
     if (params.group_by_field) {
-        filter(concatenate_files.out)
+        filtered = filter(concatenate_files.out, 'o3da_score_rel', true, params.group_by_field,
+            params.output_filename[0..-5] + '-best.sdf')
     }
 
     emit:
-    concatenate_files.out
-    params.group_by_field ? filter.out : ''
+    results = concatenate_files.out
+    best = filtered
 }
 
 workflow {
-    o3da(inputs, query)
+    o3da(file(params.inputs), file(params.query))
 }

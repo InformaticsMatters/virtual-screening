@@ -20,14 +20,11 @@ limitations under the License.
 nextflow.enable.dsl=2
 
 
-params.inputs = 'need-conf.smi'
+params.inputs = 'need-conf.smi' // smiles with molecules to enumerate
 params.chunk_size = 10000
 
-// files
-inputs_smi = file(params.inputs) // smiles with molecules to enumerate
-
 // includes
-include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { split_txt } from './nf-processes/file/split_txt.nf'
 include { gen_conformers } from './nf-processes/moldb/gen_conformers.nf'
 
 // workflow definitions
@@ -37,7 +34,7 @@ workflow generate_confs {
     inputs_smi
 
     main:
-    split_txt(inputs_smi)
+    split_txt(inputs_smi, '.smi')
     gen_conformers(split_txt.out.flatten())
 
     emit:
@@ -45,5 +42,5 @@ workflow generate_confs {
 }
 
 workflow {
-    generate_confs(inputs_smi)
+    generate_confs(file(params.inputs))
 }

@@ -13,8 +13,9 @@ process sucos {
 
     output:
     path '*.sdf'
-    env COUNT
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     OUT=${params.output == null ? 'sucos_' + inputs : params.output}
     /code/sucos.py\
@@ -32,5 +33,6 @@ process sucos {
       else
         COUNT=0
       fi
+      echo \$COUNT > count.txt
     """
 }

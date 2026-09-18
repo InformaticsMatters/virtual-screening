@@ -33,28 +33,13 @@ params.protein = 'receptor.pdbqt'
 params.output_basename = 'results_smina'
 params.publish_dir = './'
 
-// files
-ligands = file(params.ligands)
-ligand = file(params.ligand)
-protein = file(params.protein)
-
 
 // includes
-include { convert_format as format_protein } from './nf-processes/obabel/convert_format.nf' addParams(
-    input_extensions: ['.pdb', '.mol2'],
-    output_extension: '.pdbqt',
-    outputfile: 'ready_receptor'
-    )
-include { convert_format as format_ligand } from './nf-processes/obabel/convert_format.nf' addParams(
-    input_extensions: ['.pdb', '.mol2', '.mol'],
-    output_extension: '.pdbqt',
-    outputfile: 'ready_ligand'
-    )
+include { convert_format as format_protein } from './nf-processes/obabel/convert_format.nf'
+include { convert_format as format_ligand } from './nf-processes/obabel/convert_format.nf'
 include { split_sdf } from './nf-processes/file/split_sdf.nf'
 include { smina_docking as smina } from './nf-processes/smina/smina_docking.nf'
-include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: params.output_basename + '.sdf',
-    glob: 'smina_*.sdf')
+include { concatenate_files } from './nf-processes/file/concatenate_files.nf'
 
 
 // workflows
@@ -66,17 +51,16 @@ workflow smina_docking {
     protein
 
     main:
-    format_protein(protein)
-    format_ligand(ligand)
+    format_protein(protein, ['.pdb', '.mol2'], '.pdbqt', 'ready_receptor')
+    format_ligand(ligand, ['.pdb', '.mol2', '.mol'], '.pdbqt', 'ready_ligand')
     split_sdf(ligands)
     smina(split_sdf.out.flatten(), format_ligand.out, format_protein.out)
-    concatenate_files(smina.out[0].collect())
+    concatenate_files(smina.out.collect(), params.output_basename + '.sdf', 'smina_*.sdf')
 
     emit:
     concatenate_files.out
 }
 
 workflow {
-    smina_docking(ligands, ligand, protein)
+    smina_docking(file(params.ligands), file(params.ligand), file(params.protein))
 }
-

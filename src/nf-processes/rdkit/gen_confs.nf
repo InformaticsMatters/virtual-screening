@@ -26,12 +26,13 @@ process gen_conformers {
     container 'informaticsmatters/vs-prep:2.0.0'
 
     input:
-    file inputs
+    path inputs
 
     output:
-    file "confs-*.sdf"
-    env COUNT
+    path "confs-*.sdf"
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     /code/le_conformers.py -i $inputs -o confs-${inputs.name}.sdf\
         ${params.num_conformers ? '--num-conformers ' + params.num_conformers : ''}\
@@ -44,5 +45,6 @@ process gen_conformers {
 
     # count the number of outputs
     COUNT=\$(fgrep -c '\$\$\$\$' 'confs-${inputs.name}.sdf')
+    echo \$COUNT > count.txt
     """
 }

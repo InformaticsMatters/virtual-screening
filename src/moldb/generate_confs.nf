@@ -20,7 +20,7 @@ limitations under the License.
 nextflow.enable.dsl=2
 
 // inputs
-params.specification
+params.specification = null
 
 params.file = 'need-confs.smi'
 params.chunk_size = 1000
@@ -29,20 +29,17 @@ params.chunk_size = 1000
 // params.count = 10000
 // all the mol prop filters e.g. --min_hac 16
 
-specification = file(params.specification)
-
 // includes
-include { extract_need_conf } from '../nf-processes/moldb/filter.nf' addParams(output: params.file)
-include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { extract_need_conf } from '../nf-processes/moldb/filter.nf'
+include { split_txt } from '../nf-processes/file/split_txt.nf'
 include { gen_conformers } from '../nf-processes/moldb/gen_conformers.nf'
 include { load_conf } from '../nf-processes/moldb/db_load.nf'
 
-def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
-dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-
-def now = dateFormat.format(new java.util.Date())
-def wrkflw = 'gen_confs'
-log.info("$now # PROGRESS -START- $wrkflw:extract_need_conf 1")
+def curr_t() {
+    def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+    dateFormat.setTimeZone(TimeZone.getTimeZone('UTC'))
+    return dateFormat.format(new java.util.Date())
+}
 
 // workflow definitions
 workflow gen_confs {
@@ -51,43 +48,45 @@ workflow gen_confs {
     specification
 
     main:
-    extract_need_conf(specification)
-    split_txt(extract_need_conf.out)
+    def wrkflw = 'gen_confs'
+    log.info("${curr_t()} # PROGRESS -START- $wrkflw:extract_need_conf 1")
+
+    extract_need_conf(specification, params.file)
+    split_txt(extract_need_conf.out, '.smi')
     gen_conformers(split_txt.out.flatten())
     load_conf(gen_conformers.out)
 
-    extract_need_conf.out.subscribe {
-        now = dateFormat.format(new java.util.Date())
+    extract_need_conf.out.subscribe { _extracted ->
+        def now = curr_t()
         log.info("$now # PROGRESS -DONE- $wrkflw:extract_need_conf 1")
         log.info("$now # PROGRESS -START- $wrkflw:split_txt 1")
     }
 
-    split_count = 0
-    split_txt.out.flatten().subscribe {
-        now = dateFormat.format(new java.util.Date())
-        if (split_count == 0) log.info("$now # PROGRESS -DONE- $wrkflw:split_txt 1")
-        split_count++
-        log.info("$now # PROGRESS -START- $wrkflw:gen_conformers $split_count")
+    def split_count = new java.util.concurrent.atomic.AtomicInteger()
+    split_txt.out.flatten().subscribe { _part ->
+        def now = curr_t()
+        if (split_count.get() == 0) log.info("$now # PROGRESS -DONE- $wrkflw:split_txt 1")
+        log.info("$now # PROGRESS -START- $wrkflw:gen_conformers ${split_count.incrementAndGet()}")
     }
 
-    conf_count = 0
-    gen_conformers.out.subscribe {
-        now = dateFormat.format(new java.util.Date())
-        conf_count++
-        log.info("$now # PROGRESS -DONE- $wrkflw:gen_conformers $conf_count")
-        log.info("$now # PROGRESS -START- $wrkflw:load_conf $conf_count")
+    def conf_count = new java.util.concurrent.atomic.AtomicInteger()
+    gen_conformers.out.subscribe { _confs ->
+        def now = curr_t()
+        def n = conf_count.incrementAndGet()
+        log.info("$now # PROGRESS -DONE- $wrkflw:gen_conformers $n")
+        log.info("$now # PROGRESS -START- $wrkflw:load_conf $n")
     }
 
-    load_count = 0
-    load_conf.out.subscribe {
-        cost = new Integer(it)
-        load_count++
-        now = dateFormat.format(new java.util.Date())
-        log.info("$now # PROGRESS -DONE- $wrkflw:load_conf $load_count")
-        log.info("$now # INFO -COST- +$cost $load_count")
+    def load_count = new java.util.concurrent.atomic.AtomicInteger()
+    load_conf.out.subscribe { count_file ->
+        def cost = count_file.text.trim() as Integer
+        def n = load_count.incrementAndGet()
+        def now = curr_t()
+        log.info("$now # PROGRESS -DONE- $wrkflw:load_conf $n")
+        log.info("$now # INFO -COST- +$cost $n")
     }
 }
 
 workflow {
-    gen_confs(specification)
+    gen_confs(file(params.specification))
 }

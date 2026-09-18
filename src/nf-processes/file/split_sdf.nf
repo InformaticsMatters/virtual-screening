@@ -25,6 +25,7 @@ process split_sdf {
     output:
     path 'mols_part*.sdf'
 
+    script:
     """
     file=$molecules.name
     if [ \${file##*.} == 'gz' ]; then

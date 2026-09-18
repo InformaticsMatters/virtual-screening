@@ -1,10 +1,5 @@
-params.sort_field = 'SCORE'
-params.sort_descending = false
-params.group_by_field = "_Name"
 params.top = 1
 
-// outputfile should be just the filename (no path). It will be placed in publish_dir
-params.outputfile = 'results.sdf'
 // empty string means nothing will be published. Change this to where you want your outputs.
 params.publish_dir = ''
 params.publish_dir_mode = 'copy'
@@ -14,17 +9,22 @@ params.publish_dir_mode = 'copy'
 process sd_sort_and_top {
 
     container 'informaticsmatters/vs-rdock:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
     path inputs
+    val sort_field      // e.g. 'SCORE'
+    val sort_descending // true or false
+    val group_by_field  // e.g. '_Name'
+    val outputfile      // just the filename (no path). It will be placed in publish_dir
 
     output:
-    path params.outputfile
+    path "${outputfile}"
 
+    script:
     """
-    sdsort -n -s -f${params.sort_field} -id${params.group_by_field} ${params.sort_descending ? '-r' : ''} $inputs |\
-      sdfilter -f'\$_COUNT == ${params.top}' -s${params.group_by_field} > ${params.outputfile}
+    sdsort -n -s -f${sort_field} -id${group_by_field} ${sort_descending ? '-r' : ''} $inputs |\
+      sdfilter -f'\$_COUNT == ${params.top}' -s${group_by_field} > ${outputfile}
     """
 }
 
@@ -34,18 +34,23 @@ and sort those best results.
 process sd_best_sorted {
 
     container 'informaticsmatters/vs-rdock:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
     path inputs
+    val sort_field      // e.g. 'SCORE'
+    val sort_descending // true or false
+    val group_by_field  // e.g. '_Name'
+    val outputfile      // just the filename (no path). It will be placed in publish_dir
 
     output:
-    path params.outputfile
+    path "${outputfile}"
 
+    script:
     """
-    sdsort -n -s -f${params.sort_field} -id${params.group_by_field} ${params.sort_descending ? '-r' : ''} $inputs |\
-      sdfilter -f'\$_COUNT == 1' -s${params.group_by_field} |\
-      sdsort -n -f${params.sort_field} ${params.sort_descending ? '-r' : ''} > ${params.outputfile}
+    sdsort -n -s -f${sort_field} -id${group_by_field} ${sort_descending ? '-r' : ''} $inputs |\
+      sdfilter -f'\$_COUNT == 1' -s${group_by_field} |\
+      sdsort -n -f${sort_field} ${sort_descending ? '-r' : ''} > ${outputfile}
     """
 }
 
@@ -56,18 +61,23 @@ and sort those best results and keep the top n (params.top)
 process sd_best_sorted_top {
 
     container 'informaticsmatters/vs-rdock:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
     path inputs
+    val sort_field      // e.g. 'SCORE'
+    val sort_descending // true or false
+    val group_by_field  // e.g. '_Name'
+    val outputfile      // just the filename (no path). It will be placed in publish_dir
 
     output:
-    path params.outputfile
+    path "${outputfile}"
 
+    script:
     """
-    sdsort -n -s -f${params.sort_field} -id${params.group_by_field} ${params.sort_descending ? '-r' : ''} $inputs |\
-      sdfilter -f'\$_COUNT == 1' -s${params.group_by_field} |\
-      sdsort -n -f${params.sort_field} ${params.sort_descending ? '-r' : ''} |\
-      sdfilter -f'\$_REC <= ${params.top}' > ${params.outputfile}
+    sdsort -n -s -f${sort_field} -id${group_by_field} ${sort_descending ? '-r' : ''} $inputs |\
+      sdfilter -f'\$_COUNT == 1' -s${group_by_field} |\
+      sdsort -n -f${sort_field} ${sort_descending ? '-r' : ''} |\
+      sdfilter -f'\$_REC <= ${params.top}' > ${outputfile}
     """
 }

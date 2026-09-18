@@ -14,13 +14,14 @@ process smina_docking {
     scratch params.scratch
 
     input:
-    file part
-    file 'ligand.pdbqt'
-    file 'receptor.pdbqt'
+    path part
+    path 'ligand.pdbqt'
+    path 'receptor.pdbqt'
 
     output:
-    file 'smina_part_*.sdf'
+    path 'smina_part_*.sdf'
 
+    script:
     """
     smina -r receptor.pdbqt -l $part --autobox_ligand ligand.pdbqt --autobox_add $params.padding\
       --exhaustiveness $params.exhaustiveness --scoring $params.scoring_function --cpu $params.cpu\

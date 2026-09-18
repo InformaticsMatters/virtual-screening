@@ -11,8 +11,9 @@ process load_standardized {
     maxRetries 3
 
     input:
-    file inputs
+    path inputs
 
+    script:
     """
     python -m moldb.load_standardized --input '$inputs' --library-name '$params.library_name'
     """
@@ -26,16 +27,18 @@ process load_molprops {
     maxRetries 3
 
     input:
-    file inputs
+    path inputs
 
     output:
-    env COUNT
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     python -m moldb.load_molprops --input '$inputs'
 
     # count the number of lines
     COUNT=\$(wc -l < '$inputs')
+    echo \$COUNT > count.txt
     """
 }
 
@@ -47,17 +50,19 @@ process load_enum {
     maxRetries 3
 
     input:
-    file inputs
+    path inputs
 
     output:
-    env COUNT
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     python -m moldb.load_enums --input '$inputs' --interval $params.interval\
       ${params.purge ? '--purge' : ''}
 
     # count the number of lines
     COUNT=\$(wc -l < '$inputs')
+    echo \$COUNT > count.txt
     """
 }
 
@@ -69,16 +74,18 @@ process load_conf {
     maxRetries 3
 
     input:
-    file inputs
+    path inputs
 
     output:
-    env COUNT
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     python -m moldb.load_confs --input '$inputs' --interval $params.interval\
       ${params.purge ? '--purge' : ''}
 
     # count the number of lines
     COUNT=\$(wc -l < '$inputs')
+    echo \$COUNT > count.txt
     """
 }

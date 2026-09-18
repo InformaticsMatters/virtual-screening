@@ -8,7 +8,7 @@ params.interval = 100
 process gen_conformers {
 
     container 'informaticsmatters/vs-moldb:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
     path inputs
@@ -16,6 +16,7 @@ process gen_conformers {
     output:
     path 'confs-*.cxsmi'
 
+    script:
     """
     python -m moldb.conformers -i $inputs -o confs-${inputs.name}.cxsmi\
       --rms-threshold $params.rms_threshold\

@@ -30,6 +30,7 @@ process calc_interactions {
     output:
     path 'oddt_*.sdf'
 
+    script:
     """
     python /code/oddt_interactions.py -i '$poses_sdf' -p '$protein_pdb' -o 'oddt_${poses_sdf.name}'\
       ${params.key_hbond ? '--key-hbond \'' + params.key_hbond + '\'' : ''}\

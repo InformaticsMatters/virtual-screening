@@ -15,6 +15,7 @@ process prep_lists {
     path params.enum_out
     path params.conf_out
 
+    script:
     """
     /code/prepare_enum_conf_lists.py\
       --input $inputs\

@@ -37,12 +37,13 @@ process enumerate {
     container 'informaticsmatters/vs-prep:2.0.0'
 
     input:
-    file inputs
+    path inputs
 
     output:
-    file "enumerated-*.sdf"
-    env COUNT
+    path "enumerated-*.sdf"
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     python -m enumerate -i $inputs -o enumerated-${inputs.name}.sdf --interval $params.interval\
       ${params.enumerate_charges ? '--enumerate-charges' : ''}\
@@ -65,5 +66,6 @@ process enumerate {
 
     # count the number of outputs
     COUNT=\$(fgrep -c '\$\$\$\$' 'enumerated-${inputs.name}.sdf')
+    echo \$COUNT > count.txt
     """
 }
