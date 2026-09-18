@@ -21,7 +21,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [rdk_props.py](/rdk_props.py)
+* Job implementation: [rdk_props.py](/src/rdk_props.py)
 * Job definition: `jobs.rdkit-molprops` in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job

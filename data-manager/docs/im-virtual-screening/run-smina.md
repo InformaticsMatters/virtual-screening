@@ -15,7 +15,7 @@ Smina will generate the box into which the candidate poses are restricted based 
 
 This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-* Nextflow workflow: [smina-docking.nf](/smina-docking.nf)
+* Nextflow workflow: [smina-docking.nf](/src/smina-docking.nf)
 * Job definition: `jobs.run-smina` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 * About Smina: https://sourceforge.net/projects/smina/
 

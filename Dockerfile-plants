@@ -23,7 +23,7 @@ RUN apt-get update &&\
     python3-openbabel &&\
   apt-get clean
 
-COPY pharmacophore.py /code/
+COPY src/pharmacophore.py /code/
 
 RUN chmod a+x /code/*.py &&\
     pip install "im-data-manager-job-utilities>=1.4.0"

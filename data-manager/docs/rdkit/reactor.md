@@ -12,7 +12,7 @@ SMARTS if you have variations of the reaction e.g. one for primary amines and an
 
 ## Implementation details
 
-* Job implementation: [reactor.py](/reactor.py)
+* Job implementation: [reactor.py](/src/reactor.py)
 * Job definition: `reactor job` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job

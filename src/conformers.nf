@@ -28,7 +28,7 @@ inputs_smi = file(params.inputs) // smiles with molecules to enumerate
 
 // includes
 include { split_txt } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
-include { gen_conformers } from './nf-processes/rdkit/gen_conformers.nf'
+include { gen_conformers } from './nf-processes/moldb/gen_conformers.nf'
 
 // workflow definitions
 workflow generate_confs {

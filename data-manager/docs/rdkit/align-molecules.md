@@ -8,7 +8,7 @@ This job takes a template molecule and aligns molecules to it. The matching atom
 
 ## Implementation details
 
-* Job implementation: [align_mol.py](/align_mol.py)
+* Job implementation: [align_mol.py](/src/align_mol.py)
 * Job definition: `jobs.align-molecules` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job

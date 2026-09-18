@@ -18,4 +18,4 @@ need-*
 .idea
 .nextflow*
 
-__pycache__
+**/__pycache__

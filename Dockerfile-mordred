@@ -16,4 +16,4 @@ RUN pip install mordredcommunity==2.0.4 \
   "im-data-manager-job-utilities>=1.4.0" \
   "im-rdkit-utilities>=1.1.2"
 
-COPY im_mordred/descriptor_generator.py ./im_mordred/
+COPY src/im_mordred/descriptor_generator.py ./im_mordred/

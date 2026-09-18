@@ -12,7 +12,7 @@ Note that the Butina algorithm does not scale to very large datasets (more than 
 
 ## Implementation details
 
-* Job implementation: [cluster_butina.py](/cluster_butina.py)
+* Job implementation: [cluster_butina.py](/src/cluster_butina.py)
 * Job definition: `cluster-butina job` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job

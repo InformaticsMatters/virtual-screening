@@ -9,7 +9,7 @@ The resulting synthons can be used in the [fragment-network-synthon-expansion](f
 
 ## Implementation details
 
-* Job implementation: [fn_find_synthons.py](/fn_find_synthons.py)
+* Job implementation: [fn_find_synthons.py](/src/fn_find_synthons.py)
 * Job definition: `jobs.fragment-network-find-synthons` in [fragnet-search.yaml](/data-manager/fragnet-search.yaml)
 
 ## How to run the job

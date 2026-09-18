@@ -17,7 +17,7 @@ shape and molecular properties to a known active molecule.
 
 ## Implementation details
 
-* Job implementation: [open3dalign.py](/open3dalign.py)
+* Job implementation: [open3dalign.py](/src/open3dalign.py)
 * Job definition: `jobs.open3dalign` in [rdkit.yaml](../rdkit.yaml)
 
 ## How to run the job

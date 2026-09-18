@@ -27,10 +27,10 @@ set of molecular properties otherwise you will not get a complete set of molecul
 
 This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-* Nextflow workflow: [enumerate_mols.nf](/moldb/enumerate_mols.nf)
-* Python module for extracting molecules: [filter.py](/moldb/filter.py)
-* Python module for enumeration: [enumerate.py](/enumerate.py)
-* Python module for loading molecules: [db_load.py](/moldb/db_load.py)
+* Nextflow workflow: [enumerate_mols.nf](/src/moldb/enumerate_mols.nf)
+* Python module for extracting molecules: [filter.py](/src/moldb/filter.py)
+* Python module for enumeration: [enumerate.py](/src/enumerate.py)
+* Python module for loading molecules: [db_load.py](/src/moldb/db_load.py)
 * Job definition: `jobs.moldb-enumerate-mols` in [moldb.yaml](/data-manager/moldb.yaml)
 
 ## How to run the job

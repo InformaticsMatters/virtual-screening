@@ -24,7 +24,7 @@ needed beforehand.
 This job uses the ODDT implementation of these three tools. Details can be found
 [here](https://oddt.readthedocs.io/en/latest/#molecular-shape-comparison).
 
-* Python module: [usr.py](/usr.py)
+* Python module: [usr.py](/src/usr.py)
 * Job definition: `jobs.ultrafast-shape-recognition` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
