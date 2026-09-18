@@ -18,7 +18,7 @@ Scores are between 1 (easy to make) and 10 (very difficult to make).
 ## Implementation details
 
 * Job implementation: [sa_scorepy](/src/sa_score.py)
-* Job definition: `jobs.sa-score` in [rdkit.yaml](../rdkit.yaml)
+* Job definition: `jobs.sa-score` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 

@@ -26,7 +26,7 @@ Or, to build using the `latest` tag: -
 ## Prepare conda environments
 
 Alternatively these processes can be run in conda environments.
-Use the [](environment-im-prep.yaml) and [](environment-im-oddt.yaml) environment files to 
+Use the [environment-im-vs-prep.yaml](environment-im-vs-prep.yaml) and [environment-im-oddt.yaml](environment-im-oddt.yaml) environment files to 
 create a conda environments named `im-vs-prep` and `im-vs-oddt`. e.g.
 ```
 conda env create -f environment-im-prep.yaml

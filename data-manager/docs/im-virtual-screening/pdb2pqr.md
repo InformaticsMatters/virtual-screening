@@ -12,7 +12,7 @@ The input is a PDB file and the fixed protein is written in PDB and PQR formats.
 ## Implementation details
 
 * pdb2pqr GitHub repo: https://github.com/Electrostatics/pdb2pqr
-* Job definition: `jobs.pdb2pqr` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml])
+* Job definition: `jobs.pdb2pqr` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 

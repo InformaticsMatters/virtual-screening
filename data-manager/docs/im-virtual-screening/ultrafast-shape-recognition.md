@@ -29,16 +29,19 @@ This job uses the ODDT implementation of these three tools. Details can be found
 
 ## How to run the job
 
-Prior to running the job you must generate a list of molecules you want to screen, probably by running the [filter](filter.md) job 
-(and possibly the [max-min-picker](../rdkit/max-min-picker.md) job to select a diverse subset of those).
-Then you must run the [prep-enum-conf-lists](prep-enum-conf-lists.md) job, then the 
-[enumerate-candidates](enumerate-candidates.md) job, then the [generate-low-energy-conformers](../rdkit/generate-low-energy-conformers.md)
-job that will generate low energy conformers of the molecules that you want to screen. Generating the conformers can take a long time.
+Prior to running the job you must generate low energy conformers of the molecules you want to screen.
+Using MolDB, run the [moldb-enumerate-mols](../moldb/moldb-enumerate-mols.md) and
+[moldb-gen-confs](../moldb/moldb-gen-confs.md) jobs, then extract the conformers with the
+[moldb-extract-confs](../moldb/moldb-extract-confs.md) job. Alternatively, extract the molecules with the
+[moldb-extract-molecules](../moldb/moldb-extract-molecules.md) job (and possibly use the
+[max-min-picker](../rdkit/max-min-picker.md) job to select a diverse subset of those), then run the
+[enumerate-candidates](enumerate-candidates.md) job and the [generate-low-energy-conformers](../rdkit/generate-low-energy-conformers.md)
+job. Generating the conformers can take a long time.
 
 ### Inputs
 
 * **Query molecule**: A SD file or Molfile containing the molecule you want to use as a query. If SDF then the first record is used.
-* **Molecules to screen**: Filename for conformers to be screened, typically the output of the  [filter](filter.md) job.
+* **Molecules to screen**: Filename for conformers to be screened, typically the output of the [moldb-extract-confs](../moldb/moldb-extract-confs.md) job.
 
 ### Options
 
@@ -56,8 +59,8 @@ If a *Group by field* was specified only the most similar conformer for each gro
 ## Related topics
 
 * [Description of the sharded molecule system](https://discourse.squonk.it/t/the-sharded-molecule-system/88)
-* [filter job](filter.md)
-* [prep-enum-conf-lists job](prep-enum-conf-lists.md)
+* [moldb-extract-molecules job](../moldb/moldb-extract-molecules.md)
+* [moldb-extract-enums job](../moldb/moldb-extract-enums.md)
 * [enumerate-candidates job](enumerate-candidates.md)
 * [generate-low-energy-conformers job](../rdkit/generate-low-energy-conformers.md)
-* [assemble-conformers job](assemble-conformers.md)
+* [moldb-extract-confs job](../moldb/moldb-extract-confs.md)

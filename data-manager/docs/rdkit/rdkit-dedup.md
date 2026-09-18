@@ -13,8 +13,8 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [rdk_dedup.py](/src/rdk_dedup.py)
-* Job definition: `jobs.rdkit-dedup` in [rdkit.yaml](../rdkit.yaml)
+* Job implementation: [rdkit_dedup.py](/src/rdkit_dedup.py)
+* Job definition: `jobs.rdkit-dedup` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 

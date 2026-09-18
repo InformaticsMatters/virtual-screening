@@ -11,7 +11,7 @@ filter expressions.
 ## Implementation details
 
 * Job implementation: [sdf_manip.py](/src/sdf_manip.py)
-* Job definition: `jobs.sdf-manipulate` in [rdkit.yaml](../rdkit.yaml)
+* Job definition: `jobs.sdf-manipulate` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 

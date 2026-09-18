@@ -137,5 +137,5 @@ The following fields are added by this job (all fields in the input will aslo be
 
 ## See also
 
-* [open3dalign](../rdkit/open3dalign) job
-* [sort-sdf and filter-sdf](rdock-filter-sdf) jobs
+* [open3dalign](../rdkit/open3dalign.md) job
+* [sort-sdf and filter-sdf](rdock-filter-sdf.md) jobs

@@ -18,7 +18,7 @@ shape and molecular properties to a known active molecule.
 ## Implementation details
 
 * Job implementation: [open3dalign.py](/src/open3dalign.py)
-* Job definition: `jobs.open3dalign` in [rdkit.yaml](../rdkit.yaml)
+* Job definition: `jobs.open3dalign` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 
@@ -44,9 +44,9 @@ A SD file containing the aligned inputs, optionally filtered by the *Filter thre
 ## Related topics
 
 * [Description of the sharded molecule system](https://discourse.squonk.it/t/the-sharded-molecule-system/88)
-* [prep-enum-conf-lists job](../im-virtual-screening/prep-enum-conf-lists.md)
+* [moldb-extract-enums job](../moldb/moldb-extract-enums.md)
 * [generate-low-energy-conformers job](generate-low-energy-conformers.md)
-* [assemble-conformers job](../im-virtual-screening/job-assemble-conformers.md)
-* [align-it job](../silicos-it/align-it.md)
-* [shape-it job](../silicos-it/shape-it.md)
+* [moldb-extract-confs job](../moldb/moldb-extract-confs.md)
+* [align-it-search job](../silicos-it/align-it-search.md)
+* [shape-it-search job](../silicos-it/shape-it-search.md)
 * [ultrafast-shape-recognition](../im-virtual-screening/ultrafast-shape-recognition.md)
