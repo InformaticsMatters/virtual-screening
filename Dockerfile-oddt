@@ -13,7 +13,7 @@ FROM informaticsmatters/vs-rdkit-base:2.0.0
 RUN sed -i -e 's|^# deb http://snapshot|deb http://snapshot|' \
            -e 's|^deb http://deb.debian.org|# deb http://deb.debian.org|' \
            /etc/apt/sources.list && \
-    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot
+    printf 'Acquire::Check-Valid-Until "false";\nAcquire::Retries "5";\nAcquire::http::Timeout "30";\n' > /etc/apt/apt.conf.d/99snapshot
 
 RUN apt-get -y update &&\
   apt-get -y install git &&\
