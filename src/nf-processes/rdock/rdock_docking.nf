@@ -24,10 +24,11 @@ process rdock_docking {
     path 'docking.as'
 
     output:
-    path 'docked_*.sdf' optional true // e.g. docked_mols_part_0019.sdf
-    path 'failed_*.sdf' optional true
-    env COUNT
+    path 'docked_*.sdf', optional: true // e.g. docked_mols_part_0019.sdf
+    path 'failed_*.sdf', optional: true
+    path 'count.txt' // the number of outputs, used for the cost
 
+    script:
     """
     set -e
 
@@ -60,5 +61,6 @@ process rdock_docking {
 
     # count the number of outputs
     COUNT=\$(fgrep -c '\$\$\$\$' 'docked_${part.name}')
+    echo \$COUNT > count.txt
     """
 }

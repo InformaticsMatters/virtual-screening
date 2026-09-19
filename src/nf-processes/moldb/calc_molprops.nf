@@ -6,14 +6,15 @@ params.interval = 10000
 process calc_molprops {
 
     container 'informaticsmatters/vs-moldb:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
-    file inputs
+    path inputs
 
     output:
-    file 'calc_*'
+    path 'calc_*'
 
+    script:
     """
     python -m moldb.calc_molprops --input $inputs --output calc_$inputs --interval $params.interval
     """

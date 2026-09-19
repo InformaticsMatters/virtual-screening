@@ -20,7 +20,7 @@ limitations under the License.
 nextflow.enable.dsl=2
 
 // inputs
-params.specification
+params.specification = null
 
 // outputs
 params.file = 'need-enum.smi'
@@ -31,20 +31,17 @@ params.file = 'need-enum.smi'
 // split options
 params.chunk_size = 1000
 
-specification = file(params.specification)
-
 // includes
-include { extract_need_enum } from '../nf-processes/moldb/filter.nf' addParams(output: params.file)
-include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { extract_need_enum } from '../nf-processes/moldb/filter.nf'
+include { split_txt } from '../nf-processes/file/split_txt.nf'
 include { enumerate } from '../nf-processes/moldb/enumerate.nf'
 include { load_enum } from '../nf-processes/moldb/db_load.nf'
 
-def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
-dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-
-def now = dateFormat.format(new java.util.Date())
-def wrkflw = 'enumerate_forms'
-log.info("$now # PROGRESS -START- $wrkflw:extract_need_enum 1")
+def curr_t() {
+    def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+    dateFormat.setTimeZone(TimeZone.getTimeZone('UTC'))
+    return dateFormat.format(new java.util.Date())
+}
 
 // workflow definitions
 workflow enumerate_forms {
@@ -53,43 +50,45 @@ workflow enumerate_forms {
     specification
 
     main:
-    extract_need_enum(specification)
-    split_txt(extract_need_enum.out)
+    def wrkflw = 'enumerate_forms'
+    log.info("${curr_t()} # PROGRESS -START- $wrkflw:extract_need_enum 1")
+
+    extract_need_enum(specification, params.file)
+    split_txt(extract_need_enum.out, '.smi')
     enumerate(split_txt.out.flatten())
     load_enum(enumerate.out[0])
 
-    extract_need_enum.out.subscribe {
-        now = dateFormat.format(new java.util.Date())
+    extract_need_enum.out.subscribe { _extracted ->
+        def now = curr_t()
         log.info("$now # PROGRESS -DONE- $wrkflw:extract_need_enum 1")
         log.info("$now # PROGRESS -START- $wrkflw:split_txt 1")
     }
 
-    split_count = 0
-    split_txt.out.flatten().subscribe {
-        now = dateFormat.format(new java.util.Date())
-        if (split_count == 0) log.info("$now # PROGRESS -DONE- $wrkflw:split_txt 1")
-        split_count++
-        log.info("$now # PROGRESS -START- $wrkflw:enumerate $split_count")
+    def split_count = new java.util.concurrent.atomic.AtomicInteger()
+    split_txt.out.flatten().subscribe { _part ->
+        def now = curr_t()
+        if (split_count.get() == 0) log.info("$now # PROGRESS -DONE- $wrkflw:split_txt 1")
+        log.info("$now # PROGRESS -START- $wrkflw:enumerate ${split_count.incrementAndGet()}")
     }
 
-    enumerate_count = 0
-    enumerate.out[1].subscribe {
-        now = dateFormat.format(new java.util.Date())
-        enumerate_count++
-        log.info("$now # PROGRESS -DONE- $wrkflw:enumerate $enumerate_count")
-        log.info("$now # PROGRESS -START- $wrkflw:load_enum $enumerate_count")
+    def enumerate_count = new java.util.concurrent.atomic.AtomicInteger()
+    enumerate.out[1].subscribe { _count_file ->
+        def now = curr_t()
+        def n = enumerate_count.incrementAndGet()
+        log.info("$now # PROGRESS -DONE- $wrkflw:enumerate $n")
+        log.info("$now # PROGRESS -START- $wrkflw:load_enum $n")
     }
 
-    load_enum_count = 0
-    load_enum.out.subscribe {
-        cost = new Integer(it)
-        load_enum_count++
-        now = dateFormat.format(new java.util.Date())
-        log.info("$now # PROGRESS -DONE- $wrkflw:load_enum $load_enum_count")
-        log.info("$now # INFO -COST- +$cost $load_enum_count")
+    def load_enum_count = new java.util.concurrent.atomic.AtomicInteger()
+    load_enum.out.subscribe { count_file ->
+        def cost = count_file.text.trim() as Integer
+        def n = load_enum_count.incrementAndGet()
+        def now = curr_t()
+        log.info("$now # PROGRESS -DONE- $wrkflw:load_enum $n")
+        log.info("$now # INFO -COST- +$cost $n")
     }
 }
 
 workflow {
-    enumerate_forms(specification)
+    enumerate_forms(file(params.specification))
 }

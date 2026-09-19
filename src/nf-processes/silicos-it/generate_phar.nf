@@ -4,11 +4,12 @@ process generate_phar {
     container '3dechem/silicos-it:latest'
 
     input:
-    file inputs
+    path inputs
 
     output:
-    file '*.phar'
+    path '*.phar'
 
+    script:
     """
     align-it -d '$inputs' -p '${inputs.name[0..-5]}.phar'
     """

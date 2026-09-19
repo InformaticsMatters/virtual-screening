@@ -20,6 +20,7 @@ process search_phar {
     path 'aligned_*.sdf'
     path 'aligned_*.tab'
 
+    script:
     """
     align-it -r '$query' -d '$inputs'\
       ${query.name.endsWith('.phar') ? '--refType PHAR' : ''}\
@@ -27,9 +28,9 @@ process search_phar {
       --epsilon $params.epsilon\
       ${params.func_groups ? '--funcGroup ' + params.func_groups : ''}\
       ${params.merge ? '--merge' : ''}\
-      ${params.no_normal ? --noNormal : ''}\
-      ${params.no_hybrid ? --noHybrid : ''}\
-      ${params.with_exclusion ? --withExclusion : ''}\
+      ${params.no_normal ? '--noNormal' : ''}\
+      ${params.no_hybrid ? '--noHybrid' : ''}\
+      ${params.with_exclusion ? '--withExclusion' : ''}\
       --scores 'aligned_${inputs.name[0..-5]}.tab'\
       --out 'aligned_${inputs.name[0..-5]}.sdf'
     """

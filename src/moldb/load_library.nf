@@ -23,14 +23,10 @@ nextflow.enable.dsl=2
 params.inputs = 'inputs.smi'
 params.chunk_size = 10000
 
-inputs = file(params.inputs)
-
 // includes
-include { split_txt } from '../nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
+include { split_txt } from '../nf-processes/file/split_txt.nf'
 include { standardize } from '../nf-processes/rdkit/standardize.nf'
-include { concatenate_files} from '../nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: inputs.getName(),
-    glob: '*.smi')
+include { concatenate_files} from '../nf-processes/file/concatenate_files.nf'
 include { load_standardized } from '../nf-processes/moldb/db_load.nf'
 
 // workflow definitions
@@ -40,12 +36,12 @@ workflow load_library {
     inputs
 
     main:
-    split_txt(inputs)
+    split_txt(inputs, '.smi')
     standardize(split_txt.out.flatten())
-    concatenate_files(standardize.out.collect())
+    concatenate_files(standardize.out.collect(), inputs.name, '*.smi')
     load_standardized(concatenate_files.out)
 }
 
 workflow {
-    load_library(inputs)
+    load_library(file(params.inputs))
 }

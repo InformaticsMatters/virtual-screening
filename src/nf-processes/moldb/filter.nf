@@ -1,37 +1,40 @@
 params.publish_dir = ''
 params.publish_dir_mode = 'copy'
-params.output = 'need-enum.smi'
 params.count = 10000
 
 
 process extract_need_enum {
 
     container 'informaticsmatters/vs-moldb:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
-    file specification
+    path specification
+    val outputfile // e.g. 'need-enum.smi'
 
     output:
-    file params.output
+    path "${outputfile}"
 
+    script:
     """
-    python -m moldb.filter --specification $specification --output-need-enum $params.output --count $params.count
+    python -m moldb.filter --specification $specification --output-need-enum '$outputfile' --count $params.count
     """
 }
 
 process extract_need_conf {
 
     container 'informaticsmatters/vs-moldb:2.0.0'
-    if (params.publish_dir) { publishDir params.publish_dir, mode: params.publish_dir_mode }
+    publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
-    file specification
+    path specification
+    val outputfile // e.g. 'need-enum.smi'
 
     output:
-    file params.output
+    path "${outputfile}"
 
+    script:
     """
-    python -m moldb.filter --specification $specification --output-need-conf $params.output --count $params.count
+    python -m moldb.filter --specification $specification --output-need-conf '$outputfile' --count $params.count
     """
 }

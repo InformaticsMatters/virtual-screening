@@ -6,8 +6,9 @@ process extract_molprops {
     container 'informaticsmatters/vs-moldb:2.0.0'
 
     output:
-    file params.outfile
+    path params.outfile
 
+    script:
     """
     python -m moldb.extract_need_molprops --outfile $params.outfile --count $params.count
     """

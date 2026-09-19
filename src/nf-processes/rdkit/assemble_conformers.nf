@@ -15,6 +15,7 @@ process assemble {
     output:
     path params.output
 
+    script:
     """
     /code/assemble_conformers.py -m $params.mode\
       --input $input\

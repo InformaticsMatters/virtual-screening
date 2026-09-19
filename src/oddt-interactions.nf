@@ -31,14 +31,8 @@ params.protein = 'receptor.pdb'
 params.output_filename = 'oddt_interactions.sdf'
 params.publish_dir = './'
 
-// files
-ligands = file(params.ligands)
-protein = file(params.protein)
-
 include { split_sdf } from './nf-processes/file/split_sdf.nf'
-include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: params.output_filename,
-    glob: 'oddt_*.sdf')
+include { concatenate_files } from './nf-processes/file/concatenate_files.nf'
 include { calc_interactions } from './nf-processes/oddt/calc_interactions.nf'
 
 workflow interactions {
@@ -50,13 +44,13 @@ workflow interactions {
     main:
     split_sdf(poses_sdf)
     calc_interactions(split_sdf.out.flatten(), protein_pdb)
-    concatenate_files(calc_interactions.out.collect())
+    concatenate_files(calc_interactions.out.collect(), params.output_filename, 'oddt_*.sdf')
 
     emit:
     concatenate_files.out
 }
 
 workflow {
-    interactions(ligands, protein)
+    interactions(file(params.ligands), file(params.protein))
 }
 

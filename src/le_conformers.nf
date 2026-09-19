@@ -32,27 +32,17 @@ params.delimiter = null
 params.id_column = null
 */
 
-inputs = file(params.input)
-
 // includes
-if (inputs.name.endsWith('.sdf') || inputs.name.endsWith('.sdf.gz')) {
-    include { split_sdf as splitter } from './nf-processes/file/split_sdf.nf'
-} else {
-    include { split_txt as splitter } from './nf-processes/file/split_txt.nf' addParams(suffix: '.smi')
-}
+include { split_sdf } from './nf-processes/file/split_sdf.nf'
+include { split_txt } from './nf-processes/file/split_txt.nf'
 include { gen_conformers } from './nf-processes/rdkit/gen_confs.nf'
-include { concatenate_files } from './nf-processes/file/concatenate_files.nf' addParams(
-    outputfile: params.output,
-    glob: 'confs-*.sdf')
+include { concatenate_files } from './nf-processes/file/concatenate_files.nf'
 
-dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
-dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-def curr_t() { dateFormat.format(new java.util.Date()) }
-int splits = 0
-
-def now = curr_t()
-def wrkflw = 'generate_conformers'
-log.info("$now # PROGRESS -START- $wrkflw:splitter 1")
+def curr_t() {
+    def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+    dateFormat.setTimeZone(TimeZone.getTimeZone('UTC'))
+    return dateFormat.format(new java.util.Date())
+}
 
 
 // workflow definitions
@@ -62,35 +52,37 @@ workflow generate_conformers {
     inputs
 
     main:
-    splitter(inputs)
-    gen_conformers(splitter.out.flatten())
-    concatenate_files(gen_conformers.out[0].collect())
+    def wrkflw = 'generate_conformers'
+    log.info("${curr_t()} # PROGRESS -START- $wrkflw:splitter 1")
 
-    split_count = 0
-    splitter.out.flatten().subscribe {
-        now = curr_t()
-        if (split_count == 0) {
+    def is_sdf = inputs.name.endsWith('.sdf') || inputs.name.endsWith('.sdf.gz')
+    def parts = is_sdf ? split_sdf(inputs) : split_txt(inputs, '.smi')
+    gen_conformers(parts.flatten())
+    concatenate_files(gen_conformers.out[0].collect(), params.output, 'confs-*.sdf')
+
+    def split_count = new java.util.concurrent.atomic.AtomicInteger()
+    parts.flatten().subscribe { _part ->
+        def now = curr_t()
+        if (split_count.get() == 0) {
             log.info("$now # PROGRESS -DONE- $wrkflw:splitter 1")
         }
-        split_count++
-        log.info("$now # PROGRESS -START- $wrkflw:gen_conformers $split_count")
+        log.info("$now # PROGRESS -START- $wrkflw:gen_conformers ${split_count.incrementAndGet()}")
     }
 
-    int cost = 0
-    int count = 0
-    gen_conformers.out[1].subscribe {
-        count += 1
-        cost += new Integer(it)
-        now = curr_t()
-        log.info("$now # INFO -COST- $cost $count")
-        log.info("$now # PROGRESS -DONE- $wrkflw:gen_conformers $count")
-        if (count == split_count) {
+    def cost = new java.util.concurrent.atomic.AtomicInteger()
+    def count = new java.util.concurrent.atomic.AtomicInteger()
+    gen_conformers.out[1].subscribe { count_file ->
+        def n = count.incrementAndGet()
+        def total = cost.addAndGet(count_file.text.trim() as Integer)
+        def now = curr_t()
+        log.info("$now # INFO -COST- $total $n")
+        log.info("$now # PROGRESS -DONE- $wrkflw:gen_conformers $n")
+        if (n == split_count.get()) {
             log.info("$now # PROGRESS -START- $wrkflw:concatenate_files 1")
         }
     }
-    concatenate_files.out.subscribe {
-        now = curr_t()
-        log.info("$now # PROGRESS -DONE- $wrkflw:concatenate_files 1")
+    concatenate_files.out.subscribe { _result ->
+        log.info("${curr_t()} # PROGRESS -DONE- $wrkflw:concatenate_files 1")
     }
 
     emit:
@@ -98,5 +90,5 @@ workflow generate_conformers {
 }
 
 workflow {
-    generate_conformers(inputs)
+    generate_conformers(file(params.input))
 }

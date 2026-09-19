@@ -16,8 +16,10 @@ limitations under the License.
 nextflow.enable.dsl=2
 
 params.inputs = 'inputs.sdf'
-
-inputs = file(params.inputs)
+params.sort_field = 'SCORE'
+params.sort_descending = false
+params.group_by_field = '_Name'
+params.outputfile = 'results.sdf'
 
 // includes
 include { sd_best_sorted as filter } from './nf-processes/rdock/filter.nf'
@@ -27,10 +29,12 @@ workflow filter_sdf {
     inputs_sdf
 
     main:
-    filter(inputs_sdf)
+    filter(inputs_sdf, params.sort_field, params.sort_descending, params.group_by_field, params.outputfile)
 
+    emit:
+    filter.out
 }
 
 workflow {
-    filter_sdf(inputs)
+    filter_sdf(file(params.inputs))
 }
