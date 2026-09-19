@@ -1,8 +1,8 @@
 ---
 # Build and push with: -
 #
-# IMAGE_TAG=2.0.0 docker-compose build
-# IMAGE_TAG=2.0.0 docker-compose push
+# IMAGE_TAG=3.0.0 docker-compose build
+# IMAGE_TAG=3.0.0 docker-compose push
 #
 # ----
 # NOTE: This file is for copnvenience, it does not feature in the CI build process.

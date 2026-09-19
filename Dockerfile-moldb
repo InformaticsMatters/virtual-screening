@@ -1,4 +1,4 @@
-FROM informaticsmatters/vs-rdkit-base:2.0.0
+FROM informaticsmatters/vs-rdkit-base:3.0.0
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -9,22 +9,13 @@ ENV PYTHONPATH=/code
 ENV HOME=/code
 WORKDIR ${HOME}
 
-# Debian 11 (bullseye) is now EOL and no longer served from the live
-# deb.debian.org mirrors. Switch to the snapshot.debian.org mirror that
-# Debian's own image ships (commented out) as a fallback for this, and
-# stop apt rejecting its now-expired Release file.
-RUN sed -i -e 's|^# deb http://snapshot|deb http://snapshot|' \
-           -e 's|^deb http://deb.debian.org|# deb http://deb.debian.org|' \
-           /etc/apt/sources.list && \
-    printf 'Acquire::Check-Valid-Until "false";\nAcquire::Retries "5";\nAcquire::http::Timeout "30";\n' > /etc/apt/apt.conf.d/99snapshot
-
 # gcc libpq-dev are needed for psycopg2
 RUN apt-get update && apt-get install -y gcc libpq-dev &&\
   apt-get clean
 
 # install our requirements. RDKit is already present in the base container.
 RUN pip install sqlalchemy==1.4.49\
-    psycopg2-binary==2.9.6\
+    psycopg2-binary==2.9.13\
     im-standardize-molecule==0.1.0\
     "im-data-manager-job-utilities>=1.4.0"\
     "im-rdkit-utilities>=1.1.2"

@@ -23,7 +23,7 @@ params.interval = 10
 
 process gen_conformers {
 
-    container 'informaticsmatters/vs-prep:2.0.0'
+    container 'informaticsmatters/vs-prep:3.0.0'
 
     input:
     path inputs

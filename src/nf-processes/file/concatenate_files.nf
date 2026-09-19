@@ -5,7 +5,7 @@ params.publish_dir_mode = 'copy'
 */
 process concatenate_files {
 
-    container 'informaticsmatters/vs-prep:2.0.0'
+    container 'informaticsmatters/vs-prep:3.0.0'
     publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:

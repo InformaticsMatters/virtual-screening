@@ -7,9 +7,10 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python == 3.10*
+  - python == 3.12*
   - pip
-  - nextflow == 21.10.6
+  - nextflow == 26.04.6
+  - openjdk == 21.*
   - pip:
     - im-jote
-    - im-data-manager-job-utilities==1.0.1
+    - im-data-manager-job-utilities>=1.4.0
