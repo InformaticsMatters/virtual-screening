@@ -27,9 +27,9 @@ process sucos {
       ${params.tanimoto ? '--tanimoto' : ''}\
 
       # count the number of outputs - for some strange reason the fgrep command fails is the file is empty
-      if [ -s '\$OUT' ]
+      if [ -s "\$OUT" ]
       then
-        COUNT=\$(fgrep -c '\$\$\$\$' '\$OUT')
+        COUNT=\$(fgrep -c '\$\$\$\$' "\$OUT")
       else
         COUNT=0
       fi
