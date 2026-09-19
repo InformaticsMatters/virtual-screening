@@ -4,7 +4,7 @@ params.remove_hydrogens = true
 
 process open3dalign {
 
-    container 'informaticsmatters/vs-prep:2.0.0'
+    container 'informaticsmatters/vs-prep:3.0.0'
 
     input:
     path inputs // .sdf

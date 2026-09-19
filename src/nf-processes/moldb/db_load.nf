@@ -5,7 +5,7 @@ params.library_name = 'no_name'
 
 process load_standardized {
 
-    container 'informaticsmatters/vs-moldb:2.0.0'
+    container 'informaticsmatters/vs-moldb:3.0.0'
     maxForks 1
     errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
     maxRetries 3
@@ -21,7 +21,7 @@ process load_standardized {
 
 process load_molprops {
 
-    container 'informaticsmatters/vs-moldb:2.0.0'
+    container 'informaticsmatters/vs-moldb:3.0.0'
     maxForks 1
     errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
     maxRetries 3
@@ -44,7 +44,7 @@ process load_molprops {
 
 process load_enum {
 
-    container 'informaticsmatters/vs-moldb:2.0.0'
+    container 'informaticsmatters/vs-moldb:3.0.0'
     maxForks 1
     errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
     maxRetries 3
@@ -68,7 +68,7 @@ process load_enum {
 
 process load_conf {
 
-    container 'informaticsmatters/vs-moldb:2.0.0'
+    container 'informaticsmatters/vs-moldb:3.0.0'
     maxForks 1
     errorStrategy { sleep(Math.pow(2, task.attempt) * 1000 as long); return 'retry' }
     maxRetries 3
