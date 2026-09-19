@@ -66,7 +66,7 @@ jobs:
     - test
     image:
       name: informaticsmatters/vs-prep
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -143,7 +143,7 @@ jobs:
     - openbabel
     image:
       name: informaticsmatters/vs-prep
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -206,7 +206,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -294,7 +294,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-rdock
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -362,7 +362,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-oddt
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -466,7 +466,7 @@ jobs:
     doc-url: im-virtual-screening/rdock-filter-sdf.md
     image:
       name: informaticsmatters/vs-rdock
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -570,7 +570,7 @@ jobs:
     doc-url: im-virtual-screening/rdock-filter-sdf.md
     image:
       name: informaticsmatters/vs-rdock
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -679,7 +679,7 @@ jobs:
     - format
     image:
       name: informaticsmatters/vs-prep
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -735,7 +735,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-prep
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -949,7 +949,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -958,7 +958,7 @@ jobs:
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/rdock-docking.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/rdock-docking.nf
       --ligands '{{ ligandsSDF }}'
       --protein '{{ proteinMOL2 }}'
       --prmfile '{{ prmFile }}'
@@ -1077,14 +1077,14 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/smina-docking.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/smina-docking.nf
       --ligands '{{ ligands }}'
       --protein '{{ protein }}'
       --ligand '{{ ligand }}'
@@ -1200,14 +1200,14 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/oddt-interactions.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/oddt-interactions.nf
       --ligands '{{ ligandsSDF }}'
       --protein '{{ proteinPDB }}'
       {% if resultsDir is defined %}--publish_dir '{{ resultsDir }}'{% endif %}
@@ -1268,7 +1268,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-plants
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1415,7 +1415,7 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-plants
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -1534,14 +1534,14 @@ jobs:
     doc-url: im-virtual-screening/ph4-align-to-fragments.md
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/frag-merge-pharmacophore.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/frag-merge-pharmacophore.nf
       --inputs '{{ inputs }}'
       --fragments '{{ fragments }}'
       {% if genTitle is defined and genTitle %}--gen_title{% endif %}
@@ -1745,14 +1745,14 @@ jobs:
     - nextflow
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
       fix-permissions: true
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/enumerate.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/enumerate.nf
       --input '{{ inputFile }}' --output '{{ outputFile }}'
       {% if fragment is defined %}--fragment_method '{{ fragment }}'{% endif %}
       {% if enumerateCharges is defined and enumerateCharges %}--enumerate_charges{% endif %}

@@ -17,15 +17,15 @@ Typically the [generate-low-energy-conformers](../rdkit/generate-low-energy-conf
 
 ## Implementation details
 
-* Python module: [enumerate.py](/enumerate.py)
+* Python module: [enumerate.py](/src/enumerate.py)
 * Job definition: `jobs.enumerate-candidates` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job
 
 ### Inputs
 
-* **Molecules to enumerate**:  typically the  *Molecules needing enumeration* output of the 
-[prep-enum-conf-lists](prep-enum-conf-lists.md) job.
+* **Molecules to enumerate**:  typically molecules extracted from MolDB with the
+[moldb-extract-molecules](../moldb/moldb-extract-molecules.md) job.
 
 ### Options
 

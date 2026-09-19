@@ -1,0 +1,92 @@
+/* Copyright 2022 Informatics Matters Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/* Example usage:
+   nextflow run moldb/generate_confs.nf -with-trace --specification specification.txt --count 1000 --chunk_size 50
+*/
+
+nextflow.enable.dsl=2
+
+// inputs
+params.specification = null
+
+params.file = 'need-confs.smi'
+params.chunk_size = 1000
+
+// filter options:
+// params.count = 10000
+// all the mol prop filters e.g. --min_hac 16
+
+// includes
+include { extract_need_conf } from '../nf-processes/moldb/filter.nf'
+include { split_txt } from '../nf-processes/file/split_txt.nf'
+include { gen_conformers } from '../nf-processes/moldb/gen_conformers.nf'
+include { load_conf } from '../nf-processes/moldb/db_load.nf'
+
+def curr_t() {
+    def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'+00:00'", Locale.UK)
+    dateFormat.setTimeZone(TimeZone.getTimeZone('UTC'))
+    return dateFormat.format(new java.util.Date())
+}
+
+// workflow definitions
+workflow gen_confs {
+
+    take:
+    specification
+
+    main:
+    def wrkflw = 'gen_confs'
+    log.info("${curr_t()} # PROGRESS -START- $wrkflw:extract_need_conf 1")
+
+    extract_need_conf(specification, params.file)
+    split_txt(extract_need_conf.out, '.smi')
+    gen_conformers(split_txt.out.flatten())
+    load_conf(gen_conformers.out)
+
+    extract_need_conf.out.subscribe { _extracted ->
+        def now = curr_t()
+        log.info("$now # PROGRESS -DONE- $wrkflw:extract_need_conf 1")
+        log.info("$now # PROGRESS -START- $wrkflw:split_txt 1")
+    }
+
+    def split_count = new java.util.concurrent.atomic.AtomicInteger()
+    split_txt.out.flatten().subscribe { _part ->
+        def now = curr_t()
+        if (split_count.get() == 0) log.info("$now # PROGRESS -DONE- $wrkflw:split_txt 1")
+        log.info("$now # PROGRESS -START- $wrkflw:gen_conformers ${split_count.incrementAndGet()}")
+    }
+
+    def conf_count = new java.util.concurrent.atomic.AtomicInteger()
+    gen_conformers.out.subscribe { _confs ->
+        def now = curr_t()
+        def n = conf_count.incrementAndGet()
+        log.info("$now # PROGRESS -DONE- $wrkflw:gen_conformers $n")
+        log.info("$now # PROGRESS -START- $wrkflw:load_conf $n")
+    }
+
+    def load_count = new java.util.concurrent.atomic.AtomicInteger()
+    load_conf.out.subscribe { count_file ->
+        def cost = count_file.text.trim() as Integer
+        def n = load_count.incrementAndGet()
+        def now = curr_t()
+        log.info("$now # PROGRESS -DONE- $wrkflw:load_conf $n")
+        log.info("$now # INFO -COST- +$cost $n")
+    }
+}
+
+workflow {
+    gen_confs(file(params.specification))
+}

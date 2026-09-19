@@ -9,7 +9,7 @@ It is based on original work by Amit Kumar Garg <a.garg@sygnaturediscovery.com>.
 
 ## Implementation details
 
-* Job implementation: [pk_tmax_cmax_sim.py](/dmpk/pk_tmax_cmax_sim.py)
+* Job implementation: [pk_tmax_cmax_sim.py](/src/dmpk/pk_tmax_cmax_sim.py)
 * Job definition: `jobs.pk-tmax-cmax-sim` in [dmpk.yaml](/data-manager/dmpk.yaml)
 
 ## How to run the job
@@ -37,7 +37,7 @@ Two files are generated:
 
 Example output would look like this:
 
-![pk_tmax_cmax_sim output](pk_tmax_cmax_sim.png)
+![pk_tmax_cmax_sim output](pk-tmax-cmax-sim.png)
 
 The corresponding text file would contain:
 ```

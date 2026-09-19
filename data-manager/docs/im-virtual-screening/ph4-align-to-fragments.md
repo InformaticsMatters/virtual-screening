@@ -45,7 +45,7 @@ whilst Open3DAlign can only align to a single molecule so the multiple fragments
 
 The workflow job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-* Nextflow workflow: [frag-merge-pharmacophore.nf](/frag-merge-pharmacophore.nf)
+* Nextflow workflow: [frag-merge-pharmacophore.nf](/src/frag-merge-pharmacophore.nf)
 * Job definition: `jobs.ph4-align-to-fragments-*` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 * About PLANTS: https://pubs.acs.org/doi/10.1021/ci1000218
 * About Open3DAlign: https://open3dalign.sourceforge.net/
@@ -137,5 +137,5 @@ The following fields are added by this job (all fields in the input will aslo be
 
 ## See also
 
-* [open3dalign](../rdkit/open3dalign) job
-* [sort-sdf and filter-sdf](rdock-filter-sdf) jobs
+* [open3dalign](../rdkit/open3dalign.md) job
+* [sort-sdf and filter-sdf](rdock-filter-sdf.md) jobs

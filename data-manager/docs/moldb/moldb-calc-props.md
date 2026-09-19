@@ -29,7 +29,7 @@ These properties are calculated:
 
 This job is implemented as a [Nextflow](https://www.nextflow.io/) workflow.
 
-* Job implementation: [calc_molprops.nf](/moldb/calc_molprops.nf)
+* Job implementation: [calc_molprops.nf](/src/moldb/calc_molprops.nf)
 * Job definition: `jobs.moldb-load-library` in [moldb.yaml](/data-manager/moldb.yaml)
 
 ## How to run the job
@@ -46,4 +46,4 @@ section [here](https://discourse.squonk.it/t/about-moldb/138).
 
 * [About MOlDB](https://discourse.squonk.it/t/about-moldb/138)
 * [moldb-load-library job](moldb-load-library.md)
-* [rdk-molprops job](../rdkit/rdk-molprops.md)
+* [rdkit-molprops job](../rdkit/rdkit-molprops.md)

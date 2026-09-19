@@ -3,6 +3,12 @@
 This repo contains a set of tools for running virtual screening operations.
 This guide shows how to run the tools as command line utilities.
 
+>   The scripts and Nextflow workflows live in the `src` directory. The examples
+    below were written when they sat at the top of the repo, so either run them
+    from `src` or prefix their paths with `src/` (e.g. `./src/max_min_picker.py`,
+    `nextflow run src/rdock-docking.nf`). Python modules run with `python -m`
+    need `src` on the `PYTHONPATH`.
+
 ## Prepare Docker images
 
 Whilst these scripts can be run directly we prefer to always run as Docker containers.
@@ -11,7 +17,7 @@ yourself for some reason this is how...
 
 To build the container images run this:
 
-    $ IMAGE_TAG=2.0.0 docker-compose build 
+    $ IMAGE_TAG=3.0.0 docker-compose build 
 
 Or, to build using the `latest` tag: -
 
@@ -20,7 +26,7 @@ Or, to build using the `latest` tag: -
 ## Prepare conda environments
 
 Alternatively these processes can be run in conda environments.
-Use the [](environment-im-prep.yaml) and [](environment-im-oddt.yaml) environment files to 
+Use the [environment-im-vs-prep.yaml](environment-im-vs-prep.yaml) and [environment-im-oddt.yaml](environment-im-oddt.yaml) environment files to 
 create a conda environments named `im-vs-prep` and `im-vs-oddt`. e.g.
 ```
 conda env create -f environment-im-prep.yaml
@@ -98,12 +104,12 @@ protonate the protein.
 
 ## Docking with rDock
 
-We use the [](rdock-docking.nf) Nextflow workflow for performing the docking.
+We use the [rdock-docking.nf](src/rdock-docking.nf) Nextflow workflow for performing the docking.
 This workflow splits the input SDF into multiple chunks that can be docked in parallel, and then
 collates the reulst into a single output and does some very basic analysis.
 
 Before we can do this we must prepare a rDock configuration file (.prm file) and generate the 
-cavity definition (.as file). The [](prepare_rdock.py) script can be used to do this. Currently 
+cavity definition (.as file). The [prepare_rdock.py](src/prepare_rdock.py) script can be used to do this. Currently 
 we don't have a conda environment for this so it must be done with Docker. Before running copy the 
 `data/dhfr-ligand.mol` file to this directory:
 ```

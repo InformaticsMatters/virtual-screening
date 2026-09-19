@@ -8,11 +8,11 @@ This job takes a  set of molecules and clusters them using the Butina algorithm.
 metrics can be used to determine the distance between the molecules. Optionally a diverse subset of those molecules can be selected.
 
 Note that the Butina algorithm does not scale to very large datasets (more than a few thousand). Consider using the
-[max-min-picker job](max-min-picker job.md) if you want to pick a diverse subset from a very large number of candidates.
+[max-min-picker job](max-min-picker.md) if you want to pick a diverse subset from a very large number of candidates.
 
 ## Implementation details
 
-* Job implementation: [cluster_butina.py](/cluster_butina.py)
+* Job implementation: [cluster_butina.py](/src/cluster_butina.py)
 * Job definition: `cluster-butina job` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job

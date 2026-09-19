@@ -1,5 +1,9 @@
 # Fragment merging
 
+>   This is a record of a past session, run when the scripts sat at the top of the
+    repo. They now live in `src`, so prefix the script and workflow paths below
+    with `src/` and put `src` on the `PYTHONPATH` for `python -m` commands.
+
 ## Preparation
 
 Molport and Chemspace had already been sharded in the docking workflow. See that for details of how to prepare these.

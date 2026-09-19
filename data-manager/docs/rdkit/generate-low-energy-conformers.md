@@ -22,7 +22,7 @@ The input is a file containing the molecules that need conformer generation, typ
 
 ## Implementation details
 
-* Python module: [le_conformers.py](/le_conformers.py). This module is also used by the [conformers-for-mol](conformers-for-mol.md) job.
+* Python module: [le_conformers.py](/src/le_conformers.py). This module is also used by the [conformers-for-mol](conformers-for-mol.md) job.
 * Job definition: `jobs.generate-low-energy-conformers` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job

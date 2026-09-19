@@ -17,8 +17,8 @@ The work in this job is done by the `sdsort` and `sdfilter` programs from rDock.
 [rDock documentation](http://rdock.sourceforge.net/wp-content/uploads/2015/08/rDock_User_Guide.pdf) for details.
 
 * Job definition: `jobs.filter-sdf` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
-* Scripts: [rdock_filter_sdf_sort_top.sh](rdock_filter_sdf_sort_top.sh) and 
-  [rdock_filter_sdf_group.sh](rdock_filter_sdf_group.sh)
+* Scripts: [rdock_filter_sdf_sort_top.sh](/src/rdock_filter_sdf_sort_top.sh) and 
+  [rdock_filter_sdf_group.sh](/src/rdock_filter_sdf_group.sh)
 
 ## How to run the job
 

@@ -1,4 +1,4 @@
-FROM python:3.10.12-slim-bullseye
+FROM python:3.12.14-slim-trixie
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -13,8 +13,6 @@ RUN apt-get -y update &&\
 ENV PYTHONUNBUFFERED=1
 
 # pip install RDKit
-# numpy is pinned below 2 because this rdkit release predates NumPy 2.0
-# and its compiled extensions are not ABI-compatible with it
-RUN pip install "numpy<2" rdkit==2023.3.2
+RUN pip install rdkit==2026.3.6
 
 

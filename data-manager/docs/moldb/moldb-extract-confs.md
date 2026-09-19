@@ -13,7 +13,7 @@ set of molecules otherwise you will not get a complete set.
 
 ## Implementation details
 
-* Job implementation: [filter.nf](/moldb/filter.py)
+* Job implementation: [filter.nf](/src/moldb/filter.py)
 * Job definition: `jobs.moldb-extract-confs` in [moldb.yaml](/data-manager/moldb.yaml)
 
 ## How to run the job

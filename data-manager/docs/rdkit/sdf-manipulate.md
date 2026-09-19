@@ -10,8 +10,8 @@ filter expressions.
 
 ## Implementation details
 
-* Job implementation: [sdf_manip.py](/sdf_manip.py)
-* Job definition: `jobs.sdf-manipulate` in [rdkit.yaml](../rdkit.yaml)
+* Job implementation: [sdf_manip.py](/src/sdf_manip.py)
+* Job definition: `jobs.sdf-manipulate` in [rdkit.yaml](/data-manager/rdkit.yaml)
 
 ## How to run the job
 
@@ -94,7 +94,7 @@ The functions that you can call are restricted. e.g min(a, b) is allowed, but 'e
 Here we use the Python eval() function, which is a known security risk. The approach we take is twofold:
 1. minimise the risk from attack. We base this mostly around this excellent article:
 https://realpython.com/python-eval-function/
-The code can be inspected (see [sdf_manip.py](/sdf_manip.py). If you see loopholes then please let us know.
+The code can be inspected (see [sdf_manip.py](/src/sdf_manip.py). If you see loopholes then please let us know.
 2. In Squonk all execution takes places in a container, so, without security leaks in Docker itself,
 the only harm that can be caused is to your own container. e.g. you can cause harm to yourself but not others.
 You could potentially delete all your project's data, but as you already have access to that data there are many

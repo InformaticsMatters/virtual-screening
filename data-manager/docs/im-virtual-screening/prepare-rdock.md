@@ -11,7 +11,7 @@ versions of these files if you have more specific needs.
 
 ## Implementation details
 
-* Python module: [prepare_rdock.py](/prepare_rdock.py)
+* Python module: [prepare_rdock.py](/src/prepare_rdock.py)
 * Job definition: `jobs.prepare-rdock` in [im-virtual-screening.yaml](/data-manager/im-virtual-screening.yaml)
 
 ## How to run the job

@@ -9,7 +9,7 @@ RUN yum -y update &&\
 
 RUN pip install im-data-manager-job-utilities==1.0.1
 
-COPY prepare_rdock.py rdock_*.sh /code/
+COPY src/prepare_rdock.py src/rdock_*.sh /code/
 RUN chmod 755 /code/prepare_rdock.py
 
 USER rdock

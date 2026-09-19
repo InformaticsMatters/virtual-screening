@@ -1,4 +1,4 @@
-FROM informaticsmatters/vs-rdkit-base:2.0.0
+FROM informaticsmatters/vs-rdkit-base:3.0.0
 
 # Note:     When run by the Data Manager the uid and gid
 #           will be set according to the Project we're running against.
@@ -11,9 +11,9 @@ ENV HOME=/code
 WORKDIR ${HOME}
 
 # install our requirements. RDKit is present in base container
-RUN pip install mordredcommunity==2.0.4 \
+RUN pip install mordredcommunity==2.0.7 \
   im-standardize-molecule==0.1.0 \
   "im-data-manager-job-utilities>=1.4.0" \
   "im-rdkit-utilities>=1.1.2"
 
-COPY im_mordred/descriptor_generator.py ./im_mordred/
+COPY src/im_mordred/descriptor_generator.py ./im_mordred/

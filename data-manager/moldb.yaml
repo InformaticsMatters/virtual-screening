@@ -27,7 +27,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -78,7 +78,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -187,7 +187,7 @@ jobs:
     - library
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -215,7 +215,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/load_library.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/load_library.nf
       --inputs '{{ input }}'
       --library_name '{{ library }}'
       --name_col {{ id_col }}
@@ -313,7 +313,7 @@ jobs:
     - molecular properties
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -341,7 +341,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/calc_molprops.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/calc_molprops.nf
       {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
       --count {{ count }}
       -with-trace {{ DM_INSTANCE_DIRECTORY }}/trace.txt
@@ -397,7 +397,7 @@ jobs:
     - stereoisomers
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -425,7 +425,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/enumerate_mols.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/enumerate_mols.nf
       --specification '{{ specification }}'
       --count {{ count }}
       --chunk_size {{ chunk_size }}
@@ -495,7 +495,7 @@ jobs:
     - conformers
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -523,7 +523,7 @@ jobs:
       fix-permissions: false # no outputs
     command: >-
       nextflow -log {{ DM_INSTANCE_DIRECTORY }}/nextflow.log
-      run {{ CODE_DIRECTORY|default('/code') }}/moldb/generate_confs.nf
+      run {{ CODE_DIRECTORY ~ '/src' if CODE_DIRECTORY is defined else '/code' }}/moldb/generate_confs.nf
       --specification {{ specification }}
       {% if chunk_size is defined %}--chunk_size {{ chunk_size }}{% endif %}
       --count {{ count }}
@@ -592,7 +592,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -697,7 +697,7 @@ jobs:
     - stereoisomers
     image:
       name: informaticsmatters/vs-moldb
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -826,7 +826,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-moldb
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -953,7 +953,7 @@ jobs:
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '2.0.0'
+      tag: '3.0.0'
       project-directory: /data
       working-directory: /data
       type: simple

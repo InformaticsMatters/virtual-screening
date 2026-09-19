@@ -1,0 +1,15 @@
+params.count = 10000
+params.outfile = 'outputs.smi'
+
+process extract_molprops {
+
+    container 'informaticsmatters/vs-moldb:3.0.0'
+
+    output:
+    path params.outfile
+
+    script:
+    """
+    python -m moldb.extract_need_molprops --outfile $params.outfile --count $params.count
+    """
+}
