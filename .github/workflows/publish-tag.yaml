@@ -10,9 +10,10 @@ name: publish-tag
 # running the old content. See docs/versioning.md in the squonk2-jobs
 # umbrella repository.
 #
-# Note that 'informaticsmatters/vs-rdkit-base' is not built here - it is built
-# and pushed by hand, and five of the images below are FROM it. Publish the
-# matching base image before running this workflow.
+# 'informaticsmatters/vs-rdkit-base' is built and pushed here too, and the
+# five images that are FROM it each rebuild it from this same commit before
+# building themselves - so there is nothing to publish by hand first, and no
+# ordering to get wrong.
 
 # -----------------
 # Control variables (GitHub Secrets)

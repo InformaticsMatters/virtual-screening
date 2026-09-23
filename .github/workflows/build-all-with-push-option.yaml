@@ -15,11 +15,24 @@ on:
         required: false
 
 jobs:
+  # The base image five of the jobs below are FROM. Those jobs build it
+  # themselves as well, from this same commit, so they never depend on this
+  # one having pushed first.
+  build-rdkit-base:
+    uses: ./.github/workflows/build-image-with-push-option.yaml
+    secrets: inherit
+    with:
+      dockerfile-suffix: rdkit-base
+      image-name: vs-rdkit-base
+      image-tag: ${{ inputs.image-tag }}
+      image-push: ${{ inputs.image-push }}
+
   build-prep:
     uses: ./.github/workflows/build-image-with-push-option.yaml
     secrets: inherit
     with:
       dockerfile-suffix: prep
+      base-dockerfile-suffix: rdkit-base
       image-name: vs-prep
       image-tag: ${{ inputs.image-tag }}
       image-push: ${{ inputs.image-push }}
@@ -56,6 +69,7 @@ jobs:
     secrets: inherit
     with:
       dockerfile-suffix: oddt
+      base-dockerfile-suffix: rdkit-base
       image-name: vs-oddt
       image-tag: ${{ inputs.image-tag }}
       image-push: ${{ inputs.image-push }}
@@ -74,6 +88,7 @@ jobs:
     secrets: inherit
     with:
       dockerfile-suffix: fns
+      base-dockerfile-suffix: rdkit-base
       image-name: vs-fragnet-search
       image-tag: ${{ inputs.image-tag }}
       image-push: ${{ inputs.image-push }}
@@ -83,6 +98,7 @@ jobs:
     secrets: inherit
     with:
       dockerfile-suffix: moldb
+      base-dockerfile-suffix: rdkit-base
       image-name: vs-moldb
       image-tag: ${{ inputs.image-tag }}
       image-push: ${{ inputs.image-push }}
@@ -101,6 +117,7 @@ jobs:
     secrets: inherit
     with:
       dockerfile-suffix: mordred
+      base-dockerfile-suffix: rdkit-base
       image-name: mordred
       image-tag: ${{ inputs.image-tag }}
       image-push: ${{ inputs.image-push }}
