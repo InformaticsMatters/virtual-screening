@@ -8,7 +8,7 @@ params.publish_dir_mode = 'copy'
 */
 process sd_sort_and_top {
 
-    container 'informaticsmatters/vs-rdock:3.0.0'
+    container 'informaticsmatters/vs-rdock:3.1.0'
     publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
@@ -33,7 +33,7 @@ and sort those best results.
 */
 process sd_best_sorted {
 
-    container 'informaticsmatters/vs-rdock:3.0.0'
+    container 'informaticsmatters/vs-rdock:3.1.0'
     publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:
@@ -60,7 +60,7 @@ and sort those best results and keep the top n (params.top)
 */
 process sd_best_sorted_top {
 
-    container 'informaticsmatters/vs-rdock:3.0.0'
+    container 'informaticsmatters/vs-rdock:3.1.0'
     publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:

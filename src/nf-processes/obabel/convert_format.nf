@@ -5,7 +5,7 @@ params.scratch = false
 
 process convert_format {
 
-    container 'informaticsmatters/vs-prep:3.0.0'
+    container 'informaticsmatters/vs-prep:3.1.0'
     scratch params.scratch
 
     input:

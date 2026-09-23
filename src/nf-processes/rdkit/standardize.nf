@@ -8,7 +8,7 @@ params.skip_lines = 0
 
 process standardize {
 
-    container 'informaticsmatters/vs-moldb:3.0.0'
+    container 'informaticsmatters/vs-moldb:3.1.0'
     publishDir params.publish_dir ?: '.', mode: params.publish_dir_mode, enabled: params.publish_dir as boolean
 
     input:

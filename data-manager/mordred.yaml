@@ -9,7 +9,7 @@ jobs:
     name: 2D/3D Mordred descriptor generation
     description: >-
       Generate Mordred descriptors for molecules
-    version: '2.0.0'
+    version: '3.1.0'
     category: comp chem
     keywords:
     - rdkit
@@ -17,7 +17,7 @@ jobs:
     - descriptors
     image:
       name: informaticsmatters/mordred
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true

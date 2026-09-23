@@ -8,7 +8,7 @@ params.cpu = 1
 
 process smina_docking {
 
-    container 'informaticsmatters/vs-smina:3.0.0'
+    container 'informaticsmatters/vs-smina:3.1.0'
     errorStrategy 'retry'
     maxRetries params.retries
     scratch params.scratch

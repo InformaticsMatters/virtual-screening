@@ -18,7 +18,7 @@ See the Python oddt_interactions.py module for full details.
 */
 process calc_interactions {
 
-    container 'informaticsmatters/vs-oddt:3.0.0'
+    container 'informaticsmatters/vs-oddt:3.1.0'
     errorStrategy 'retry'
     maxRetries 3
     scratch params.scratch
