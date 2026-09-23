@@ -18,7 +18,7 @@ RUN pip install sqlalchemy==1.4.49\
     psycopg2-binary==2.9.13\
     im-standardize-molecule==0.1.0\
     "im-data-manager-job-utilities>=1.4.0"\
-    "im-rdkit-utilities>=1.1.2"
+    "im-rdkit-utilities>=1.2.0"
 
 COPY src/*.py src/site_substructures.smarts ./
 COPY src/moldb/ ./moldb/
