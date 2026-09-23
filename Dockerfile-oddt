@@ -24,7 +24,7 @@ WORKDIR ${HOME}
 # is not PEP 440 and is rejected by current setuptools.
 RUN pip install setuptools wheel six &&\
   pip install "im-data-manager-job-utilities>=1.4.0"\
-  "im-rdkit-utilities>=1.1.2" &&\
+  "im-rdkit-utilities>=1.2.0" &&\
   pip install --no-build-isolation https://github.com/oddt/oddt/archive/refs/heads/master.tar.gz
 
 COPY src/*.py ./
