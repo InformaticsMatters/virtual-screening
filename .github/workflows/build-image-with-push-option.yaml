@@ -9,6 +9,15 @@ on:
       dockerfile-suffix:
         type: string
         required: true
+      base-dockerfile-suffix:
+        # The suffix of a Dockerfile in this repository that builds the image
+        # this one is FROM. When set, that base is built here first, so the
+        # image below is built against the base in *this* commit rather than
+        # whatever happens to be published. Leave unset for images whose base
+        # is genuinely external (e.g. debian, python, informaticsmatters/rdock).
+        type: string
+        required: false
+        default: ''
       image-owner:
         type: string
         required: false
@@ -30,6 +39,15 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Build base
+      if: ${{ inputs.base-dockerfile-suffix != '' }}
+      run: |
+        # Tag the locally-built base with the exact reference the derived
+        # Dockerfile's FROM line uses, so the Build step below resolves it
+        # from the local image store instead of pulling the published one.
+        base=$(awk '$1 == "FROM" { print $2; exit }' Dockerfile-${{ inputs.dockerfile-suffix }})
+        echo "Building ${base} from Dockerfile-${{ inputs.base-dockerfile-suffix }}"
+        docker build -f Dockerfile-${{ inputs.base-dockerfile-suffix }} . -t "${base}"
     - name: Build
       run: docker build -f Dockerfile-${{ inputs.dockerfile-suffix }} . -t ${{ inputs.image-owner }}/${{ inputs.image-name }}:${{ inputs.image-tag }}
     - name: Login
