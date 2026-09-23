@@ -39,8 +39,8 @@ built manually and pushed to docker hub when the RDKit release needs to be updat
 It is controlled by the dockerfile `Dockerfile-rdkit-base`, and is pushed with
 the release tag that the dependent images will use: -
 
-    $ IMAGE_TAG=3.0.0 docker-compose -f docker-compose-manual.yaml build
-    $ IMAGE_TAG=3.0.0 docker-compose -f docker-compose-manual.yaml push
+    $ IMAGE_TAG=3.1.0 docker-compose -f docker-compose-manual.yaml build
+    $ IMAGE_TAG=3.1.0 docker-compose -f docker-compose-manual.yaml push
 
 Publish it *before* running the release workflow below - `Dockerfile-fns`,
 `-moldb`, `-mordred`, `-oddt` and `-prep` are all `FROM` it and will fail to
@@ -49,7 +49,7 @@ build without it.
 The other images are built automatically by the GitHub workflows, where: -
 
 - The `publish-tag` workflow, run manually, results in a series of images
-  carrying the tag you give it (e.g. `:3.0.0`). This is how releases are made:
+  carrying the tag you give it (e.g. `:3.1.0`). This is how releases are made:
   the Job Definitions pin these static tags, so **a tag must never be reused**
 - Every change to the `main` branch results in a series of `:stable` images
 - Every change to the `staging` branch results in a series of `:latest` images

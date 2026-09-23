@@ -20,14 +20,14 @@ jobs:
     name: Create MolDB database tables
     description: >-
       Create MolDB database tables
-    version: '2.0.0'
+    version: '3.1.0'
     # no category as this is only used as part of testing
     keywords:
     - moldb
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -71,14 +71,14 @@ jobs:
     name: MolDB count rows
     description: >-
       Verify there are the expected number of rows in a database table
-    version: '2.0.0'
+    version: '3.1.0'
     # no category as this is only used as part of testing
     keywords:
     - moldb
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -156,7 +156,14 @@ jobs:
         - POSTGRES_DATABASE
         options:
           table: enumeration
-          count: 529
+          # A range, not an exact count, for the same reason the conformer
+          # test below uses one: this asserts on RDKit's tautomer rules, which
+          # change between releases. Moving from RDKit 2025.09.1 to 2026.03.6
+          # took the count from 529 to 533 - 7 of the 999 test molecules
+          # enumerate a different number of tautomers, while the charge,
+          # chiral and base-structure counts are unchanged.
+          min_rows: 500
+          max_rows: 600
         checks:
           exitCode: 0
       conformer:
@@ -179,7 +186,7 @@ jobs:
     name: MolDB load library
     description: >-
       Load compound library into MolDB
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
@@ -187,7 +194,7 @@ jobs:
     - library
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -305,7 +312,7 @@ jobs:
     name: MolDB molecular properties
     description: >-
       Calculate molecular properties and load into MolDB
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
@@ -313,7 +320,7 @@ jobs:
     - molecular properties
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -386,7 +393,7 @@ jobs:
     name: MolDB enumerate forms
     description: >-
       Enumerate tautomers, microstates and stereoisomers
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
@@ -397,7 +404,7 @@ jobs:
     - stereoisomers
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -487,7 +494,7 @@ jobs:
     name: MolDB generate conformers
     description: >-
       Generate multiple low energy conformers
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
@@ -495,7 +502,7 @@ jobs:
     - conformers
     image:
       name: informaticsmatters/vs-nextflow
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: nextflow
@@ -585,14 +592,14 @@ jobs:
     name: MolDB extract molecules
     description: >-
       Extract base molecules
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -686,7 +693,7 @@ jobs:
     name: MolDB extract enumerated forms
     description: >-
       Extract enumerated tautomers, microstates and stereoisomers
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
@@ -697,7 +704,7 @@ jobs:
     - stereoisomers
     image:
       name: informaticsmatters/vs-moldb
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -817,7 +824,7 @@ jobs:
     name: MolDB extract low energy conformers
     description: >-
       Extract extract low energy conformers
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
@@ -826,7 +833,7 @@ jobs:
     - 3d
     image:
       name: informaticsmatters/vs-moldb
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: simple
@@ -946,14 +953,14 @@ jobs:
     name: MolDB analyse database contents
     description: >-
       Analyse the database contents to establish what actions are needed
-    version: '2.0.0'
+    version: '3.1.0'
     category: ligand preparation
     keywords:
     - moldb
     - database
     image:
       name: informaticsmatters/vs-moldb
-      tag: '3.0.0'
+      tag: '3.1.0'
       project-directory: /data
       working-directory: /data
       type: simple
