@@ -1,12 +1,20 @@
 ---
+# A development environment mirroring the vs-mordred image.
+#
+#   conda env create -f environment-im-mordred.yaml
+#
+# This is a convenience for working on the code locally. It is NOT what builds
+# the image - Dockerfile-mordred is - so treat that as authoritative and keep
+# this in step with it.
 name: im-mordred
 channels:
-  - conda-forge
+- conda-forge
 dependencies:
-  - python=3.10
-  - pip=24.0
-  - rdkit=2023.09.5
-  - mordredcommunity=2.0.4
-  - pip:
-    - im-standardize-molecule==0.1.0
-    - im-data-manager-job-utilities==1.1.1
+- python == 3.12*
+- pip
+- rdkit == 2026.3.6
+- pip:
+  - mordredcommunity==2.0.7
+  - im-standardize-molecule==0.1.0
+  - im-data-manager-job-utilities>=1.4.0
+  - im-rdkit-utilities>=1.2.0

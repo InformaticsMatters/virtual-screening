@@ -1,12 +1,21 @@
+---
+# A development environment mirroring the vs-moldb image.
+#
+#   conda env create -f environment-moldb.yaml
+#
+# This is a convenience for working on the code locally. It is NOT what builds
+# the image - Dockerfile-moldb is - so treat that as authoritative and keep
+# this in step with it.
 name: moldb
 channels:
 - conda-forge
 dependencies:
-- python=3.9
-- pip=21.1
-- sqlalchemy=1.4
-- psycopg2=2.9
-- rdkit=2021.03.5
+- python == 3.12*
+- pip
+- rdkit == 2026.3.6
 - pip:
+  - sqlalchemy==1.4.49
+  - psycopg2-binary==2.9.13
   - im-standardize-molecule==0.1.0
-  - im-data-manager-job-utilities==1.1.0
+  - im-data-manager-job-utilities>=1.4.0
+  - im-rdkit-utilities>=1.2.0
