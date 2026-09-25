@@ -1,10 +1,19 @@
+---
+# A development environment mirroring the vs-fns image.
+#
+#   conda env create -f environment-im-fns.yaml
+#
+# This is a convenience for working on the code locally. It is NOT what builds
+# the image - Dockerfile-fns is - so treat that as authoritative and keep
+# this in step with it.
 name: im-vs-fns
 channels:
-  - conda-forge
+- conda-forge
 dependencies:
-  - pip=21.1.1
-  - rdkit=2021.03.5
-  - neo4j-python-driver=4.4.1
-  - pip:
-    - im-standardize-molecule==0.1.0
-    - im-data-manager-job-utilities==1.0.1
+- python == 3.12*
+- pip
+- rdkit == 2026.3.6
+- pip:
+  - neo4j-driver==4.4.11
+  - im-standardize-molecule==0.1.0
+  - im-data-manager-job-utilities>=1.4.0

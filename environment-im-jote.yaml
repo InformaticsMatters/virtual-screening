@@ -4,13 +4,13 @@
 #   conda env create -f environment-im-jote.yaml
 name: im-jote
 channels:
-  - conda-forge
-  - bioconda
+- conda-forge
+- bioconda
 dependencies:
-  - python == 3.12*
-  - pip
-  - nextflow == 26.04.6
-  - openjdk == 21.*
-  - pip:
-    - im-jote
-    - im-data-manager-job-utilities>=1.4.0
+- python == 3.12*
+- pip
+- nextflow == 26.04.6
+- openjdk == 21.*
+- pip:
+  - im-jote
+  - im-data-manager-job-utilities>=1.4.0

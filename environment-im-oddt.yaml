@@ -1,14 +1,26 @@
 ---
+# A development environment mirroring the vs-oddt image.
+#
+#   conda env create -f environment-im-oddt.yaml
+#
+# This is a convenience for working on the code locally. It is NOT what builds
+# the image - Dockerfile-oddt is - so treat that as authoritative and keep
+# this in step with it.
+#
+# oddt itself is not here. The image installs it from git master, because no
+# release supports this stack. After creating the environment, add it with:
+#
+#   pip install --no-build-isolation \
+#     https://github.com/oddt/oddt/archive/refs/heads/master.tar.gz
 name: im-vs-oddt
 channels:
-  - conda-forge
+- conda-forge
 dependencies:
-  - python=3.10
-  - pip=23.2.1
-  - rdkit=2023.03.3
-  - mdtraj=1.9.9
-  - six=1.16.0
-  #- oddt
-  - pip:
-    - im-data-manager-job-utilities==1.0.1
-    #- git+https://github.com/oddt/oddt.git@master
+- python == 3.12*
+- pip
+- rdkit == 2026.3.6
+- mdtraj
+- six
+- pip:
+  - im-data-manager-job-utilities>=1.4.0
+  - im-rdkit-utilities>=1.2.0
